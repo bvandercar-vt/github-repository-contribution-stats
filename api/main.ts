@@ -18,10 +18,10 @@ import { isLocaleAvailable } from '@/translations';
 // Query parameter validation schema
 const querySchema = z.object({
   username: z.string(),
-  hide: z.string().optional(),
-  hide_title: z.string().optional(),
-  hide_border: z.string().optional(),
-  hide_contributor_rank: z.string().optional(),
+  hide: z.string().optional().transform(parseArray),
+  hide_title: z.string().optional().transform(parseBoolean),
+  hide_border: z.string().optional().transform(parseBoolean),
+  hide_contributor_rank: z.string().optional().transform(parseBoolean),
   order_by: z.enum(['stars', 'contribution_rank']).optional(),
   line_height: z.coerce.number().int().optional(),
   title_color: z.string().optional(),
@@ -33,7 +33,10 @@ const querySchema = z.object({
   border_color: z.string().optional(),
   theme: z.string().optional(),
   cache_seconds: z.coerce.number().int().optional(),
-  locale: z.string().optional(),
+  locale: z
+    .string()
+    .optional()
+    .transform((val) => val?.toLowerCase()),
   combine_all_yearly_contributions: z.string().optional(),
   limit: z.coerce.number().int().optional(),
 });
@@ -44,27 +47,9 @@ app.use(compression());
 
 // Create GET request
 app.get('/api', async (req, res) => {
-  const {
-    username,
-    hide,
-    hide_title,
-    hide_border,
-    hide_contributor_rank,
-    order_by,
-    line_height,
-    title_color,
-    icon_color,
-    text_color,
-    bg_color,
-    custom_title,
-    border_radius,
-    border_color,
-    theme,
-    cache_seconds,
-    locale,
-    combine_all_yearly_contributions,
-    limit,
-  } = querySchema.parse(req.query);
+  const parsedQuery = querySchema.parse(req.query);
+  const { locale, combine_all_yearly_contributions, username, cache_seconds } =
+    parsedQuery;
   res.set('Content-Type', 'image/svg+xml');
 
   if (locale && !isLocaleAvailable(locale)) {
@@ -73,8 +58,8 @@ app.get('/api', async (req, res) => {
 
   try {
     const result = await (combine_all_yearly_contributions
-      ? fetchAllContributorStats(username as string)
-      : fetchContributorStats(username as string));
+      ? fetchAllContributorStats(username)
+      : fetchContributorStats(username));
 
     if (result === undefined) {
       throw new Error('Failed to fetch contributor stats');
@@ -92,24 +77,7 @@ app.get('/api', async (req, res) => {
     res.setHeader('Cache-Control', `public, max-age=${cacheSeconds}`);
 
     res.send(
-      await renderContributorStatsCard(username, name, contributorStats, {
-        hide: parseArray(hide),
-        hide_title: parseBoolean(hide_title),
-        hide_border: parseBoolean(hide_border),
-        hide_contributor_rank: parseBoolean(hide_contributor_rank),
-        order_by,
-        line_height,
-        title_color,
-        icon_color,
-        text_color,
-        bg_color,
-        custom_title,
-        border_radius,
-        border_color,
-        theme,
-        locale: locale?.toLowerCase(),
-        limit,
-      }),
+      await renderContributorStatsCard(username, name, contributorStats, parsedQuery),
     );
   } catch (err: unknown) {
     if (err instanceof Error) {

@@ -54176,10 +54176,35 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const app = express__WEBPACK_IMPORTED_MODULE_5___default()();
-app.use(compression__WEBPACK_IMPORTED_MODULE_6___default()());
+
+const querySchema = zod__WEBPACK_IMPORTED_MODULE_7__.object({
+    username: zod__WEBPACK_IMPORTED_MODULE_7__.string(),
+    hide: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional().transform(_common_utils__WEBPACK_IMPORTED_MODULE_3__.parseArray),
+    hide_title: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional().transform(_common_utils__WEBPACK_IMPORTED_MODULE_3__.parseBoolean),
+    hide_border: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional().transform(_common_utils__WEBPACK_IMPORTED_MODULE_3__.parseBoolean),
+    hide_contributor_rank: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional().transform(_common_utils__WEBPACK_IMPORTED_MODULE_3__.parseBoolean),
+    order_by: zod__WEBPACK_IMPORTED_MODULE_7__["enum"](['stars', 'contribution_rank']).optional(),
+    line_height: zod__WEBPACK_IMPORTED_MODULE_7__.coerce.number().int().optional(),
+    title_color: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional(),
+    icon_color: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional(),
+    text_color: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional(),
+    bg_color: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional(),
+    custom_title: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional(),
+    border_radius: zod__WEBPACK_IMPORTED_MODULE_7__.coerce.number().optional(),
+    border_color: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional(),
+    theme: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional(),
+    cache_seconds: zod__WEBPACK_IMPORTED_MODULE_7__.coerce.number().int().optional(),
+    locale: zod__WEBPACK_IMPORTED_MODULE_7__.string()
+        .optional()
+        .transform((val) => val?.toLowerCase()),
+    combine_all_yearly_contributions: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional(),
+    limit: zod__WEBPACK_IMPORTED_MODULE_7__.coerce.number().int().optional(),
+});
+const app = express__WEBPACK_IMPORTED_MODULE_1___default()();
+app.use(compression__WEBPACK_IMPORTED_MODULE_0___default()());
 app.get('/api', async (req, res) => {
-    const { username, hide, hide_title, hide_border, hide_contributor_rank, order_by, line_height, title_color, icon_color, text_color, bg_color, custom_title, border_radius, border_color, theme, cache_seconds, locale, combine_all_yearly_contributions, limit, } = req.query;
+    const parsedQuery = querySchema.parse(req.query);
+    const { locale, combine_all_yearly_contributions, username, cache_seconds } = parsedQuery;
     res.set('Content-Type', 'image/svg+xml');
     if (locale && !(0,_translations__WEBPACK_IMPORTED_MODULE_4__.isLocaleAvailable)(locale)) {
         return res.send((0,_common_utils__WEBPACK_IMPORTED_MODULE_1__.renderError)('Something went wrong', 'Language not found'));
@@ -54193,25 +54218,7 @@ app.get('/api', async (req, res) => {
         const contributorStats = result.repositoriesContributedTo.nodes;
         const cacheSeconds = (0,_common_utils__WEBPACK_IMPORTED_MODULE_1__.clampValue)(parseInt(cache_seconds || _common_utils__WEBPACK_IMPORTED_MODULE_1__.CONSTANTS.FOUR_HOURS, 10), _common_utils__WEBPACK_IMPORTED_MODULE_1__.CONSTANTS.FOUR_HOURS, _common_utils__WEBPACK_IMPORTED_MODULE_1__.CONSTANTS.ONE_DAY);
         res.setHeader('Cache-Control', `public, max-age=${cacheSeconds}`);
-        res.send(await (0,_cards_stats_card__WEBPACK_IMPORTED_MODULE_0__.renderContributorStatsCard)(username, name, contributorStats, {
-            hide: (0,_common_utils__WEBPACK_IMPORTED_MODULE_1__.parseArray)(hide),
-            hide_title: (0,_common_utils__WEBPACK_IMPORTED_MODULE_1__.parseBoolean)(hide_title),
-            hide_border: (0,_common_utils__WEBPACK_IMPORTED_MODULE_1__.parseBoolean)(hide_border),
-            hide_contributor_rank: (0,_common_utils__WEBPACK_IMPORTED_MODULE_1__.parseBoolean)(hide_contributor_rank),
-            order_by,
-            line_height,
-            title_color,
-            icon_color,
-            text_color,
-            bg_color,
-            custom_title,
-            border_radius,
-            border_color,
-            theme,
-            locale: locale ? locale.toLowerCase() : null,
-            limit,
-            token,
-        }));
+        res.send(await (0,_cards_stats_card__WEBPACK_IMPORTED_MODULE_2__.renderContributorStatsCard)(username, name, contributorStats, parsedQuery));
     }
     catch (err) {
         return res.send((0,_common_utils__WEBPACK_IMPORTED_MODULE_1__.renderError)(err.message, err.secondaryMessage));
