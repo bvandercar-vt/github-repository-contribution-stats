@@ -1,8 +1,5 @@
 // @ts-check
-/**
- * @param {number} value
- */
-export const calculateCircleProgress = (value) => {
+export const calculateCircleProgress = (value: number) => {
   const radius = 40;
   const c = Math.PI * (radius * 2);
 
@@ -12,12 +9,7 @@ export const calculateCircleProgress = (value) => {
   return ((100 - value) / 100) * c;
 };
 
-/**
- *
- * @param {{progress: number}} param0
- * @returns
- */
-export const getProgressAnimation = ({ progress }) => {
+export const getProgressAnimation = ({ progress }: { progress: number }) => {
   return `
     @keyframes rankAnimation {
       from {
@@ -52,16 +44,19 @@ export const getAnimations = () => {
   `;
 };
 
-/**
- * @param {{
- *  titleColor?: string | string[]
- *  textColor?: string | string[]
- *  iconColor?: string | string[]
- *  show_icons?: boolean;
- *  progress?: number;
- * }} args
- */
-export const getStyles = ({ titleColor, textColor, iconColor, show_icons, progress }) => {
+export const getStyles = ({
+  titleColor,
+  textColor,
+  iconColor,
+  show_icons,
+  progress,
+}: {
+  titleColor?: string | string[];
+  textColor?: string | string[];
+  iconColor?: string | string[];
+  show_icons?: boolean;
+  progress?: number;
+}) => {
   return `
     .stat {
       font: 600 14px 'Segoe UI', Ubuntu, "Helvetica Neue", Sans-Serif; fill: ${textColor};
@@ -95,7 +90,11 @@ export const getStyles = ({ titleColor, textColor, iconColor, show_icons, progre
       stroke-width: 3;
       opacity: 0.2;
     }
-    ${process.env.NODE_ENV === 'test' ? '' : getProgressAnimation({ progress })}
+    ${
+      process.env.NODE_ENV === 'test' || progress === undefined
+        ? ''
+        : getProgressAnimation({ progress })
+    }
   `;
 };
 

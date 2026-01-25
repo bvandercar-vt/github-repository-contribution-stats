@@ -1,6 +1,6 @@
 import { encodeHTML } from '@/common/utils';
 
-const statCardLocales = ({ name, apostrophe }) => {
+const statCardLocales = ({ name, apostrophe }: { name: string; apostrophe: string }) => {
   const encodedName = encodeHTML(name);
   return {
     'statcard.title': {
@@ -354,7 +354,7 @@ const wakatimeCardLocales = {
 
 const availableLocales = Object.keys(repoCardLocales['repocard.archived']);
 
-function isLocaleAvailable(locale) {
+function isLocaleAvailable(locale: string) {
   return availableLocales.includes(locale.toLowerCase());
 }
 

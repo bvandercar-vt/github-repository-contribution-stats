@@ -11,6 +11,7 @@ import tseslint from 'typescript-eslint'; // eslint-disable-line import/no-unres
  * @type {import('eslint').Linter.RulesRecord}
  */
 const commonRules = {
+  'object-shorthand': 'error',
   // Import plugin rules
   'import/no-unresolved': 'error',
   'import/named': 'error',

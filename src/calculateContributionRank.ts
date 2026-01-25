@@ -1,7 +1,7 @@
 import { type Contributor } from 'getContributors';
 
 export const calculateContributionRank = (
-  name,
+  name: string,
   contributors: Contributor[],
   numOfMyContributions: number,
 ) => {

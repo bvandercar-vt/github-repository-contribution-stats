@@ -3,6 +3,7 @@
     "target": "esnext",
     "lib": ["dom", "dom.iterable", "esnext"],
     "moduleResolution": "node",
+    "module": "esnext",
     "sourceMap": true,
     "removeComments": true,
     "allowJs": false,
@@ -11,7 +12,7 @@
     "strictFunctionTypes": true,
     "strictBindCallApply": true,
     "strictPropertyInitialization": true,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "noImplicitThis": true,
     "noFallthroughCasesInSwitch": true,
     "esModuleInterop": true,
@@ -20,17 +21,21 @@
     "incremental": false,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": false,
-    "resolveJsonModule": true,
     "isolatedModules": false,
     "allowSyntheticDefaultImports": true,
-    "module": "esnext",
-    "typeRoots": ["./node_modules/@types", "types"],
     "baseUrl": ".",
     "paths": {
       "@*": ["./src*"],
       "package": ["./package.json"]
     }
   },
-  "include": ["**/*", "./package.json", "./.env"],
-  "exclude": ["**/node_modules", "output"]
+  "include": [
+    "src/**/*",
+    "action/**/*",
+    "api/**/*",
+    "themes/**/*",
+    "./package.json",
+    "./.env"
+  ],
+  "exclude": ["node_modules", "output"]
 }

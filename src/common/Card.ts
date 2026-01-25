@@ -36,6 +36,23 @@ export class Card {
     customTitle,
     defaultTitle = '',
     titlePrefixIcon = '',
+  }: {
+    /**
+     * @default 100
+     */
+    width?: number;
+    /**
+     * @default 100
+     */
+    height?: number;
+    /**
+     * @default 4.5
+     */
+    border_radius?: number;
+    colors?: Partial<CardColors>;
+    customTitle?: string;
+    defaultTitle?: string;
+    titlePrefixIcon?: string;
   }) {
     this.width = width;
     this.height = height;
@@ -66,49 +83,31 @@ export class Card {
     this.animations = false;
   }
 
-  /**
-   * @param {{title: string, desc: string}} prop
-   */
-  setAccessibilityLabel({ title, desc }) {
+  setAccessibilityLabel({ title, desc }: { title: string; desc: string }) {
     this.a11yTitle = title;
     this.a11yDesc = desc;
   }
 
-  /**
-   * @param {string} value
-   */
-  setCSS(value) {
+  setCSS(value: string) {
     this.css = value;
   }
 
-  /**
-   * @param {boolean} value
-   */
-  setHideBorder(value) {
+  setHideBorder(value: boolean) {
     this.hideBorder = value;
   }
 
-  /**
-   * @param {boolean} value
-   */
-  setHideTitle(value) {
+  setHideTitle(value: boolean) {
     this.hideTitle = value;
     if (value) {
       this.height -= 30;
     }
   }
 
-  /**
-   * @param {boolean} value
-   */
-  setHideContributorRank(value) {
+  setHideContributorRank(value: boolean) {
     this.hideContributorRank = value;
   }
 
-  /**
-   * @param {string} text
-   */
-  setTitle(text) {
+  setTitle(text: string) {
     this.title = text;
   }
 
@@ -221,7 +220,7 @@ export class Card {
         transform="translate(${this.paddingX + 235}, ${this.paddingY + 30})"
       >
         ${flexLayout({
-          items: [!this.hideContributorRank && gitPRIcon, starIcon],
+          items: [...(!this.hideContributorRank ? [gitPRIcon] : []), starIcon],
           gap: 50,
           direction: 'row',
         }).join('')}
@@ -254,7 +253,7 @@ export class Card {
   /**
    * @param {string} body
    */
-  render(body) {
+  render(body: string) {
     return `
       <svg
         width="${this.width}"

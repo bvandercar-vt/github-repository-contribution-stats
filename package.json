@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --mode development --config webpack.common.js",
@@ -36,7 +37,8 @@
     "image-to-base64": "^2.2.0",
     "lodash": "^4.17.23",
     "node-fetch": "^3.2.10",
-    "typescript": "^4.9.0"
+    "typescript": "^4.9.0",
+    "zod": "^3.3.0"
   },
   "devDependencies": {
     "@types/compression": "^1.7.2",

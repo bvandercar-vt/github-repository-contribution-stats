@@ -1,4 +1,4 @@
-export const calculateRank = (stargazers) => {
+export const calculateRank = (stargazers: number) => {
   const RANK_S_PLUS_VALUE = 10000; // S+
   const RANK_S_VALUE = 1000; // S
   const RANK_A_PLUS_VALUE = 500; // A+

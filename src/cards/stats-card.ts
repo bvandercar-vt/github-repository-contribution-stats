@@ -25,10 +25,22 @@ export type ContributorFetcher = (
   token: string,
 ) => Promise<Contributor[]>;
 
-const createTextNode = ({ imageBase64, name, rank, contributionRank, index }) => {
+const createTextNode = ({
+  imageBase64,
+  name,
+  rank,
+  contributionRank,
+  index,
+}: {
+  imageBase64: string;
+  name: string;
+  rank: string;
+  contributionRank?: string;
+  index: number;
+}) => {
   const staggerDelay = (index + 3) * 150;
 
-  const calculateTextWidth = (text) => {
+  const calculateTextWidth = (text: string) => {
     return measureText(text, 18);
   };
 
@@ -98,12 +110,10 @@ export type ContributionsStats = Pick<
 };
 
 export const renderContributorStatsCard = async (
-  username,
-  name,
+  username: string,
+  name: string,
   contributorStats: ContributionsStats[] = [],
-  options: Record<string, any> = {}, // eslint-disable-line @typescript-eslint/no-explicit-any
-) => {
-  const {
+  {
     hide = [],
     line_height = 25,
     hide_title = false,
@@ -121,9 +131,47 @@ export const renderContributorStatsCard = async (
     locale,
     limit = -1,
     contributor_fetcher,
-  } = options;
-
-  const orderBy = order_by;
+  }: {
+    hide?: string[];
+    /**
+     * @default 25
+     */
+    line_height?: number;
+    /**
+     * @default false
+     */
+    hide_title?: boolean;
+    /**
+     * @default false
+     */
+    hide_border?: boolean;
+    /**
+     * @default true
+     */
+    hide_contributor_rank?: boolean;
+    /**
+     * @default 'stars'
+     */
+    order_by?: 'stars' | 'contribution_rank';
+    title_color?: string;
+    icon_color?: string;
+    text_color?: string;
+    bg_color?: string;
+    border_radius?: number;
+    border_color?: string;
+    custom_title?: string;
+    /**
+     * @default 'default'
+     */
+    theme?: string;
+    locale?: string;
+    /**
+     * @default none
+     */
+    limit?: number;
+    contributor_fetcher?: ContributorFetcher;
+  } = {},
+) => {
   const lheight = parseInt(String(line_height), 10);
 
   // returns theme based colors with proper overrides and defaults
@@ -156,8 +204,7 @@ export const renderContributorStatsCard = async (
     const fetchContributors: ContributorFetcher = contributor_fetcher || getContributors;
     // Fetch sequentially to respect rate limiting (not in parallel with Promise.all)
     allContributorsByRepo = [];
-    for (const key of Object.keys(contributorStats)) {
-      const nameWithOwner = contributorStats[key].nameWithOwner;
+    for (const { nameWithOwner } of Object.values(contributorStats)) {
       const contributors = await fetchContributors(username, nameWithOwner, token!);
       allContributorsByRepo.push(contributors);
     }
@@ -172,36 +219,50 @@ export const renderContributorStatsCard = async (
     B: 0,
   };
 
-  const sortFunction =
-    orderBy == 'stars'
-      ? (a, b) => b.stars - a.stars
-      : (a, b) => rankValues[b.contributionRank] - rankValues[a.contributionRank];
+  type TransformedContributionStat = {
+    name: string;
+    imageBase64: string;
+    url: string;
+    stars: number;
+    contributionRank: ReturnType<typeof calculateContributionRank> | undefined;
+    rank: string;
+  };
 
-  const transformedContributorStats = contributorStats
-    .map(({ url, name, stargazerCount, numOfMyContributions }, index) => ({
-      name: name,
-      imageBase64: imageBase64s[index],
-      url: url,
-      stars: stargazerCount,
-      contributionRank:
-        hide_contributor_rank || numOfMyContributions === undefined
-          ? undefined
-          : calculateContributionRank(
-              name,
-              allContributorsByRepo[index],
-              numOfMyContributions,
-            ),
-      rank: calculateRank(stargazerCount),
-    }))
+  const getContributionRank = (i: TransformedContributionStat) =>
+    i.contributionRank === undefined ? -1 : rankValues[i.contributionRank];
+
+  const sortFunction = (a: TransformedContributionStat, b: TransformedContributionStat) =>
+    order_by == 'stars'
+      ? b.stars - a.stars
+      : getContributionRank(b) - getContributionRank(a);
+
+  const transformedContributorStats: TransformedContributionStat[] = contributorStats
+    .map(
+      ({ url, name, stargazerCount, numOfMyContributions }, index) =>
+        ({
+          name,
+          imageBase64: imageBase64s[index],
+          url,
+          stars: stargazerCount,
+          contributionRank:
+            hide_contributor_rank || numOfMyContributions === undefined
+              ? undefined
+              : calculateContributionRank(
+                  name,
+                  allContributorsByRepo[index],
+                  numOfMyContributions,
+                ),
+          rank: calculateRank(stargazerCount),
+        } as const),
+    )
     .filter((repository) => !hide.includes(repository.rank))
     .sort(sortFunction);
 
-  let statItems = Object.keys(transformedContributorStats).map((key, index) =>
+  let statItems = Object.values(transformedContributorStats).map((stat, index) =>
     // create the text nodes, and pass index so that we can calculate the line spacing
     createTextNode({
-      ...transformedContributorStats[key],
+      ...stat,
       index,
-      lheight,
     }),
   );
 
@@ -217,7 +278,6 @@ export const renderContributorStatsCard = async (
     textColor,
     iconColor,
     show_icons: true,
-    progress: true,
   });
 
   const width = 495;

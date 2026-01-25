@@ -59,25 +59,21 @@ function isValidHexColor(hexColor: string) {
   ).test(hexColor);
 }
 
-/**
- * @param {string} value
- * @returns {boolean | string}
- */
-export const parseBoolean = (value: string | boolean) => {
+export const parseBoolean = (value: string | undefined): boolean | undefined => {
   if (value === 'true') {
     return true;
   } else if (value === 'false') {
     return false;
+  } else if (value === undefined || value === null) {
+    return undefined;
   } else {
-    return value;
+    return Boolean(value);
   }
 };
 
-/**
- * @param {string} str
- */
-export const parseArray = (str) => {
+export const parseArray = (str: string | undefined): string[] => {
   if (!str) return [];
+  if (typeof str !== 'string') return [];
   return str.split(',');
 };
 
@@ -86,15 +82,18 @@ export const parseArray = (str) => {
  * @param {number} min
  * @param {number} max
  */
-export const clampValue = (number, min, max) => {
-  if (Number.isNaN(parseInt(number))) return min;
+export const clampValue = (number: string | number, min: number, max: number) => {
+  if (typeof number === 'string') {
+    number = parseInt(number);
+  }
+  if (Number.isNaN(number)) return min;
   return Math.max(min, Math.min(number, max));
 };
 
 /**
  * @param {string[]} colors
  */
-function isValidGradient(colors) {
+function isValidGradient(colors: string[]) {
   return isValidHexColor(colors[1]) && isValidHexColor(colors[2]);
 }
 
@@ -131,7 +130,17 @@ function fallbackColor(color: string | undefined | null, fallbackColor: string) 
  * Auto layout utility, allows us to layout things
  * vertically or horizontally with proper gaping
  */
-export const flexLayout = ({ items, gap, direction, sizes = [] }) => {
+export const flexLayout = ({
+  items,
+  gap,
+  direction,
+  sizes = [],
+}: {
+  items: string[];
+  gap: number;
+  direction?: 'column' | 'row';
+  sizes?: number[];
+}) => {
   let lastSize = 0;
   // filter() for filtering out empty strings
   return items.filter(Boolean).map((item, i) => {
@@ -168,16 +177,16 @@ export const getCardColors = ({
   theme,
   fallbackTheme = 'default',
 }: {
-  title_color: string;
-  text_color: string;
-  icon_color: string;
-  bg_color: string;
-  border_color: string;
-  theme: ThemeNames;
+  title_color?: string;
+  text_color?: string;
+  icon_color?: string;
+  bg_color?: string;
+  border_color?: string;
+  theme: ThemeNames | string;
   fallbackTheme?: ThemeNames;
 }) => {
   const defaultTheme: Theme = themes[fallbackTheme];
-  const selectedTheme: Theme = themes[theme] || defaultTheme;
+  const selectedTheme: Theme = themes[theme as ThemeNames] || defaultTheme;
   const defaultBorderColor = selectedTheme.border_color || defaultTheme.border_color;
 
   // get the color provided by the user else the theme color
@@ -243,16 +252,18 @@ export type CardColors = ReturnType<typeof getCardColors>;
 // }
 
 export const CONSTANTS = {
-  THIRTY_MINUTES: '1800',
-  TWO_HOURS: '7200',
-  FOUR_HOURS: '14400',
-  ONE_DAY: '86400',
+  THIRTY_MINUTES: 1800,
+  TWO_HOURS: 7200,
+  FOUR_HOURS: 14400,
+  ONE_DAY: 86400,
 };
 
 export const SECONDARY_ERROR_MESSAGES = {
   MAX_RETRY: 'Please add an env variable called PAT_1 with your github token in vercel',
   USER_NOT_FOUND: 'Make sure the provided username is not an organization',
 };
+
+type SecondaryErrorMessageKeys = keyof typeof SECONDARY_ERROR_MESSAGES;
 
 export class CustomError extends Error {
   type: string;
@@ -261,10 +272,11 @@ export class CustomError extends Error {
    * @param {string} message
    * @param {string} type
    */
-  constructor(message, type) {
+  constructor(message: string, type: string | SecondaryErrorMessageKeys) {
     super(message);
     this.type = type;
-    this.secondaryMessage = SECONDARY_ERROR_MESSAGES[type] || type;
+    this.secondaryMessage =
+      SECONDARY_ERROR_MESSAGES[type as SecondaryErrorMessageKeys] || type;
   }
 
   static MAX_RETRY = 'MAX_RETRY';
@@ -277,7 +289,7 @@ export class CustomError extends Error {
  * @param {number} fontSize
  * @returns
  */
-export const measureText = (str, fontSize = 10) => {
+export const measureText = (str: string, fontSize: number = 10) => {
   // prettier-ignore
   const widths = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -309,7 +321,7 @@ export const measureText = (str, fontSize = 10) => {
   );
 };
 
-export const getImageBase64FromURL = async (url: string) => {
+export const getImageBase64FromURL = async (url: string): Promise<string> => {
   const imageURLData = await fetch(url);
   const buffer = await imageURLData.arrayBuffer();
   const stringifiedBuffer = Buffer.from(buffer).toString('base64');

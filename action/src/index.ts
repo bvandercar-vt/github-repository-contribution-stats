@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import * as core from '@actions/core';
+import { z } from 'zod';
 
 import { type Contributor } from '../../getContributors';
 import {
@@ -69,7 +70,7 @@ function createRateLimitedFetcher(): ContributorFetcher {
 
       // Check retry-after header first (secondary rate limit)
       if (retryAfter) {
-        waitTime = parseInt(retryAfter, 10) * 1000 + 1000; // +1s buffer
+        waitTime = parseInt(retryAfter) * 1000 + 1000; // +1s buffer
         core.info(
           `Secondary rate limit hit. retry-after: ${retryAfter}s. Waiting ${Math.ceil(
             waitTime / 1000,
@@ -161,36 +162,99 @@ function createRateLimitedFetcher(): ContributorFetcher {
   };
 }
 
+// Input validation schema
+const inputSchema = z.object({
+  username: z.string().min(1, 'Username is required'),
+  output_file: z.string().default('github-contributor-stats.svg'),
+  combine_all_yearly_contributions: z.boolean().default(true),
+  hide_contributor_rank: z.boolean().default(true),
+  hide: z.array(z.string()).default([]),
+  order_by: z.enum(['stars', 'contribution_rank']).default('stars'),
+  limit: z.number().int().min(-1).default(-1),
+  theme: z.string().default('default'),
+  title_color: z.string().optional(),
+  text_color: z.string().optional(),
+  icon_color: z.string().optional(),
+  bg_color: z.string().optional(),
+  border_color: z.string().optional(),
+  border_radius: z.number().nonnegative().optional(),
+  hide_title: z.boolean().default(false),
+  hide_border: z.boolean().default(false),
+  custom_title: z.string().optional(),
+  locale: z.string().optional(),
+});
+
+type ValidatedInputs = z.infer<typeof inputSchema>;
+
+function parseInputs(): ValidatedInputs {
+  const rawInputs = {
+    username: core.getInput('username', { required: true }),
+    output_file: core.getInput('output-file') || 'github-contributor-stats.svg',
+    combine_all_yearly_contributions:
+      core.getInput('combine-all-yearly-contributions') !== 'false',
+    hide_contributor_rank: core.getInput('hide-contributor-rank') !== 'false',
+    hide: core.getInput('hide').split(',').filter(Boolean),
+    order_by: core.getInput('order-by') || 'stars',
+    limit: parseInt(core.getInput('limit') || '-1', 10),
+    theme: core.getInput('theme') || 'default',
+    title_color: core.getInput('title-color') || undefined,
+    text_color: core.getInput('text-color') || undefined,
+    icon_color: core.getInput('icon-color') || undefined,
+    bg_color: core.getInput('bg-color') || undefined,
+    border_color: core.getInput('border-color') || undefined,
+    border_radius: core.getInput('border-radius')
+      ? parseFloat(core.getInput('border-radius'))
+      : undefined,
+    hide_title: core.getInput('hide-title') === 'true',
+    hide_border: core.getInput('hide-border') === 'true',
+    custom_title: core.getInput('custom-title') || undefined,
+    locale: core.getInput('locale') || undefined,
+  };
+
+  try {
+    return inputSchema.parse(rawInputs);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const errorMessage = error.issues
+        .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+        .join('\n');
+      throw new Error(`Invalid input parameters:\n${errorMessage}`);
+    }
+    throw error;
+  }
+}
+
 async function run(): Promise<void> {
   try {
-    // Read inputs
-    const username = core.getInput('username', { required: true });
-    const outputFile = core.getInput('output-file') || 'github-contributor-stats.svg';
-    const combineAllYearlyContributions =
-      core.getInput('combine-all-yearly-contributions') !== 'false';
-    const hideContributorRank = core.getInput('hide-contributor-rank') !== 'false';
-    const hide = core.getInput('hide').split(',').filter(Boolean);
-    const orderBy = core.getInput('order-by') || 'stars';
-    const limit = parseInt(core.getInput('limit') || '-1', 10);
-    const theme = core.getInput('theme') || 'default';
-    const titleColor = core.getInput('title-color') || undefined;
-    const textColor = core.getInput('text-color') || undefined;
-    const iconColor = core.getInput('icon-color') || undefined;
-    const bgColor = core.getInput('bg-color') || undefined;
-    const borderColor = core.getInput('border-color') || undefined;
-    const borderRadius = core.getInput('border-radius') || undefined;
-    const hideTitle = core.getInput('hide-title') === 'true';
-    const hideBorder = core.getInput('hide-border') === 'true';
-    const customTitle = core.getInput('custom-title') || undefined;
-    const locale = core.getInput('locale') || undefined;
+    // Parse and validate inputs
+    const {
+      username,
+      output_file,
+      combine_all_yearly_contributions,
+      hide_contributor_rank,
+      hide,
+      order_by,
+      limit,
+      theme,
+      title_color,
+      text_color,
+      icon_color,
+      bg_color,
+      border_color,
+      border_radius,
+      hide_title,
+      hide_border,
+      custom_title,
+      locale,
+    } = parseInputs();
 
     core.info(`Generating stats for user: ${username}`);
-    core.info(`Combine all yearly contributions: ${combineAllYearlyContributions}`);
-    core.info(`Hide contributor rank: ${hideContributorRank}`);
+    core.info(`Combine all yearly contributions: ${combine_all_yearly_contributions}`);
+    core.info(`Hide contributor rank: ${hide_contributor_rank}`);
 
     // Fetch contributor stats
     core.info('Fetching contribution data...');
-    const result = await (combineAllYearlyContributions
+    const result = await (combine_all_yearly_contributions
       ? fetchAllContributorStats(username)
       : fetchContributorStats(username));
 
@@ -204,11 +268,11 @@ async function run(): Promise<void> {
     core.info(`Found ${contributorStats.length} repositories`);
 
     // Create rate-limited fetcher if needed
-    const contributorFetcher = !hideContributorRank
+    const contributorFetcher = !hide_contributor_rank
       ? createRateLimitedFetcher()
       : undefined;
 
-    if (!hideContributorRank) {
+    if (!hide_contributor_rank) {
       core.info(
         `Will fetch contributors for ${contributorStats.length} repositories with rate limiting`,
       );
@@ -221,17 +285,17 @@ async function run(): Promise<void> {
     core.info('Rendering SVG...');
     const svg = await renderContributorStatsCard(username, name, contributorStats, {
       hide,
-      hide_title: hideTitle,
-      hide_border: hideBorder,
-      hide_contributor_rank: hideContributorRank,
-      order_by: orderBy,
-      title_color: titleColor,
-      icon_color: iconColor,
-      text_color: textColor,
-      bg_color: bgColor,
-      custom_title: customTitle,
-      border_radius: borderRadius,
-      border_color: borderColor,
+      hide_title,
+      hide_border,
+      hide_contributor_rank,
+      order_by,
+      title_color,
+      icon_color,
+      text_color,
+      bg_color,
+      custom_title,
+      border_radius,
+      border_color,
       theme,
       locale,
       limit,
@@ -239,13 +303,13 @@ async function run(): Promise<void> {
     });
 
     // Write SVG to file
-    const outputPath = path.resolve(process.cwd(), outputFile);
+    const outputPath = path.resolve(process.cwd(), output_file);
     fs.writeFileSync(outputPath, svg);
 
     core.info(`SVG written to: ${outputPath}`);
     core.setOutput('svg-path', outputPath);
 
-    if (!hideContributorRank) {
+    if (!hide_contributor_rank) {
       core.info(`Total contributor API requests made: ${requestCount}`);
     }
   } catch (error) {
