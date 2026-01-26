@@ -1,4 +1,4 @@
-import { type Columns } from './schema';
+import { type ColumnName } from './schema';
 
 import { type CardColors, encodeHTML, flexLayout, measureText } from '@/common/utils';
 import { getAnimations } from '@/getStyles';
@@ -22,7 +22,7 @@ export function renderCard({
   defaultTitle?: string;
   titlePrefixIcon?: string;
   body: string;
-  columns: Array<{ column: Columns; width: number }>;
+  columns: Array<{ column: ColumnName; width: number }>;
   /**
    * @default 100
    */
@@ -144,7 +144,7 @@ export function renderCard({
       contribution_rank: { icon: gitPRIcon, title: 'Contribution Rank' },
       star_rank: { icon: starIcon, title: 'Star Rank' },
       commits: { icon: commitsIcon, title: 'Commits' },
-    } satisfies Record<Columns, { icon: string; title?: string }>;
+    } satisfies Record<ColumnName, { icon: string; title?: string }>;
 
     return `
       <g

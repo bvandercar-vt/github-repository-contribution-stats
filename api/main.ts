@@ -3,17 +3,19 @@ import express from 'express';
 import { z } from 'zod';
 
 import { renderContributorStatsCard } from '@/cards/stats-card';
-import { commonSchema } from '@/common/schema';
+import { commonInputSchema, mergeHideIntoColumnCriteria } from '@/common/schema';
 import { clampValue, TIMES_S, CustomError, renderError } from '@/common/utils';
 import { fetchAllContributorStats } from '@/fetchAllContributorStats';
 import { fetchContributorStats } from '@/fetchContributorStats';
 import { isLocaleAvailable } from '@/translations';
 
 // Query parameter validation schema
-const querySchema = commonSchema.extend({
-  line_height: z.coerce.number().int().optional(),
-  cache_seconds: z.coerce.number().int().optional(),
-});
+const querySchema = commonInputSchema
+  .extend({
+    line_height: z.coerce.number().int().optional(),
+    cache_seconds: z.coerce.number().int().optional(),
+  })
+  .transform(mergeHideIntoColumnCriteria);
 
 // Initialize Express
 const app = express();

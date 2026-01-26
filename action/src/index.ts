@@ -5,8 +5,12 @@ import * as core from '@actions/core';
 import type { z } from 'zod';
 
 import { renderContributorStatsCard, type ContributorFetcher } from '@/cards/stats-card';
-import { commonSchema, emptyStringToUndefined } from '@/common/schema';
-import { shouldCalculateContributorRank } from '@/common/utils';
+import {
+  commonInputSchema,
+  emptyStringToUndefined,
+  mergeHideIntoColumnCriteria,
+} from '@/common/schema';
+import { getColumnCriteria } from '@/common/utils';
 import { fetchAllContributorStats } from '@/fetchAllContributorStats';
 import { type Contributor } from '@/fetchContributors';
 import { fetchContributorStats } from '@/fetchContributorStats';
@@ -161,13 +165,15 @@ function createRateLimitedFetcher(): ContributorFetcher {
   };
 }
 
-const inputSchema = commonSchema.extend({
-  output_file: emptyStringToUndefined.default('github-contributor-stats.svg'),
-});
+const inputSchema = commonInputSchema
+  .extend({
+    output_file: emptyStringToUndefined.default('github-contributor-stats.svg'),
+  })
+  .transform(mergeHideIntoColumnCriteria);
 
-type ValidatedInputs = z.infer<typeof inputSchema>;
+export type ValidatedActionInputs = z.infer<typeof inputSchema>;
 
-export function parseInputs(): ValidatedInputs {
+export function parseActionInputs(): ValidatedActionInputs {
   return inputSchema.parse({
     username: core.getInput('username', { required: true }),
     output_file: core.getInput('output-file'),
@@ -198,7 +204,6 @@ async function run(): Promise<void> {
       output_file,
       combine_all_yearly_contributions,
       columns,
-      hide,
       order_by,
       limit,
       theme,
@@ -212,13 +217,13 @@ async function run(): Promise<void> {
       hide_border,
       custom_title,
       locale,
-    } = parseInputs();
+    } = parseActionInputs();
 
     core.info(`Generating stats for user: ${username}`);
     core.info(`Combine all yearly contributions: ${combine_all_yearly_contributions}`);
-    core.info(`Columns: ${columns.join(', ')}`);
+    core.info(`Columns: ${columns.map((col) => col.name).join(', ')}`);
 
-    const calculateContributorRank = shouldCalculateContributorRank(columns);
+    const contributorRankCriteria = getColumnCriteria(columns, 'contribution_rank');
 
     // Fetch contributor stats
     core.info('Fetching contribution data...');
@@ -236,11 +241,11 @@ async function run(): Promise<void> {
     core.info(`Found ${contributorStats.length} repositories`);
 
     // Create rate-limited fetcher if needed
-    const contributorFetcher = calculateContributorRank
+    const contributorFetcher = contributorRankCriteria
       ? createRateLimitedFetcher()
       : undefined;
 
-    if (calculateContributorRank) {
+    if (contributorRankCriteria) {
       core.info(
         `Will fetch contributors for ${contributorStats.length} repositories with rate limiting`,
       );
@@ -253,7 +258,6 @@ async function run(): Promise<void> {
     core.info('Rendering SVG...');
     const svg = await renderContributorStatsCard(username, name, contributorStats, {
       columns,
-      hide,
       hide_title,
       hide_border,
       order_by,
@@ -277,7 +281,7 @@ async function run(): Promise<void> {
     core.info(`SVG written to: ${outputPath}`);
     core.setOutput('svg-path', outputPath);
 
-    if (calculateContributorRank) {
+    if (contributorRankCriteria) {
       core.info(`Total contributor API requests made: ${requestCount}`);
     }
   } catch (error) {

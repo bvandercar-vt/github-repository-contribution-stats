@@ -1,0 +1,17 @@
+jobs:
+  update-stats:
+    steps:
+      - name: Generate GitHub Contributor Stats SVG
+        uses: bvandercar-vt/github-repository-contribution-stats/action@better-types-zod-check
+        env:
+          GITHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN }}
+        with:
+          username: Atry
+          output-file: github-contributor-stats.svg
+          columns:
+            - name: star_rank
+            - name: contribution_rank
+              hide: B
+            - name: commits
+              minimum: 2
+          combine-all-yearly-contributions: true

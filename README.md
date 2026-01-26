@@ -27,7 +27,19 @@ Change the `?username=` value to your GitHub username.
 
 ![Taehyun's GitHub Repository Contribution stats](https://github-contributor-stats.vercel.app/api?username=HwangTaehyun&hide=B)
 
-\_Note: Available ranks are S+ (over 10000), S (over 1000), A+ (over 500), A (over 100), B+ (over 50) and B (over 1).
+_Note: Available ranks are S+ (over 10000), S (over 1000), A+ (over 500), A (over 100), B+ (over 50) and B (over 1)._
+
+### Columns
+
+Can configure the visible columns by passing a string array of values that can be `star_rank`, `contribution_rank`, or `columns`
+
+Examples:
+
+- `&columns=contribution_rank`
+- `&columns=contribution_rank,star_rank`
+- `&columns=star_rank,commits`
+
+<!-- TODO: example image with all columns present -->
 
 ### Limiting contribution repos to show
 
@@ -45,20 +57,12 @@ To hide specific ranks, you can pass a query parameter `&hide=` with comma-separ
 ![Taehyun's GitHub Repository Contribution stats](https://github-contributor-stats.vercel.app/api?username=HwangTaehyun&hide=B,B%2B)
 ```
 
-### Showing contributor rank stats
-
-To show contributor ranks, you can pass `contribution_rank` in the `columns` query parameter, i.e. `&columns=contribution_rank` or `&columns=contribution_rank,stars`.
-
-```md
-![Taehyun's GitHub Repository Contribution stats](https://github-contributor-stats.vercel.app/api?username=HwangTaehyun&hide=B,B%2Bcolumns=contribution_rank,stars&limit=5)
-```
-
 ### Configuring the sorting order for gitHub contributor stats
 
 To specify the sorting order based on either contributions or star count, include the &order_by= query parameter with the options `stars` or `contributions` in your request URL.
 
 ```md
-![Taehyun's GitHub Repository Contribution stats](https://github-contributor-stats.vercel.app/api?username=HwangTaehyun&hide=B,B%2Bcolumns=contribution_rank,stars&limit=5&order_by=contributions)
+![Taehyun's GitHub Repository Contribution stats](https://github-contributor-stats.vercel.app/api?username=HwangTaehyun&hide=B,B%2Bcolumns=contribution_rank,star_rank&limit=5&order_by=contributions)
 ```
 
 ### Including all contributions, not only recent contributions

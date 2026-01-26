@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import z from 'zod';
 
 import { themeNames, type ThemeNames } from '../../themes';
@@ -18,19 +19,44 @@ export const parseArray = emptyStringToUndefined.transform(
   (val) => val?.split(',').map((v) => v.trim()) ?? [],
 );
 
-const columns = ['star_rank', 'contribution_rank', 'commits'] as const;
+const columnCriteriaSchema = z.union([
+  z.object({
+    name: z.enum(['star_rank', 'contribution_rank']),
+    hide: parseArray,
+  }),
+  z.object({
+    name: z.enum(['commits']),
+    minimum: z.number().optional(),
+  }),
+]);
 
-export type Columns = (typeof columns)[number];
+export type ColumnCriteria = z.infer<typeof columnCriteriaSchema>;
+export type ColumnName = ColumnCriteria['name'];
 
-const orderByOptions = ['stars', 'contribution_rank'] as const;
+const parseColumns = z
+  .string()
+  .transform((val): { name: string }[] => {
+    const trimmed = val.trim();
 
-export type OrderByOptions = (typeof orderByOptions)[number];
+    // Try to parse as JSON array
+    if (trimmed.startsWith('[')) {
+      try {
+        return JSON.parse(trimmed);
+      } catch {
+        // Fall through to comma-separated parsing
+      }
+    }
 
-export const commonSchema = z.object({
+    // Parse comma-separated string and transform to object format
+    return parseArray.parse(trimmed).map((col) => ({ name: col }));
+  })
+  .pipe(z.array(columnCriteriaSchema));
+
+export const commonInputSchema = z.object({
   username: z.string().min(1, 'Username is required'),
   combine_all_yearly_contributions: parseBoolean.default('true'),
-  columns: parseArray.pipe(z.array(z.enum(columns))),
-  order_by: z.enum(orderByOptions).optional().default('stars'),
+  columns: parseColumns,
+  order_by: z.enum(['stars', 'contributions']).optional().default('stars'),
   limit: emptyStringToUndefined.pipe(z.coerce.number().int().optional()),
   hide: parseArray,
   theme: z
@@ -47,4 +73,22 @@ export const commonSchema = z.object({
   hide_border: parseBoolean,
   custom_title: emptyStringToUndefined,
   locale: emptyStringToUndefined.transform((val) => val?.toLowerCase()),
+});
+
+type CommonInput = z.infer<typeof commonInputSchema>;
+
+export type OrderByOptions = CommonInput['order_by'];
+
+export const mergeHideIntoColumnCriteria = <T extends CommonInput>({
+  hide,
+  columns,
+  ...v
+}: T) => ({
+  columns: columns.map((col) => {
+    if ('hide' in col) {
+      col.hide = _.uniq(col.hide.concat(hide));
+    }
+    return col;
+  }),
+  ...v,
 });

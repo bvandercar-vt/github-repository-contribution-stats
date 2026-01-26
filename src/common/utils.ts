@@ -1,8 +1,10 @@
 // @ts-check
 // import imageToBase64 from 'image-to-base64';
+import type { Simplify } from 'type-fest';
+
 import { themes, type Theme, type ThemeNames } from '../../themes';
 
-import type { Columns } from './schema';
+import type { ColumnCriteria, ColumnName } from './schema';
 
 /**
  * @param {string} message
@@ -275,8 +277,18 @@ export const getImageBase64FromURL = async (url: string): Promise<string> => {
   });
 };
 
-export const shouldCalculateContributorRank = (columns: Columns[]) =>
-  columns.includes('contribution_rank');
+type ExtractColumnCriteriaByName<T extends string> = ColumnCriteria extends infer U
+  ? U extends { name: infer N }
+    ? T extends N
+      ? Simplify<{ name: T } & Omit<U, 'name'>>
+      : never
+    : never
+  : never;
 
-export const shouldCalculateStarRank = (columns: Columns[]) =>
-  columns.includes('star_rank');
+export const getColumnCriteria = <Name extends ColumnName>(
+  columns: ColumnCriteria[],
+  name: Name,
+) =>
+  columns.find((col) => col.name === name) satisfies ColumnCriteria | undefined as
+    | ExtractColumnCriteriaByName<Name>
+    | undefined;

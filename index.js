@@ -43947,7 +43947,7 @@ const createRow = ({ imageBase64, name, valueCells: valueCellCriteria, index, })
         cellWidths,
     };
 };
-const renderContributorStatsCard = async (username, name, contributorStats = [], { columns = ['star_rank'], hide = [], line_height = 25, hide_title = false, hide_border = false, order_by = 'stars', title_color, icon_color, text_color, bg_color, border_radius, border_color, custom_title, theme = 'default', locale, limit = -1, contributor_fetcher = _fetchContributors__WEBPACK_IMPORTED_MODULE_4__.fetchContributors, } = {}) => {
+const renderContributorStatsCard = async (username, name, contributorStats = [], { columns = [{ name: 'star_rank', hide: [] }], line_height = 25, hide_title = false, hide_border = false, order_by = 'stars', title_color, icon_color, text_color, bg_color, border_radius, border_color, custom_title, theme = 'default', locale, limit = -1, contributor_fetcher = _fetchContributors__WEBPACK_IMPORTED_MODULE_4__.fetchContributors, } = {}) => {
     const lheight = parseInt(String(line_height), 10);
     const { titleColor, textColor, iconColor, bgColor, borderColor } = (0,_common_utils__WEBPACK_IMPORTED_MODULE_3__.getCardColors)({
         title_color,
@@ -43967,10 +43967,11 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
         url.searchParams.append('s', '50');
         return (0,_common_utils__WEBPACK_IMPORTED_MODULE_3__.getImageBase64FromURL)(url.toString());
     }));
-    const calculateStarRank = (0,_common_utils__WEBPACK_IMPORTED_MODULE_3__.shouldCalculateStarRank)(columns);
-    const calculateContributorRank = (0,_common_utils__WEBPACK_IMPORTED_MODULE_3__.shouldCalculateContributorRank)(columns);
+    const starRankCriteria = (0,_common_utils__WEBPACK_IMPORTED_MODULE_3__.getColumnCriteria)(columns, 'star_rank');
+    const contributorRankCriteria = (0,_common_utils__WEBPACK_IMPORTED_MODULE_3__.getColumnCriteria)(columns, 'contribution_rank');
+    const commitsCriteria = (0,_common_utils__WEBPACK_IMPORTED_MODULE_3__.getColumnCriteria)(columns, 'commits');
     let allContributorsByRepo;
-    if (calculateContributorRank) {
+    if (contributorRankCriteria) {
         allContributorsByRepo = [];
         for (const { nameWithOwner } of Object.values(contributorStats)) {
             const contributors = await contributor_fetcher(username, nameWithOwner, token);
@@ -43980,21 +43981,20 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
     const allCellWidths = [];
     const calculatedStats = contributorStats
         .map(({ url, name, stargazerCount, numContributions }, index) => {
-        const contributionRank = calculateContributorRank && numContributions !== undefined
-            ? (0,_calculateRank__WEBPACK_IMPORTED_MODULE_0__.calculateContributionsRank)(name, allContributorsByRepo[index], numContributions)
-            : undefined;
-        if (contributionRank && hide.includes(contributionRank)) {
+        if (commitsCriteria?.minimum !== undefined &&
+            numContributions !== undefined &&
+            numContributions < commitsCriteria.minimum) {
             return undefined;
         }
-        else {
-            return {
-                name: name,
-                imageBase64: imageBase64s[index],
-                url: url,
-                stars: stargazerCount,
-                contributionRank: (0,_calculateContributionRank__WEBPACK_IMPORTED_MODULE_1__.calculateContributionRank)(name, allContributorsByRepo[index], numOfMyContributions),
-                rank: (0,_calculateRank__WEBPACK_IMPORTED_MODULE_2__.calculateRank)(stargazerCount),
-            };
+        const contributionRank = contributorRankCriteria && numContributions !== undefined
+            ? (0,_calculateRank__WEBPACK_IMPORTED_MODULE_0__.calculateContributionsRank)(name, allContributorsByRepo[index], numContributions)
+            : undefined;
+        if (contributionRank && contributorRankCriteria?.hide.includes(contributionRank)) {
+            return undefined;
+        }
+        const starRank = starRankCriteria ? (0,_calculateRank__WEBPACK_IMPORTED_MODULE_0__.calculateStarsRank)(stargazerCount) : undefined;
+        if (starRank && starRankCriteria?.hide.includes(starRank)) {
+            return undefined;
         }
         return {
             name,
@@ -44020,7 +44020,7 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
         const { content, cellWidths } = createRow({
             ...stat,
             index,
-            valueCells: columns.map((c) => columnValsMap[c]),
+            valueCells: columns.map((c) => columnValsMap[c.name]),
         });
         allCellWidths.push(cellWidths);
         return content;
@@ -44047,7 +44047,10 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
         }).join('')}
     </svg>
   `,
-        columns: columns.map((column, i) => ({ column, width: columnWidths[i] })),
+        columns: columns.map((column, i) => ({
+            column: column.name,
+            width: columnWidths[i],
+        })),
         width: maxWidth,
         height,
         border_radius,
@@ -44328,32 +44331,58 @@ class I18n {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "commonSchema": () => (/* binding */ commonSchema),
+/* harmony export */   "commonInputSchema": () => (/* binding */ commonInputSchema),
 /* harmony export */   "emptyStringToUndefined": () => (/* binding */ emptyStringToUndefined),
+/* harmony export */   "mergeHideIntoColumnCriteria": () => (/* binding */ mergeHideIntoColumnCriteria),
 /* harmony export */   "parseArray": () => (/* binding */ parseArray),
 /* harmony export */   "parseBoolean": () => (/* binding */ parseBoolean)
 /* harmony export */ });
-/* harmony import */ var zod__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! zod */ "./node_modules/zod/index.js");
-/* harmony import */ var _themes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../themes */ "./themes/index.ts");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var zod__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! zod */ "./node_modules/zod/index.js");
+/* harmony import */ var _themes__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../themes */ "./themes/index.ts");
 
 
-const parseBoolean = zod__WEBPACK_IMPORTED_MODULE_1__["default"].union([zod__WEBPACK_IMPORTED_MODULE_1__["default"].literal('true'), zod__WEBPACK_IMPORTED_MODULE_1__["default"].literal('false'), zod__WEBPACK_IMPORTED_MODULE_1__["default"].boolean()])
+
+const parseBoolean = zod__WEBPACK_IMPORTED_MODULE_2__["default"].union([zod__WEBPACK_IMPORTED_MODULE_2__["default"].literal('true'), zod__WEBPACK_IMPORTED_MODULE_2__["default"].literal('false'), zod__WEBPACK_IMPORTED_MODULE_2__["default"].boolean()])
     .transform((value) => (typeof value === 'boolean' ? value : value === 'true'))
     .optional();
-const emptyStringToUndefined = zod__WEBPACK_IMPORTED_MODULE_1__["default"].string()
+const emptyStringToUndefined = zod__WEBPACK_IMPORTED_MODULE_2__["default"].string()
     .optional()
     .transform((val) => val || undefined);
 const parseArray = emptyStringToUndefined.transform((val) => val?.split(',').map((v) => v.trim()) ?? []);
-const columns = ['star_rank', 'contribution_rank', 'commits'];
+const columnCriteriaSchema = zod__WEBPACK_IMPORTED_MODULE_2__["default"].union([
+    zod__WEBPACK_IMPORTED_MODULE_2__["default"].object({
+        name: zod__WEBPACK_IMPORTED_MODULE_2__["default"]["enum"](['star_rank', 'contribution_rank']),
+        hide: parseArray,
+    }),
+    zod__WEBPACK_IMPORTED_MODULE_2__["default"].object({
+        name: zod__WEBPACK_IMPORTED_MODULE_2__["default"]["enum"](['commits']),
+        minimum: zod__WEBPACK_IMPORTED_MODULE_2__["default"].number().optional(),
+    }),
+]);
+const parseColumns = zod__WEBPACK_IMPORTED_MODULE_2__["default"].string()
+    .transform((val) => {
+    const trimmed = val.trim();
+    if (trimmed.startsWith('[')) {
+        try {
+            return JSON.parse(trimmed);
+        }
+        catch {
+        }
+    }
+    return parseArray.parse(trimmed).map((col) => ({ name: col }));
+})
+    .pipe(zod__WEBPACK_IMPORTED_MODULE_2__["default"].array(columnCriteriaSchema));
 const orderByOptions = ['stars', 'contribution_rank'];
-const commonSchema = zod__WEBPACK_IMPORTED_MODULE_1__["default"].object({
-    username: zod__WEBPACK_IMPORTED_MODULE_1__["default"].string().min(1, 'Username is required'),
+const commonInputSchema = zod__WEBPACK_IMPORTED_MODULE_2__["default"].object({
+    username: zod__WEBPACK_IMPORTED_MODULE_2__["default"].string().min(1, 'Username is required'),
     combine_all_yearly_contributions: parseBoolean.default('true'),
-    columns: parseArray.pipe(zod__WEBPACK_IMPORTED_MODULE_1__["default"].array(zod__WEBPACK_IMPORTED_MODULE_1__["default"]["enum"](columns))),
-    order_by: zod__WEBPACK_IMPORTED_MODULE_1__["default"]["enum"](orderByOptions).optional().default('stars'),
-    limit: emptyStringToUndefined.pipe(zod__WEBPACK_IMPORTED_MODULE_1__["default"].coerce.number().int().optional()),
+    columns: parseColumns,
+    order_by: zod__WEBPACK_IMPORTED_MODULE_2__["default"]["enum"](orderByOptions).optional().default('stars'),
+    limit: emptyStringToUndefined.pipe(zod__WEBPACK_IMPORTED_MODULE_2__["default"].coerce.number().int().optional()),
     hide: parseArray,
-    theme: zod__WEBPACK_IMPORTED_MODULE_1__["default"]["enum"](_themes__WEBPACK_IMPORTED_MODULE_0__.themeNames)
+    theme: zod__WEBPACK_IMPORTED_MODULE_2__["default"]["enum"](_themes__WEBPACK_IMPORTED_MODULE_1__.themeNames)
         .optional()
         .default('default'),
     title_color: emptyStringToUndefined,
@@ -44361,11 +44390,20 @@ const commonSchema = zod__WEBPACK_IMPORTED_MODULE_1__["default"].object({
     icon_color: emptyStringToUndefined,
     bg_color: emptyStringToUndefined,
     border_color: emptyStringToUndefined,
-    border_radius: emptyStringToUndefined.pipe(zod__WEBPACK_IMPORTED_MODULE_1__["default"].coerce.number().nonnegative().optional()),
+    border_radius: emptyStringToUndefined.pipe(zod__WEBPACK_IMPORTED_MODULE_2__["default"].coerce.number().nonnegative().optional()),
     hide_title: parseBoolean,
     hide_border: parseBoolean,
     custom_title: emptyStringToUndefined,
     locale: emptyStringToUndefined.transform((val) => val?.toLowerCase()),
+});
+const mergeHideIntoColumnCriteria = ({ hide, columns, ...v }) => ({
+    columns: columns.map((col) => {
+        if ('hide' in col) {
+            col.hide = lodash__WEBPACK_IMPORTED_MODULE_0___default().uniq(col.hide.concat(hide));
+        }
+        return col;
+    }),
+    ...v,
 });
 
 
@@ -44387,12 +44425,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "encodeHTML": () => (/* binding */ encodeHTML),
 /* harmony export */   "flexLayout": () => (/* binding */ flexLayout),
 /* harmony export */   "getCardColors": () => (/* binding */ getCardColors),
+/* harmony export */   "getColumnCriteria": () => (/* binding */ getColumnCriteria),
 /* harmony export */   "getImageBase64FromURL": () => (/* binding */ getImageBase64FromURL),
 /* harmony export */   "kFormatter": () => (/* binding */ kFormatter),
 /* harmony export */   "measureText": () => (/* binding */ measureText),
-/* harmony export */   "renderError": () => (/* binding */ renderError),
-/* harmony export */   "shouldCalculateContributorRank": () => (/* binding */ shouldCalculateContributorRank),
-/* harmony export */   "shouldCalculateStarRank": () => (/* binding */ shouldCalculateStarRank)
+/* harmony export */   "renderError": () => (/* binding */ renderError)
 /* harmony export */ });
 /* harmony import */ var _themes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../themes */ "./themes/index.ts");
 
@@ -44565,8 +44602,7 @@ const getImageBase64FromURL = async (url) => {
         resolve(imageBase64);
     });
 };
-const shouldCalculateContributorRank = (columns) => columns.includes('contribution_rank');
-const shouldCalculateStarRank = (columns) => columns.includes('star_rank');
+const getColumnCriteria = (columns, name) => columns.find((col) => col.name === name);
 
 
 /***/ }),
@@ -51427,10 +51463,11 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const querySchema = _common_schema__WEBPACK_IMPORTED_MODULE_3__.commonSchema.extend({
+const querySchema = _common_schema__WEBPACK_IMPORTED_MODULE_3__.commonInputSchema.extend({
     line_height: zod__WEBPACK_IMPORTED_MODULE_8__.coerce.number().int().optional(),
     cache_seconds: zod__WEBPACK_IMPORTED_MODULE_8__.coerce.number().int().optional(),
-});
+})
+    .transform(_common_schema__WEBPACK_IMPORTED_MODULE_3__.mergeHideIntoColumnCriteria);
 const app = express__WEBPACK_IMPORTED_MODULE_1___default()();
 app.use(compression__WEBPACK_IMPORTED_MODULE_0___default()());
 app.get('/api', async (req, res) => {

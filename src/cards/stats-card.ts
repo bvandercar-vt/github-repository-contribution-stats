@@ -3,15 +3,15 @@ import { type ThemeNames } from '../../themes';
 import { calculateStarsRank, calculateContributionsRank, ranks } from '@/calculateRank';
 import { renderCard } from '@/common/Card';
 import { I18n } from '@/common/I18n';
-import { type Columns, type OrderByOptions } from '@/common/schema';
+import type { ColumnCriteria } from '@/common/schema';
+import { type ColumnName, type OrderByOptions } from '@/common/schema';
 import {
   clampValue,
   flexLayout,
   getCardColors,
   getImageBase64FromURL,
   measureText,
-  shouldCalculateContributorRank,
-  shouldCalculateStarRank,
+  getColumnCriteria,
 } from '@/common/utils';
 import { fetchContributors, type Contributor } from '@/fetchContributors';
 import { type Repository } from '@/fetchContributorStats';
@@ -118,8 +118,7 @@ export const renderContributorStatsCard = async (
   name: string,
   contributorStats: ContributionsStats[] = [],
   {
-    columns = ['star_rank'],
-    hide = [],
+    columns = [{ name: 'star_rank', hide: [] }],
     line_height = 25,
     hide_title = false,
     hide_border = false,
@@ -139,8 +138,7 @@ export const renderContributorStatsCard = async (
     /**
      * @default ['star_rank']
      */
-    columns?: Columns[];
-    hide?: string[];
+    columns?: ColumnCriteria[];
     /**
      * @default 25
      */
@@ -202,11 +200,12 @@ export const renderContributorStatsCard = async (
     }),
   );
 
-  const calculateStarRank = shouldCalculateStarRank(columns);
-  const calculateContributorRank = shouldCalculateContributorRank(columns);
+  const starRankCriteria = getColumnCriteria(columns, 'star_rank');
+  const contributorRankCriteria = getColumnCriteria(columns, 'contribution_rank');
+  const commitsCriteria = getColumnCriteria(columns, 'commits');
 
   let allContributorsByRepo: Contributor[][];
-  if (calculateContributorRank) {
+  if (contributorRankCriteria) {
     // Fetch sequentially to respect rate limiting (not in parallel with Promise.all)
     allContributorsByRepo = [];
     for (const { nameWithOwner } of Object.values(contributorStats)) {
@@ -218,8 +217,16 @@ export const renderContributorStatsCard = async (
   const allCellWidths: number[][] = [];
   const calculatedStats = contributorStats
     .map(({ url, name, stargazerCount, numContributions }, index) => {
+      if (
+        commitsCriteria?.minimum !== undefined &&
+        numContributions !== undefined &&
+        numContributions < commitsCriteria.minimum
+      ) {
+        return undefined;
+      }
+
       const contributionRank =
-        calculateContributorRank && numContributions !== undefined
+        contributorRankCriteria && numContributions !== undefined
           ? calculateContributionsRank(
               name,
               allContributorsByRepo[index],
@@ -227,13 +234,13 @@ export const renderContributorStatsCard = async (
             )
           : undefined;
 
-      if (contributionRank && hide.includes(contributionRank)) {
+      if (contributionRank && contributorRankCriteria?.hide.includes(contributionRank)) {
         return undefined;
       }
 
-      const starRank = calculateStarRank ? calculateStarsRank(stargazerCount) : undefined;
+      const starRank = starRankCriteria ? calculateStarsRank(stargazerCount) : undefined;
 
-      if (starRank && hide.includes(starRank)) {
+      if (starRank && starRankCriteria?.hide.includes(starRank)) {
         return undefined;
       }
 
@@ -260,13 +267,13 @@ export const renderContributorStatsCard = async (
       star_rank: stat.starRank,
       contribution_rank: stat.contributionRank,
       commits: stat.numContributions?.toString(),
-    } satisfies Record<Columns, string | undefined>;
+    } satisfies Record<ColumnName, string | undefined>;
 
     // create the text nodes, and pass index so that we can calculate the line spacing
     const { content, cellWidths } = createRow({
       ...stat,
       index,
-      valueCells: columns.map((c) => columnValsMap[c]),
+      valueCells: columns.map((c) => columnValsMap[c.name]),
     });
     allCellWidths.push(cellWidths);
     return content;
@@ -300,7 +307,10 @@ export const renderContributorStatsCard = async (
       }).join('')}
     </svg>
   `,
-    columns: columns.map((column, i) => ({ column, width: columnWidths[i] })),
+    columns: columns.map((column, i) => ({
+      column: column.name,
+      width: columnWidths[i],
+    })),
     width: maxWidth,
     height,
     border_radius,
