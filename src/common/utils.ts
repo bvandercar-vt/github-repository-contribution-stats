@@ -2,6 +2,8 @@
 // import imageToBase64 from 'image-to-base64';
 import fetch from 'node-fetch';
 
+import type { Columns } from './schema';
+
 import { themes, type Theme, type ThemeNames } from 'themes';
 
 /**
@@ -274,3 +276,9 @@ export const getImageBase64FromURL = async (url: string): Promise<string> => {
     resolve(imageBase64);
   });
 };
+
+export const shouldCalculateContributorRank = (columns: Columns[]) =>
+  columns.includes('contribution_rank');
+
+export const shouldCalculateStarRank = (columns: Columns[]) =>
+  columns.includes('star_rank');

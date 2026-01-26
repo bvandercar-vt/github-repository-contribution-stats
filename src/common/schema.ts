@@ -11,7 +11,7 @@ export const parseBoolean = z
 export const parseArray = z
   .string()
   .optional()
-  .transform((val) => val?.split(',') ?? []);
+  .transform((val) => val?.split(',').map((v) => v.trim()) ?? []);
 
 // accounts for optional strings that may be empty
 export const emptyStringToUndefined = z
@@ -19,11 +19,19 @@ export const emptyStringToUndefined = z
   .optional()
   .transform((val) => val || undefined);
 
+const columns = ['star_rank', 'contribution_rank'] as const;
+
+export type Columns = (typeof columns)[number];
+
+const orderByOptions = ['stars', 'contribution_rank'] as const;
+
+export type OrderByOptions = (typeof orderByOptions)[number];
+
 export const commonSchema = z.object({
   username: z.string().min(1, 'Username is required'),
   combine_all_yearly_contributions: parseBoolean.default('true'),
-  hide_contributor_rank: parseBoolean.default('true'),
-  order_by: z.enum(['stars', 'contribution_rank']).optional().default('stars'),
+  columns: parseArray.pipe(z.array(z.enum(columns))),
+  order_by: z.enum(orderByOptions).optional().default('stars'),
   limit: z.coerce.number().int().optional().default(-1),
   hide: parseArray,
   theme: z

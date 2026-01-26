@@ -1,20 +1,22 @@
+import { type Columns } from './schema';
+
 import { type CardColors, encodeHTML, flexLayout } from '@/common/utils';
 import { getAnimations } from '@/getStyles';
 
 export class Card {
+  title: string;
+  titlePrefixIcon: string;
+  repositoryNameTitle: string;
+  columns: Columns[];
   width: number;
   height: number;
   hideBorder: boolean;
   hideTitle: boolean;
-  hideContributorRank: boolean;
   border_radius: number;
   colors: Partial<CardColors>;
-  title: string;
-  repositoryNameTitle: string;
   css: string;
   paddingX: number;
   paddingY: number;
-  titlePrefixIcon: string;
   animations: boolean;
   a11yTitle: string;
   a11yDesc: string;
@@ -29,14 +31,19 @@ export class Card {
    * @param {Partial<CardColors>?=} args.colors
    */
   constructor({
+    customTitle,
+    defaultTitle = '',
+    titlePrefixIcon = '',
+    columns = ['star_rank', 'contribution_rank'],
     width = 100,
     height = 100,
     border_radius = 4.5,
     colors = {},
-    customTitle,
-    defaultTitle = '',
-    titlePrefixIcon = '',
   }: {
+    customTitle?: string;
+    defaultTitle?: string;
+    titlePrefixIcon?: string;
+    columns: Columns[];
     /**
      * @default 100
      */
@@ -50,16 +57,13 @@ export class Card {
      */
     border_radius?: number;
     colors?: Partial<CardColors>;
-    customTitle?: string;
-    defaultTitle?: string;
-    titlePrefixIcon?: string;
   }) {
     this.width = width;
     this.height = height;
 
     this.hideBorder = false;
     this.hideTitle = false;
-    this.hideContributorRank = false;
+    this.columns = columns;
 
     this.border_radius = border_radius;
 
@@ -101,10 +105,6 @@ export class Card {
     if (value) {
       this.height -= 30;
     }
-  }
-
-  setHideContributorRank(value: boolean) {
-    this.hideContributorRank = value;
   }
 
   setTitle(text: string) {
@@ -204,6 +204,11 @@ export class Card {
       </g>
     </svg>`;
 
+    const iconMap = {
+      contribution_rank: gitPRIcon,
+      star_rank: starIcon,
+    } satisfies Record<Columns, string>;
+
     return `
       <g
         data-testid="card-title"
@@ -220,7 +225,7 @@ export class Card {
         transform="translate(${this.paddingX + 235}, ${this.paddingY + 30})"
       >
         ${flexLayout({
-          items: [...(!this.hideContributorRank ? [gitPRIcon] : []), starIcon],
+          items: this.columns.map((col) => iconMap[col]),
           gap: 50,
           direction: 'row',
         }).join('')}

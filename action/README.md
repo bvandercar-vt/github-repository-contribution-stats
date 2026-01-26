@@ -6,7 +6,7 @@ A GitHub Action to generate contributor stats SVG files with rate limit awarenes
 
 The Vercel-hosted API has a timeout limit that can be exceeded when:
 - `combine_all_yearly_contributions=true` (fetches contributions across all years)
-- `hide_contributor_rank=false` (requires fetching contributor data for each repository)
+- `columns` includes `contribution_rank` (requires fetching contributor data for each repository)
 
 For users like [@Atry](https://github.com/Atry) with 15+ years of contribution history across 300+ repositories, this combination triggers hundreds of API calls that exceed Vercel's timeout.
 

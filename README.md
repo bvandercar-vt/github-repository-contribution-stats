@@ -47,10 +47,10 @@ To hide specific ranks, you can pass a query parameter `&hide=` with comma-separ
 
 ### Showing contributor rank stats
 
-To show contributor ranks, you can pass a query parameter `&hide_contributor_rank=false`.
+To show contributor ranks, you can pass `contribution_rank` in the `columns` query parameter, i.e. `&columns=contribution_rank` or `&columns=contribution_rank,stars`.
 
 ```md
-![Taehyun's GitHub Repository Contribution stats](https://github-contributor-stats.vercel.app/api?username=HwangTaehyun&hide=B,B%2B&hide_contributor_rank=false&limit=5)
+![Taehyun's GitHub Repository Contribution stats](https://github-contributor-stats.vercel.app/api?username=HwangTaehyun&hide=B,B%2Bcolumns=contribution_rank,stars&limit=5)
 ```
 
 ### Configuring the sorting order for gitHub contributor stats
@@ -58,7 +58,7 @@ To show contributor ranks, you can pass a query parameter `&hide_contributor_ran
 To specify the sorting order based on either contributions or star count, include the &order_by= query parameter with the options `stars` or `contributions` in your request URL.
 
 ```md
-![Taehyun's GitHub Repository Contribution stats](https://github-contributor-stats.vercel.app/api?username=HwangTaehyun&hide=B,B%2B&hide_contributor_rank=false&limit=5&order_by=contributions)
+![Taehyun's GitHub Repository Contribution stats](https://github-contributor-stats.vercel.app/api?username=HwangTaehyun&hide=B,B%2Bcolumns=contribution_rank,stars&limit=5&order_by=contributions)
 ```
 
 ### Including all contributions, not only recent contributions

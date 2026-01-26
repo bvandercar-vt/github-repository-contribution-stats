@@ -1,6 +1,6 @@
 import type { Contributor } from 'getContributors';
 
-export type Ranks = 'S+' | 'S' | 'A+' | 'A' | 'B+' | 'B';
+export type Rank = 'S+' | 'S' | 'A+' | 'A' | 'B+' | 'B';
 
 const RANK_THRESHOLDS_STARGAZERS = {
   'S+': 10000,
@@ -9,12 +9,12 @@ const RANK_THRESHOLDS_STARGAZERS = {
   A: 100,
   'B+': 50,
   B: 0,
-} as const satisfies Record<Ranks, number>;
+} as const satisfies Record<Rank, number>;
 
-export const calculateStarsRank = (stargazers: number): Ranks => {
+export const calculateStarsRank = (stargazers: number): Rank => {
   for (const [rank, threshold] of Object.entries(RANK_THRESHOLDS_STARGAZERS)) {
     if (stargazers >= threshold) {
-      return rank as Ranks;
+      return rank as Rank;
     }
   }
 
@@ -28,13 +28,13 @@ const RANK_THRESHOLDS_CONTRIBUTIONS = {
   A: 60,
   'B+': 50,
   B: 0,
-} as const satisfies Record<Ranks, number>;
+} as const satisfies Record<Rank, number>;
 
 export const calculateContributionsRank = (
   name: string,
   contributors: Contributor[],
   numOfMyContributions: number,
-): Ranks => {
+): Rank => {
   contributors = contributors.filter((contributor) => contributor.type === 'User');
 
   const numOfOverRankContributors = contributors.filter(
@@ -46,7 +46,7 @@ export const calculateContributionsRank = (
 
   for (const [rank, threshold] of Object.entries(RANK_THRESHOLDS_CONTRIBUTIONS)) {
     if (rankOfContribution >= threshold) {
-      return rank as Ranks;
+      return rank as Rank;
     }
   }
 

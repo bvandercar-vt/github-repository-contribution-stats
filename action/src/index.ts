@@ -13,6 +13,7 @@ import { fetchAllContributorStats } from '../../src/fetchAllContributorStats';
 import { fetchContributorStats } from '../../src/fetchContributorStats';
 
 import { commonSchema, emptyStringToUndefined } from '@/common/schema';
+import { shouldCalculateContributorRank } from '@/common/utils';
 
 // Rate-limited contributor fetcher
 let requestCount = 0;
@@ -176,7 +177,7 @@ function parseInputs(): ValidatedInputs {
       username: core.getInput('username', { required: true }),
       output_file: core.getInput('output-file'),
       combine_all_yearly_contributions: core.getInput('combine-all-yearly-contributions'),
-      hide_contributor_rank: core.getInput('hide-contributor-rank'),
+      columns: core.getInput('columns'),
       hide: core.getInput('hide'),
       order_by: core.getInput('order-by'),
       limit: core.getInput('limit'),
@@ -210,7 +211,7 @@ async function run(): Promise<void> {
       username,
       output_file,
       combine_all_yearly_contributions,
-      hide_contributor_rank,
+      columns,
       hide,
       order_by,
       limit,
@@ -229,7 +230,9 @@ async function run(): Promise<void> {
 
     core.info(`Generating stats for user: ${username}`);
     core.info(`Combine all yearly contributions: ${combine_all_yearly_contributions}`);
-    core.info(`Hide contributor rank: ${hide_contributor_rank}`);
+    core.info(`Columns: ${columns.join(', ')}`);
+
+    const calculateContributorRank = shouldCalculateContributorRank(columns);
 
     // Fetch contributor stats
     core.info('Fetching contribution data...');
@@ -247,11 +250,11 @@ async function run(): Promise<void> {
     core.info(`Found ${contributorStats.length} repositories`);
 
     // Create rate-limited fetcher if needed
-    const contributorFetcher = !hide_contributor_rank
+    const contributorFetcher = calculateContributorRank
       ? createRateLimitedFetcher()
       : undefined;
 
-    if (!hide_contributor_rank) {
+    if (calculateContributorRank) {
       core.info(
         `Will fetch contributors for ${contributorStats.length} repositories with rate limiting`,
       );
@@ -263,10 +266,10 @@ async function run(): Promise<void> {
     // Render the card
     core.info('Rendering SVG...');
     const svg = await renderContributorStatsCard(username, name, contributorStats, {
+      columns,
       hide,
       hide_title,
       hide_border,
-      hide_contributor_rank,
       order_by,
       title_color,
       icon_color,
@@ -288,7 +291,7 @@ async function run(): Promise<void> {
     core.info(`SVG written to: ${outputPath}`);
     core.setOutput('svg-path', outputPath);
 
-    if (!hide_contributor_rank) {
+    if (calculateContributorRank) {
       core.info(`Total contributor API requests made: ${requestCount}`);
     }
   } catch (error) {
