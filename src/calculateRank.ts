@@ -1,4 +1,4 @@
-import type { Contributor } from 'getContributors';
+import type { Contributor } from './fetchContributors';
 
 export const ranks = ['S+', 'S', 'A+', 'A', 'B+', 'B'] as const;
 export type Rank = (typeof ranks)[number];

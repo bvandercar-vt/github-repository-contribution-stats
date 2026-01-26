@@ -2,10 +2,12 @@
   "compilerOptions": {
     "target": "esnext",
     "lib": ["dom", "dom.iterable", "esnext"],
+    "types": ["jest", "node"],
     "moduleResolution": "node",
     "module": "esnext",
     "sourceMap": true,
     "removeComments": true,
+    "resolveJsonModule": true,
     "allowJs": false,
     "strict": true,
     "strictNullChecks": true,
@@ -25,17 +27,10 @@
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "paths": {
-      "@*": ["./src*"],
+      "@/*": ["./src/*"],
       "package": ["./package.json"]
     }
   },
-  "include": [
-    "src/**/*",
-    "action/**/*",
-    "api/**/*",
-    "themes/**/*",
-    "./package.json",
-    "./.env"
-  ],
+  "include": ["**/*.ts", "./package.json", "./.env"],
   "exclude": ["node_modules", "output"]
 }

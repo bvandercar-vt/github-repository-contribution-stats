@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Generate GitHub Contributor Stats SVG
-        uses: HwangTaehyun/github-contributor-stats/action@main
+        uses: bvandercar-vt/github-repository-contribution-stats/action@better-types-zod-check
         env:
           GITHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN }}
         with:

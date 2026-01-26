@@ -1,3 +1,5 @@
+import { type ThemeNames } from '../../themes';
+
 import { calculateStarsRank, calculateContributionsRank, ranks } from '@/calculateRank';
 import { renderCard } from '@/common/Card';
 import { I18n } from '@/common/I18n';
@@ -11,11 +13,10 @@ import {
   shouldCalculateContributorRank,
   shouldCalculateStarRank,
 } from '@/common/utils';
+import { fetchContributors, type Contributor } from '@/fetchContributors';
 import { type Repository } from '@/fetchContributorStats';
 import { getStyles } from '@/getStyles';
 import { statCardLocales } from '@/translations';
-import { getContributors, type Contributor } from 'getContributors';
-import { type ThemeNames } from 'themes';
 
 const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
 
@@ -133,7 +134,7 @@ export const renderContributorStatsCard = async (
     theme = 'default',
     locale,
     limit = -1,
-    contributor_fetcher,
+    contributor_fetcher = fetchContributors,
   }: {
     /**
      * @default ['star_rank']
@@ -206,12 +207,10 @@ export const renderContributorStatsCard = async (
 
   let allContributorsByRepo: Contributor[][];
   if (calculateContributorRank) {
-    // Use custom fetcher if provided, otherwise use default
-    const fetchContributors: ContributorFetcher = contributor_fetcher || getContributors;
     // Fetch sequentially to respect rate limiting (not in parallel with Promise.all)
     allContributorsByRepo = [];
     for (const { nameWithOwner } of Object.values(contributorStats)) {
-      const contributors = await fetchContributors(username, nameWithOwner, token!);
+      const contributors = await contributor_fetcher(username, nameWithOwner, token!);
       allContributorsByRepo.push(contributors);
     }
   }

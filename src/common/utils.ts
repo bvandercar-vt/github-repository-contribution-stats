@@ -1,10 +1,8 @@
 // @ts-check
 // import imageToBase64 from 'image-to-base64';
-import fetch from 'node-fetch';
+import { themes, type Theme, type ThemeNames } from '../../themes';
 
 import type { Columns } from './schema';
-
-import { themes, type Theme, type ThemeNames } from 'themes';
 
 /**
  * @param {string} message

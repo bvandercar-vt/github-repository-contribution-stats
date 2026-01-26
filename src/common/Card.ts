@@ -17,7 +17,6 @@ export function renderCard({
   colors = {},
   css = '',
   animations = true,
-  a11yLabel,
 }: {
   customTitle?: string;
   defaultTitle?: string;
@@ -41,7 +40,6 @@ export function renderCard({
   colors?: Partial<CardColors>;
   css?: string;
   animations?: boolean;
-  a11yLabel?: { title: string; desc: string };
 }) {
   height = hide_title ? height - 30 : height;
 
@@ -214,60 +212,52 @@ export function renderCard({
         role="img"
         aria-labelledby="descId"
       >
-        <a xlink:href="https://github.com/HwangTaehyun/github-contributor-stats" 
-        xlink:title="github-contributor-stats(new tab)"
-        target="_blank">
-          <title id="titleId">${a11yLabel?.title}</title>
-          <desc id="descId">${a11yLabel?.desc}</desc>
-          <style>
-            .header {
-              font: 600 18px 'Segoe UI', Ubuntu, Sans-Serif;
-              fill: ${colors?.titleColor};
-              animation: fadeInAnimation 0.8s ease-in-out forwards;
-            }
-            .sub-title-header {
-              font: 800 14px 'Segoe UI', Ubuntu, Sans-Serif;
-              fill: ${colors?.titleColor};
-              animation: fadeInAnimation 0.8s ease-in-out forwards;
-            }
-            @supports(-moz-appearance: auto) {
-              /* Selector detects Firefox */
-              .header { font-size: 15.5px; }
-            }
-            ${css}
+        <style>
+          .header {
+            font: 600 18px 'Segoe UI', Ubuntu, Sans-Serif;
+            fill: ${colors?.titleColor};
+            animation: fadeInAnimation 0.8s ease-in-out forwards;
+          }
+          .sub-title-header {
+            font: 800 14px 'Segoe UI', Ubuntu, Sans-Serif;
+            fill: ${colors?.titleColor};
+            animation: fadeInAnimation 0.8s ease-in-out forwards;
+          }
+          @supports(-moz-appearance: auto) {
+            /* Selector detects Firefox */
+            .header { font-size: 15.5px; }
+          }
+          ${css}
 
-            ${process.env.NODE_ENV === 'test' ? '' : getAnimations()}
-            ${
-              animations === false
-                ? `* { animation-duration: 0s !important; animation-delay: 0s !important; }`
-                : ''
-            }
-          </style>
+          ${process.env.NODE_ENV === 'test' ? '' : getAnimations()}
+          ${
+            animations === false
+              ? `* { animation-duration: 0s !important; animation-delay: 0s !important; }`
+              : ''
+          }
+        </style>
 
-          ${renderGradient()}
+        ${renderGradient()}
 
-          <rect
-            data-testid="card-bg"
-            x="0.5"
-            y="0.5"
-            rx="${border_radius}"
-            height="99%"
-            stroke="${colors.borderColor}"
-            width="${width - 1}"
-            fill="${
-              typeof colors.bgColor === 'object' ? 'url(#gradient)' : colors.bgColor
-            }"
-            stroke-opacity="${hide_border ? 0 : 1}"
-          />
-          ${hide_title ? '' : resolvedTitle}
-          ${hide_title ? '' : renderSubTitle()}
-          <g
-            data-testid="main-card-body"
-            transform="translate(0, ${hide_title ? paddingX : paddingY + 20 + 30})"
-          >
-            ${body}
-          </g>
-        </a>
+        <rect
+          data-testid="card-bg"
+          x="0.5"
+          y="0.5"
+          rx="${border_radius}"
+          height="99%"
+          stroke="${colors.borderColor}"
+          width="${width - 1}"
+          fill="${typeof colors.bgColor === 'object' ? 'url(#gradient)' : colors.bgColor}"
+          stroke-opacity="${hide_border ? 0 : 1}"
+        />
+        ${hide_title ? '' : resolvedTitle}
+        ${hide_title ? '' : renderSubTitle()}
+        <g
+          data-testid="main-card-body"
+          transform="translate(0, ${hide_title ? paddingX : paddingY + 20 + 30})"
+        >
+          ${body}
+        </g>
       </svg>
     `;
 }

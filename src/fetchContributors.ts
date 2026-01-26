@@ -1,5 +1,3 @@
-import fetch from 'node-fetch';
-
 // https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-contributors
 export interface Contributor {
   login: string;
@@ -8,7 +6,7 @@ export interface Contributor {
   type: string;
 }
 
-export async function getContributors(
+export async function fetchContributors(
   username: string,
   nameWithOwner: string,
   token: string,
