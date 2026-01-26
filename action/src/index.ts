@@ -173,7 +173,7 @@ type ValidatedInputs = z.infer<typeof inputSchema>;
 function parseInputs(): ValidatedInputs {
   try {
     return inputSchema.parse({
-      username: core.getInput('userame', { required: true }),
+      username: core.getInput('username', { required: true }),
       output_file: core.getInput('output-file'),
       combine_all_yearly_contributions: core.getInput('combine-all-yearly-contributions'),
       hide_contributor_rank: core.getInput('hide-contributor-rank'),
