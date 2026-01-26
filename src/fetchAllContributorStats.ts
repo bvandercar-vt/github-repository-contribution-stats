@@ -243,7 +243,7 @@ export async function fetchAllContributorStats(username: string) {
       const totalCount = _.sumBy(contributions, 'contributions');
       return {
         ...contributions[0].repository,
-        numOfMyContributions: totalCount,
+        numContributions: totalCount,
       };
     })
     .value();

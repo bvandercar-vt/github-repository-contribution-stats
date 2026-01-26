@@ -33,12 +33,12 @@ const RANK_THRESHOLDS_CONTRIBUTIONS = {
 export const calculateContributionsRank = (
   name: string,
   contributors: Contributor[],
-  numOfMyContributions: number,
+  numContributions: number,
 ): Rank => {
   contributors = contributors.filter((contributor) => contributor.type === 'User');
 
   const numOfOverRankContributors = contributors.filter(
-    (contributor) => contributor.contributions > numOfMyContributions,
+    (contributor) => contributor.contributions > numContributions,
   );
   const rankOfContribution =
     ((contributors.length - numOfOverRankContributors.length) / contributors.length) *

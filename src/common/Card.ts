@@ -1,11 +1,11 @@
 import { type Columns } from './schema';
 
-import { type CardColors, encodeHTML, flexLayout } from '@/common/utils';
+import { type CardColors, encodeHTML, flexLayout, measureText } from '@/common/utils';
 import { getAnimations } from '@/getStyles';
 
 export class Card {
   title: string;
-  titlePrefixIcon: string;
+  titlePrefixIcon: string | undefined;
   repositoryNameTitle: string;
   columns: Columns[];
   width: number;
@@ -33,7 +33,7 @@ export class Card {
   constructor({
     customTitle,
     defaultTitle = '',
-    titlePrefixIcon = '',
+    titlePrefixIcon,
     columns = ['star_rank', 'contribution_rank'],
     width = 100,
     height = 100,
@@ -107,10 +107,6 @@ export class Card {
     }
   }
 
-  setTitle(text: string) {
-    this.title = text;
-  }
-
   renderTitle() {
     const titleText = `
       <text
@@ -121,31 +117,44 @@ export class Card {
       >${this.title}</text>
     `;
 
-    const prefixIcon = `
+    const prefixIconSize = 16;
+    const prefixIconGap = 25;
+    const prefixIcon = this.titlePrefixIcon
+      ? `
       <svg
         class="icon"
         x="0"
         y="-13"
         viewBox="0 0 16 16"
         version="1.1"
-        width="16"
-        height="16"
+        width="${prefixIconSize}"
+        height="${prefixIconSize}"
       >
         ${this.titlePrefixIcon}
       </svg>
-    `;
-    return `
+    `
+      : undefined;
+
+    const titleWidth =
+      this.paddingX +
+      (prefixIcon ? prefixIconSize + prefixIconGap : 0) +
+      measureText(this.title, 18);
+
+    return {
+      title: `
       <g
         data-testid="card-title"
         transform="translate(${this.paddingX}, ${this.paddingY})"
       >
         ${flexLayout({
-          items: [this.titlePrefixIcon && prefixIcon, titleText],
-          gap: 25,
+          items: [prefixIcon, titleText].filter((v): v is string => Boolean(v)),
+          gap: prefixIconGap,
           direction: 'row',
         }).join('')}
       </g>
-    `;
+    `,
+      titleWidth,
+    };
   }
 
   renderSubTitle() {
@@ -259,11 +268,15 @@ export class Card {
    * @param {string} body
    */
   render(body: string) {
+    const { title, titleWidth } = this.hideTitle
+      ? { title: '', titleWidth: 0 }
+      : this.renderTitle();
+    const width = Math.max(this.width, titleWidth);
     return `
       <svg
-        width="${this.width}"
+        width="${width}"
         height="${this.height}"
-        viewBox="0 0 ${this.width} ${this.height}"
+        viewBox="0 0 ${width} ${this.height}"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -317,7 +330,7 @@ export class Card {
             }"
             stroke-opacity="${this.hideBorder ? 0 : 1}"
           />
-          ${this.hideTitle ? '' : this.renderTitle()}
+          ${this.hideTitle ? '' : title}
           ${this.hideTitle ? '' : this.renderSubTitle()}
           <g
             data-testid="main-card-body"

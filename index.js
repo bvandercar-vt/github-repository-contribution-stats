@@ -43917,23 +43917,40 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "calculateContributionsRank": () => (/* binding */ calculateContributionsRank),
 /* harmony export */   "calculateStarsRank": () => (/* binding */ calculateStarsRank)
 /* harmony export */ });
-const calculateRank = (stargazers) => {
-    const RANK_S_PLUS_VALUE = 10000;
-    const RANK_S_VALUE = 1000;
-    const RANK_A_PLUS_VALUE = 500;
-    const RANK_A_VALUE = 100;
-    const RANK_B_PLUS_VALUE = 50;
-    const RANK_B_VALUE = 1;
-    if (stargazers >= RANK_S_PLUS_VALUE)
-        return 'S+';
-    if (stargazers >= RANK_S_VALUE)
-        return 'S';
-    if (stargazers >= RANK_A_PLUS_VALUE)
-        return 'A+';
-    if (stargazers >= RANK_A_VALUE)
-        return 'A';
-    if (stargazers >= RANK_B_PLUS_VALUE)
-        return 'B+';
+const RANK_THRESHOLDS_STARGAZERS = {
+    'S+': 10000,
+    S: 1000,
+    'A+': 500,
+    A: 100,
+    'B+': 50,
+    B: 0,
+};
+const calculateStarsRank = (stargazers) => {
+    for (const [rank, threshold] of Object.entries(RANK_THRESHOLDS_STARGAZERS)) {
+        if (stargazers >= threshold) {
+            return rank;
+        }
+    }
+    return 'B';
+};
+const RANK_THRESHOLDS_CONTRIBUTIONS = {
+    'S+': 90,
+    S: 80,
+    'A+': 70,
+    A: 60,
+    'B+': 50,
+    B: 0,
+};
+const calculateContributionsRank = (name, contributors, numContributions) => {
+    contributors = contributors.filter((contributor) => contributor.type === 'User');
+    const numOfOverRankContributors = contributors.filter((contributor) => contributor.contributions > numContributions);
+    const rankOfContribution = ((contributors.length - numOfOverRankContributors.length) / contributors.length) *
+        100;
+    for (const [rank, threshold] of Object.entries(RANK_THRESHOLDS_CONTRIBUTIONS)) {
+        if (rankOfContribution >= threshold) {
+            return rank;
+        }
+    }
     return 'B';
 };
 
@@ -43965,32 +43982,17 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const createTextNode = ({ imageBase64, name, rank, contributionRank, index, height }) => {
+const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
+let maxWidth = 0;
+const createRow = ({ imageBase64, name, ranks, index, }) => {
     const staggerDelay = (index + 3) * 150;
-    const calculateTextWidth = (text) => {
-        return (0,_common_utils__WEBPACK_IMPORTED_MODULE_3__.measureText)(text, 18);
-    };
-    let offset = (0,_common_utils__WEBPACK_IMPORTED_MODULE_3__.clampValue)(calculateTextWidth(name), 230, 400);
+    let offset = (0,_common_utils__WEBPACK_IMPORTED_MODULE_3__.clampValue)((0,_common_utils__WEBPACK_IMPORTED_MODULE_3__.measureText)(name, 18), 230, 400);
     offset += offset === 230 ? 5 : 15;
-    let offset2 = offset + 50;
-    const contributionRankText = contributionRank?.includes('+')
-        ? `<text x="4" y="18.5">
-        ${contributionRank}
-       </text>`
-        : `<text x="7.2" y="18.5">
-        ${contributionRank}
-       </text>`;
-    const rankText = rank.includes('+')
-        ? `<text x="4" y="18.5">
-        ${rank}
-       </text>`
-        : `<text x="7.2" y="18.5">
-        ${rank}
-       </text>`;
-    let rankItems = lodash__WEBPACK_IMPORTED_MODULE_0___default().isEmpty(contributionRank)
-        ? `
+    const circleRadius = 14;
+    const rankItems = ranks.map((rank) => {
+        const item = `
     <g data-testid="rank-circle" transform="translate(${offset}, 0)">
-      <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="14" />
+      <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="${circleRadius}" />
       <g class="rank-text">
         <text x="${rank.includes('+') ? 4 : 7.2}" y="18.5">
         ${rank}
@@ -43998,7 +44000,7 @@ const createTextNode = ({ imageBase64, name, rank, contributionRank, index, heig
       </g>
     </g>
     `;
-        maxOffset = Math.max(maxOffset, offset);
+        maxWidth = Math.max(maxWidth, offset + circleRadius * 2);
         offset += 50;
         return item;
     });
@@ -44052,28 +44054,13 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
             allContributorsByRepo.push(contributors);
         }
     }
-    const RANK_VALUES = {
-        'S+': 5,
-        S: 4,
-        'A+': 3,
-        A: 2,
-        'B+': 1,
-        B: 0,
-    };
-    const sortFunction = orderBy == 'stars'
-        ? (a, b) => b.stars - a.stars
-        : (a, b) => rankValues[b.contributionRank] - rankValues[a.contributionRank];
-    const transformedContributorStats = contributorStats
-        .map((contributorStat, index) => {
-        const { url, name, stargazerCount, numOfMyContributions } = contributorStat;
-        if (hide_contributor_rank) {
-            return {
-                name: name,
-                imageBase64: imageBase64s[index],
-                url: url,
-                stars: stargazerCount,
-                rank: (0,_calculateRank__WEBPACK_IMPORTED_MODULE_2__.calculateRank)(stargazerCount),
-            };
+    const calculatedStats = contributorStats
+        .map(({ url, name, stargazerCount, numContributions }, index) => {
+        const contributionRank = calculateContributorRank && numContributions !== undefined
+            ? (0,_calculateRank__WEBPACK_IMPORTED_MODULE_0__.calculateContributionsRank)(name, allContributorsByRepo[index], numContributions)
+            : undefined;
+        if (contributionRank && hide.includes(contributionRank)) {
+            return undefined;
         }
         else {
             return {
@@ -44085,15 +44072,34 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
                 rank: (0,_calculateRank__WEBPACK_IMPORTED_MODULE_2__.calculateRank)(stargazerCount),
             };
         }
+        return {
+            name,
+            imageBase64: imageBase64s[index],
+            url,
+            numContributions,
+            contributionRank,
+            numStars: stargazerCount,
+            starRank,
+        };
     })
-        .filter((repository) => !hide.includes(repository.rank))
-        .sort(sortFunction);
-    let statItems = Object.keys(transformedContributorStats).map((key, index) => createTextNode({
-        ...transformedContributorStats[key],
-        index,
-        lheight,
-    }));
-    statItems = limit > 0 ? statItems.slice(0, limit) : statItems.slice();
+        .filter((s) => s !== undefined)
+        .sort((a, b) => order_by == 'stars'
+        ? b.numStars - a.numStars
+        : (b.numContributions ?? 0) - (a.numContributions ?? 0))
+        .slice(0, limit > 0 ? limit : undefined);
+    const statItems = calculatedStats.map((stat, index) => {
+        const ranksMap = {
+            star_rank: stat.starRank,
+            contribution_rank: stat.contributionRank,
+        };
+        return createRow({
+            ...stat,
+            index,
+            ranks: columns
+                .map((column) => ranksMap[column])
+                .filter((rank) => rank !== undefined),
+        });
+    });
     const distanceY = 8;
     let height = Math.max(30 + 45 + (statItems.length + 1) * (lheight + distanceY), 150);
     const cssStyles = (0,_getStyles__WEBPACK_IMPORTED_MODULE_6__.getStyles)({
@@ -44106,9 +44112,8 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
     const card = new _common_Card__WEBPACK_IMPORTED_MODULE_1__.Card({
         customTitle: custom_title,
         defaultTitle: i18n.t('statcard.title'),
-        titlePrefixIcon: '',
         columns,
-        width: maxOffset,
+        width: maxWidth,
         height,
         border_radius,
         colors: {
@@ -44168,7 +44173,7 @@ class Card {
     animations;
     a11yTitle;
     a11yDesc;
-    constructor({ customTitle, defaultTitle = '', titlePrefixIcon = '', columns = ['star_rank', 'contribution_rank'], width = 100, height = 100, border_radius = 4.5, colors = {}, }) {
+    constructor({ customTitle, defaultTitle = '', titlePrefixIcon, columns = ['star_rank', 'contribution_rank'], width = 100, height = 100, border_radius = 4.5, colors = {}, }) {
         this.width = width;
         this.height = height;
         this.hideBorder = false;
@@ -44206,9 +44211,6 @@ class Card {
             this.height -= 30;
         }
     }
-    setTitle(text) {
-        this.title = text;
-    }
     renderTitle() {
         const titleText = `
       <text
@@ -44218,31 +44220,41 @@ class Card {
         data-testid="header"
       >${this.title}</text>
     `;
-        const prefixIcon = `
+        const prefixIconSize = 16;
+        const prefixIconGap = 25;
+        const prefixIcon = this.titlePrefixIcon
+            ? `
       <svg
         class="icon"
         x="0"
         y="-13"
         viewBox="0 0 16 16"
         version="1.1"
-        width="16"
-        height="16"
+        width="${prefixIconSize}"
+        height="${prefixIconSize}"
       >
         ${this.titlePrefixIcon}
       </svg>
-    `;
-        return `
+    `
+            : undefined;
+        const titleWidth = this.paddingX +
+            (prefixIcon ? prefixIconSize + prefixIconGap : 0) +
+            (0,_common_utils__WEBPACK_IMPORTED_MODULE_0__.measureText)(this.title, 18);
+        return {
+            title: `
       <g
         data-testid="card-title"
         transform="translate(${this.paddingX}, ${this.paddingY})"
       >
         ${(0,_common_utils__WEBPACK_IMPORTED_MODULE_0__.flexLayout)({
-            items: [this.titlePrefixIcon && prefixIcon, titleText],
-            gap: 25,
-            direction: 'row',
-        }).join('')}
+                items: [prefixIcon, titleText].filter((v) => Boolean(v)),
+                gap: prefixIconGap,
+                direction: 'row',
+            }).join('')}
       </g>
-    `;
+    `,
+            titleWidth,
+        };
     }
     renderSubTitle() {
         const repoTitleText = `
@@ -44345,11 +44357,15 @@ class Card {
             : '';
     }
     render(body) {
+        const { title, titleWidth } = this.hideTitle
+            ? { title: '', titleWidth: 0 }
+            : this.renderTitle();
+        const width = Math.max(this.width, titleWidth);
         return `
       <svg
-        width="${this.width}"
+        width="${width}"
         height="${this.height}"
-        viewBox="0 0 ${this.width} ${this.height}"
+        viewBox="0 0 ${width} ${this.height}"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -44399,7 +44415,7 @@ class Card {
             : this.colors.bgColor}"
             stroke-opacity="${this.hideBorder ? 0 : 1}"
           />
-          ${this.hideTitle ? '' : this.renderTitle()}
+          ${this.hideTitle ? '' : title}
           ${this.hideTitle ? '' : this.renderSubTitle()}
           <g
             data-testid="main-card-body"
@@ -44860,7 +44876,7 @@ async function fetchAllContributorStats(username, token) {
         const totalCount = lodash__WEBPACK_IMPORTED_MODULE_1___default().sumBy(contributions, 'contributions');
         return {
             ...contributions[0].repository,
-            numOfMyContributions: totalCount,
+            numContributions: totalCount,
         };
     })
         .value();

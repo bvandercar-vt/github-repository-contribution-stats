@@ -30,7 +30,7 @@ export type ContributorFetcher = (
   token: string,
 ) => Promise<Contributor[]>;
 
-let maxOffset = 0;
+let maxWidth = 0;
 
 const createRow = ({
   imageBase64,
@@ -45,17 +45,14 @@ const createRow = ({
 }) => {
   const staggerDelay = (index + 3) * 150;
 
-  const calculateTextWidth = (text: string) => {
-    return measureText(text, 18);
-  };
-
-  let offset = clampValue(calculateTextWidth(name), 230, 400);
+  let offset = clampValue(measureText(name, 18), 230, 400);
   offset += offset === 230 ? 5 : 15;
 
+  const circleRadius = 14;
   const rankItems = ranks.map((rank) => {
     const item = `
     <g data-testid="rank-circle" transform="translate(${offset}, 0)">
-      <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="14" />
+      <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="${circleRadius}" />
       <g class="rank-text">
         <text x="${rank.includes('+') ? 4 : 7.2}" y="18.5">
         ${rank}
@@ -63,7 +60,7 @@ const createRow = ({
       </g>
     </g>
     `;
-    maxOffset = Math.max(maxOffset, offset);
+    maxWidth = Math.max(maxWidth, offset + circleRadius * 2);
     offset += 50;
     return item;
   });
@@ -88,7 +85,7 @@ export type ContributionsStats = Pick<
   Repository,
   'name' | 'owner' | 'nameWithOwner' | 'url' | 'stargazerCount'
 > & {
-  numOfMyContributions?: number;
+  numContributions?: number;
 };
 
 export const renderContributorStatsCard = async (
@@ -195,40 +192,14 @@ export const renderContributorStatsCard = async (
     }
   }
 
-  const RANK_VALUES = {
-    'S+': 5,
-    S: 4,
-    'A+': 3,
-    A: 2,
-    'B+': 1,
-    B: 0,
-  } satisfies Record<Rank, number>;
-
-  type TransformedContributionStat = {
-    name: string;
-    imageBase64: string;
-    url: string;
-    stars: number;
-    contributionRank: Rank | undefined;
-    starRank: Rank | undefined;
-  };
-
-  const getContributionRank = (i: TransformedContributionStat) =>
-    i.contributionRank === undefined ? -1 : RANK_VALUES[i.contributionRank];
-
-  const sortFunction = (a: TransformedContributionStat, b: TransformedContributionStat) =>
-    order_by == 'stars'
-      ? b.stars - a.stars
-      : getContributionRank(b) - getContributionRank(a);
-
-  const transformedContributorStats: TransformedContributionStat[] = contributorStats
-    .map(({ url, name, stargazerCount, numOfMyContributions }, index) => {
+  const calculatedStats = contributorStats
+    .map(({ url, name, stargazerCount, numContributions }, index) => {
       const contributionRank =
-        calculateContributorRank && numOfMyContributions !== undefined
+        calculateContributorRank && numContributions !== undefined
           ? calculateContributionsRank(
               name,
               allContributorsByRepo[index],
-              numOfMyContributions,
+              numContributions,
             )
           : undefined;
 
@@ -246,18 +217,21 @@ export const renderContributorStatsCard = async (
         name,
         imageBase64: imageBase64s[index],
         url,
-        stars: stargazerCount,
+        numContributions,
         contributionRank,
+        numStars: stargazerCount,
         starRank,
-      } as const;
+      };
     })
-    .filter(
-      (s: TransformedContributionStat | undefined): s is TransformedContributionStat =>
-        s !== undefined,
+    .filter((s): s is Exclude<typeof s, undefined> => s !== undefined)
+    .sort((a, b) =>
+      order_by == 'stars'
+        ? b.numStars - a.numStars
+        : (b.numContributions ?? 0) - (a.numContributions ?? 0),
     )
-    .sort(sortFunction);
+    .slice(0, limit > 0 ? limit : undefined);
 
-  let statItems = Object.values(transformedContributorStats).map((stat, index) => {
+  const statItems = calculatedStats.map((stat, index) => {
     const ranksMap = {
       star_rank: stat.starRank,
       contribution_rank: stat.contributionRank,
@@ -269,11 +243,9 @@ export const renderContributorStatsCard = async (
       index,
       ranks: columns
         .map((column) => ranksMap[column])
-        .filter((rank) => rank !== undefined) as Rank[],
+        .filter((rank): rank is Rank => rank !== undefined),
     });
   });
-
-  statItems = limit > 0 ? statItems.slice(0, limit) : statItems.slice();
 
   // Calculate the card height depending on how many items there are
   // but if rank circle is visible clamp the minimum height to `150`
@@ -290,9 +262,8 @@ export const renderContributorStatsCard = async (
   const card = new Card({
     customTitle: custom_title,
     defaultTitle: i18n.t('statcard.title'),
-    titlePrefixIcon: '',
     columns,
-    width: maxOffset,
+    width: maxWidth,
     height,
     border_radius,
     colors: {
