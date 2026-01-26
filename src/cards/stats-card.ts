@@ -30,7 +30,9 @@ export type ContributorFetcher = (
   token: string,
 ) => Promise<Contributor[]>;
 
-const createTextNode = ({
+let maxOffset = 0;
+
+const createRow = ({
   imageBase64,
   name,
   ranks,
@@ -61,6 +63,7 @@ const createTextNode = ({
       </g>
     </g>
     `;
+    maxOffset = Math.max(maxOffset, offset);
     offset += 50;
     return item;
   });
@@ -261,7 +264,7 @@ export const renderContributorStatsCard = async (
     } satisfies Record<Columns, Rank | undefined>;
 
     // create the text nodes, and pass index so that we can calculate the line spacing
-    return createTextNode({
+    return createRow({
       ...stat,
       index,
       ranks: columns
@@ -284,14 +287,12 @@ export const renderContributorStatsCard = async (
     show_icons: true,
   });
 
-  const width = 495;
-
   const card = new Card({
     customTitle: custom_title,
     defaultTitle: i18n.t('statcard.title'),
     titlePrefixIcon: '',
     columns,
-    width,
+    width: maxOffset,
     height,
     border_radius,
     colors: {

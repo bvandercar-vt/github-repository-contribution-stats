@@ -43998,6 +43998,7 @@ const createTextNode = ({ imageBase64, name, rank, contributionRank, index, heig
       </g>
     </g>
     `;
+        maxOffset = Math.max(maxOffset, offset);
         offset += 50;
         return item;
     });
@@ -44102,13 +44103,12 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
         show_icons: true,
         progress: true,
     });
-    const width = 495;
     const card = new _common_Card__WEBPACK_IMPORTED_MODULE_1__.Card({
         customTitle: custom_title,
         defaultTitle: i18n.t('statcard.title'),
         titlePrefixIcon: '',
         columns,
-        width,
+        width: maxOffset,
         height,
         border_radius,
         colors: {
