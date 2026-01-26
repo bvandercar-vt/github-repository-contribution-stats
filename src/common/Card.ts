@@ -3,123 +3,67 @@ import { type Columns } from './schema';
 import { type CardColors, encodeHTML, flexLayout, measureText } from '@/common/utils';
 import { getAnimations } from '@/getStyles';
 
-export class Card {
-  title: string;
-  titlePrefixIcon: string | undefined;
-  repositoryNameTitle: string;
+export function renderCard({
+  customTitle,
+  defaultTitle = '',
+  titlePrefixIcon,
+  body,
+  columns = ['star_rank', 'contribution_rank'],
+  width = 100,
+  height = 100,
+  border_radius = 4.5,
+  hide_border = false,
+  hide_title = false,
+  colors = {},
+  css = '',
+  animations = true,
+  a11yLabel,
+}: {
+  customTitle?: string;
+  defaultTitle?: string;
+  titlePrefixIcon?: string;
+  body: string;
   columns: Columns[];
-  width: number;
-  height: number;
-  hideBorder: boolean;
-  hideTitle: boolean;
-  border_radius: number;
-  colors: Partial<CardColors>;
-  css: string;
-  paddingX: number;
-  paddingY: number;
-  animations: boolean;
-  a11yTitle: string;
-  a11yDesc: string;
   /**
-   * @param {object} args
-   * @param {number?=} args.width
-   * @param {number?=} args.height
-   * @param {number?=} args.border_radius
-   * @param {string?=} args.customTitle
-   * @param {string?=} args.defaultTitle
-   * @param {string?=} args.titlePrefixIcon
-   * @param {Partial<CardColors>?=} args.colors
+   * @default 100
    */
-  constructor({
-    customTitle,
-    defaultTitle = '',
-    titlePrefixIcon,
-    columns = ['star_rank', 'contribution_rank'],
-    width = 100,
-    height = 100,
-    border_radius = 4.5,
-    colors = {},
-  }: {
-    customTitle?: string;
-    defaultTitle?: string;
-    titlePrefixIcon?: string;
-    columns: Columns[];
-    /**
-     * @default 100
-     */
-    width?: number;
-    /**
-     * @default 100
-     */
-    height?: number;
-    /**
-     * @default 4.5
-     */
-    border_radius?: number;
-    colors?: Partial<CardColors>;
-  }) {
-    this.width = width;
-    this.height = height;
+  width?: number;
+  /**
+   * @default 100
+   */
+  height?: number;
+  /**
+   * @default 4.5
+   */
+  border_radius?: number;
+  hide_border?: boolean;
+  hide_title?: boolean;
+  colors?: Partial<CardColors>;
+  css?: string;
+  animations?: boolean;
+  a11yLabel?: { title: string; desc: string };
+}) {
+  height = hide_title ? height - 30 : height;
 
-    this.hideBorder = false;
-    this.hideTitle = false;
-    this.columns = columns;
+  const title = encodeHTML(customTitle ?? defaultTitle);
+  const repositoryNameTitle = 'Repository';
 
-    this.border_radius = border_radius;
+  const paddingX = 25;
+  const paddingY = 35;
 
-    // returns theme based colors with proper overrides and defaults
-    this.colors = colors;
-    this.title =
-      customTitle !== undefined ? encodeHTML(customTitle) : encodeHTML(defaultTitle);
-    this.repositoryNameTitle = 'Repository';
-
-    this.css = '';
-
-    this.paddingX = 25;
-    this.paddingY = 35;
-    this.titlePrefixIcon = titlePrefixIcon;
-    this.animations = true;
-    this.a11yTitle = '';
-    this.a11yDesc = '';
-  }
-
-  disableAnimations() {
-    this.animations = false;
-  }
-
-  setAccessibilityLabel({ title, desc }: { title: string; desc: string }) {
-    this.a11yTitle = title;
-    this.a11yDesc = desc;
-  }
-
-  setCSS(value: string) {
-    this.css = value;
-  }
-
-  setHideBorder(value: boolean) {
-    this.hideBorder = value;
-  }
-
-  setHideTitle(value: boolean) {
-    this.hideTitle = value;
-    if (value) {
-      this.height -= 30;
-    }
-  }
-
-  renderTitle() {
+  function renderTitle() {
     const titleText = `
       <text
         x="0"
         y="0"
         class="header"
         data-testid="header"
-      >${this.title}</text>
+      >${title}</text>
     `;
 
     const prefixIconSize = 16;
     const prefixIconGap = 25;
-    const prefixIcon = this.titlePrefixIcon
+    const prefixIcon = titlePrefixIcon
       ? `
       <svg
         class="icon"
@@ -130,21 +74,21 @@ export class Card {
         width="${prefixIconSize}"
         height="${prefixIconSize}"
       >
-        ${this.titlePrefixIcon}
+        ${titlePrefixIcon}
       </svg>
     `
       : undefined;
 
     const titleWidth =
-      this.paddingX +
+      paddingX +
       (prefixIcon ? prefixIconSize + prefixIconGap : 0) +
-      measureText(this.title, 18);
+      measureText(title, 18);
 
     return {
       title: `
       <g
         data-testid="card-title"
-        transform="translate(${this.paddingX}, ${this.paddingY})"
+        transform="translate(${paddingX}, ${paddingY})"
       >
         ${flexLayout({
           items: [prefixIcon, titleText].filter((v): v is string => Boolean(v)),
@@ -157,14 +101,14 @@ export class Card {
     };
   }
 
-  renderSubTitle() {
+  function renderSubTitle() {
     const repoTitleText = `
     <text
       x="0"
       y="5"
       class="sub-title-header"
       data-testid="header"
-    >${this.repositoryNameTitle}</text>
+    >${repositoryNameTitle}</text>
   `;
 
     const gitPRIcon = `
@@ -221,7 +165,7 @@ export class Card {
     return `
       <g
         data-testid="card-title"
-        transform="translate(${this.paddingX}, ${this.paddingY + 30})"
+        transform="translate(${paddingX}, ${paddingY + 30})"
       >
         ${flexLayout({
           items: [githubIcon, repoTitleText],
@@ -231,10 +175,10 @@ export class Card {
       </g>
       <g
         data-testid="card-title"
-        transform="translate(${this.paddingX + 235}, ${this.paddingY + 30})"
+        transform="translate(${paddingX + 235}, ${paddingY + 30})"
       >
         ${flexLayout({
-          items: this.columns.map((col) => iconMap[col]),
+          items: columns.map((col) => iconMap[col]),
           gap: 50,
           direction: 'row',
         }).join('')}
@@ -242,16 +186,16 @@ export class Card {
     `;
   }
 
-  renderGradient() {
-    if (typeof this.colors.bgColor !== 'object') return '';
+  function renderGradient() {
+    if (typeof colors.bgColor !== 'object') return '';
 
-    const gradients = this.colors.bgColor.slice(1);
-    return typeof this.colors.bgColor === 'object'
+    const gradients = colors.bgColor.slice(1);
+    return typeof colors.bgColor === 'object'
       ? `
         <defs>
           <linearGradient
             id="gradient"
-            gradientTransform="rotate(${this.colors.bgColor[0]})"
+            gradientTransform="rotate(${colors.bgColor[0]})"
             gradientUnits="userSpaceOnUse"
           >
             ${gradients.map((grad, index) => {
@@ -264,19 +208,17 @@ export class Card {
       : '';
   }
 
-  /**
-   * @param {string} body
-   */
-  render(body: string) {
-    const { title, titleWidth } = this.hideTitle
-      ? { title: '', titleWidth: 0 }
-      : this.renderTitle();
-    const width = Math.max(this.width, titleWidth);
-    return `
+  const { title: resolvedTitle, titleWidth } = hide_title
+    ? { title: '', titleWidth: 0 }
+    : renderTitle();
+  width = Math.max(width, titleWidth);
+  width += paddingX;
+
+  return `
       <svg
         width="${width}"
-        height="${this.height}"
-        viewBox="0 0 ${width} ${this.height}"
+        height="${height}"
+        viewBox="0 0 ${width} ${height}"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -286,62 +228,57 @@ export class Card {
         <a xlink:href="https://github.com/HwangTaehyun/github-contributor-stats" 
         xlink:title="github-contributor-stats(new tab)"
         target="_blank">
-          <title id="titleId">${this.a11yTitle}</title>
-          <desc id="descId">${this.a11yDesc}</desc>
+          <title id="titleId">${a11yLabel?.title}</title>
+          <desc id="descId">${a11yLabel?.desc}</desc>
           <style>
             .header {
               font: 600 18px 'Segoe UI', Ubuntu, Sans-Serif;
-              fill: ${this.colors?.titleColor};
+              fill: ${colors?.titleColor};
               animation: fadeInAnimation 0.8s ease-in-out forwards;
             }
             .sub-title-header {
               font: 800 14px 'Segoe UI', Ubuntu, Sans-Serif;
-              fill: ${this.colors?.titleColor};
+              fill: ${colors?.titleColor};
               animation: fadeInAnimation 0.8s ease-in-out forwards;
             }
             @supports(-moz-appearance: auto) {
               /* Selector detects Firefox */
               .header { font-size: 15.5px; }
             }
-            ${this.css}
+            ${css}
 
             ${process.env.NODE_ENV === 'test' ? '' : getAnimations()}
             ${
-              this.animations === false
+              animations === false
                 ? `* { animation-duration: 0s !important; animation-delay: 0s !important; }`
                 : ''
             }
           </style>
 
-          ${this.renderGradient()}
+          ${renderGradient()}
 
           <rect
             data-testid="card-bg"
             x="0.5"
             y="0.5"
-            rx="${this.border_radius}"
+            rx="${border_radius}"
             height="99%"
-            stroke="${this.colors.borderColor}"
-            width="${this.width - 1}"
+            stroke="${colors.borderColor}"
+            width="${width - 1}"
             fill="${
-              typeof this.colors.bgColor === 'object'
-                ? 'url(#gradient)'
-                : this.colors.bgColor
+              typeof colors.bgColor === 'object' ? 'url(#gradient)' : colors.bgColor
             }"
-            stroke-opacity="${this.hideBorder ? 0 : 1}"
+            stroke-opacity="${hide_border ? 0 : 1}"
           />
-          ${this.hideTitle ? '' : title}
-          ${this.hideTitle ? '' : this.renderSubTitle()}
+          ${hide_title ? '' : resolvedTitle}
+          ${hide_title ? '' : renderSubTitle()}
           <g
             data-testid="main-card-body"
-            transform="translate(0, ${
-              this.hideTitle ? this.paddingX : this.paddingY + 20 + 30
-            })"
+            transform="translate(0, ${hide_title ? paddingX : paddingY + 20 + 30})"
           >
             ${body}
           </g>
         </a>
       </svg>
     `;
-  }
 }

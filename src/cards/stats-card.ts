@@ -3,7 +3,7 @@ import {
   calculateContributionsRank,
   type Rank,
 } from '@/calculateRank';
-import { Card } from '@/common/Card';
+import { renderCard } from '@/common/Card';
 import { I18n } from '@/common/I18n';
 import { type Columns, type OrderByOptions } from '@/common/schema';
 import {
@@ -231,7 +231,7 @@ export const renderContributorStatsCard = async (
     )
     .slice(0, limit > 0 ? limit : undefined);
 
-  const statItems = calculatedStats.map((stat, index) => {
+  const statRows = calculatedStats.map((stat, index) => {
     const ranksMap = {
       star_rank: stat.starRank,
       contribution_rank: stat.contributionRank,
@@ -250,7 +250,7 @@ export const renderContributorStatsCard = async (
   // Calculate the card height depending on how many items there are
   // but if rank circle is visible clamp the minimum height to `150`
   const distanceY = 8;
-  const height = Math.max(30 + 45 + (statItems.length + 1) * (lheight + distanceY), 150);
+  const height = Math.max(30 + 45 + (statRows.length + 1) * (lheight + distanceY), 150);
 
   const cssStyles = getStyles({
     titleColor,
@@ -259,13 +259,25 @@ export const renderContributorStatsCard = async (
     show_icons: true,
   });
 
-  const card = new Card({
+  return renderCard({
     customTitle: custom_title,
     defaultTitle: i18n.t('statcard.title'),
+    body: `
+    <svg overflow="visible">
+      ${flexLayout({
+        items: statRows,
+        gap: lheight + distanceY,
+        direction: 'column',
+      }).join('')}
+    </svg>
+  `,
     columns,
     width: maxWidth,
     height,
     border_radius,
+    hide_border,
+    hide_title,
+    css: cssStyles,
     colors: {
       titleColor,
       textColor,
@@ -274,18 +286,4 @@ export const renderContributorStatsCard = async (
       borderColor,
     },
   });
-
-  card.setHideBorder(hide_border);
-  card.setHideTitle(hide_title);
-  card.setCSS(cssStyles);
-
-  return card.render(`
-    <svg overflow="visible">
-      ${flexLayout({
-        items: statItems,
-        gap: lheight + distanceY,
-        direction: 'column',
-      }).join('')}
-    </svg>
-  `);
 };

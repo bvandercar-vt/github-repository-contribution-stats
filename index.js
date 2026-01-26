@@ -44087,7 +44087,7 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
         ? b.numStars - a.numStars
         : (b.numContributions ?? 0) - (a.numContributions ?? 0))
         .slice(0, limit > 0 ? limit : undefined);
-    const statItems = calculatedStats.map((stat, index) => {
+    const statRows = calculatedStats.map((stat, index) => {
         const ranksMap = {
             star_rank: stat.starRank,
             contribution_rank: stat.contributionRank,
@@ -44101,21 +44101,33 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
         });
     });
     const distanceY = 8;
-    let height = Math.max(30 + 45 + (statItems.length + 1) * (lheight + distanceY), 150);
-    const cssStyles = (0,_getStyles__WEBPACK_IMPORTED_MODULE_6__.getStyles)({
+    const height = Math.max(30 + 45 + (statRows.length + 1) * (lheight + distanceY), 150);
+    const cssStyles = (0,_getStyles__WEBPACK_IMPORTED_MODULE_4__.getStyles)({
         titleColor,
         textColor,
         iconColor,
         show_icons: true,
         progress: true,
     });
-    const card = new _common_Card__WEBPACK_IMPORTED_MODULE_1__.Card({
+    return (0,_common_Card__WEBPACK_IMPORTED_MODULE_1__.renderCard)({
         customTitle: custom_title,
         defaultTitle: i18n.t('statcard.title'),
+        body: `
+    <svg overflow="visible">
+      ${(0,_common_utils__WEBPACK_IMPORTED_MODULE_3__.flexLayout)({
+            items: statRows,
+            gap: lheight + distanceY,
+            direction: 'column',
+        }).join('')}
+    </svg>
+  `,
         columns,
         width: maxWidth,
         height,
         border_radius,
+        hide_border,
+        hide_title,
+        css: cssStyles,
         colors: {
             titleColor,
             textColor,
@@ -44124,18 +44136,6 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
             borderColor,
         },
     });
-    card.setHideBorder(hide_border);
-    card.setHideTitle(hide_title);
-    card.setCSS(cssStyles);
-    return card.render(`
-    <svg overflow="visible">
-      ${(0,_common_utils__WEBPACK_IMPORTED_MODULE_3__.flexLayout)({
-        items: statItems,
-        gap: lheight + distanceY,
-        direction: 'column',
-    }).join('')}
-    </svg>
-  `);
 };
 
 
@@ -44150,79 +44150,30 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "Card": () => (/* binding */ Card)
+/* harmony export */   "renderCard": () => (/* binding */ renderCard)
 /* harmony export */ });
 /* harmony import */ var _common_utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @/common/utils */ "./src/common/utils.ts");
 /* harmony import */ var _getStyles__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @/getStyles */ "./src/getStyles.ts");
 
 
-class Card {
-    title;
-    titlePrefixIcon;
-    repositoryNameTitle;
-    columns;
-    width;
-    height;
-    hideBorder;
-    hideTitle;
-    border_radius;
-    colors;
-    css;
-    paddingX;
-    paddingY;
-    animations;
-    a11yTitle;
-    a11yDesc;
-    constructor({ customTitle, defaultTitle = '', titlePrefixIcon, columns = ['star_rank', 'contribution_rank'], width = 100, height = 100, border_radius = 4.5, colors = {}, }) {
-        this.width = width;
-        this.height = height;
-        this.hideBorder = false;
-        this.hideTitle = false;
-        this.columns = columns;
-        this.border_radius = border_radius;
-        this.colors = colors;
-        this.title =
-            customTitle !== undefined ? (0,_common_utils__WEBPACK_IMPORTED_MODULE_0__.encodeHTML)(customTitle) : (0,_common_utils__WEBPACK_IMPORTED_MODULE_0__.encodeHTML)(defaultTitle);
-        this.repositoryNameTitle = 'Repository';
-        this.css = '';
-        this.paddingX = 25;
-        this.paddingY = 35;
-        this.titlePrefixIcon = titlePrefixIcon;
-        this.animations = true;
-        this.a11yTitle = '';
-        this.a11yDesc = '';
-    }
-    disableAnimations() {
-        this.animations = false;
-    }
-    setAccessibilityLabel({ title, desc }) {
-        this.a11yTitle = title;
-        this.a11yDesc = desc;
-    }
-    setCSS(value) {
-        this.css = value;
-    }
-    setHideBorder(value) {
-        this.hideBorder = value;
-    }
-    setHideTitle(value) {
-        this.hideTitle = value;
-        if (value) {
-            this.height -= 30;
-        }
-    }
-    renderTitle() {
+function renderCard({ customTitle, defaultTitle = '', titlePrefixIcon, body, columns = ['star_rank', 'contribution_rank'], width = 100, height = 100, border_radius = 4.5, hide_border = false, hide_title = false, colors = {}, css = '', animations = true, a11yLabel, }) {
+    height = hide_title ? height - 30 : height;
+    const title = (0,_common_utils__WEBPACK_IMPORTED_MODULE_0__.encodeHTML)(customTitle ?? defaultTitle);
+    const repositoryNameTitle = 'Repository';
+    const paddingX = 25;
+    const paddingY = 35;
+    function renderTitle() {
         const titleText = `
       <text
         x="0"
         y="0"
         class="header"
         data-testid="header"
-      >${this.title}</text>
+      >${title}</text>
     `;
         const prefixIconSize = 16;
         const prefixIconGap = 25;
-        const prefixIcon = this.titlePrefixIcon
+        const prefixIcon = titlePrefixIcon
             ? `
       <svg
         class="icon"
@@ -44233,18 +44184,18 @@ class Card {
         width="${prefixIconSize}"
         height="${prefixIconSize}"
       >
-        ${this.titlePrefixIcon}
+        ${titlePrefixIcon}
       </svg>
     `
             : undefined;
-        const titleWidth = this.paddingX +
+        const titleWidth = paddingX +
             (prefixIcon ? prefixIconSize + prefixIconGap : 0) +
-            (0,_common_utils__WEBPACK_IMPORTED_MODULE_0__.measureText)(this.title, 18);
+            (0,_common_utils__WEBPACK_IMPORTED_MODULE_0__.measureText)(title, 18);
         return {
             title: `
       <g
         data-testid="card-title"
-        transform="translate(${this.paddingX}, ${this.paddingY})"
+        transform="translate(${paddingX}, ${paddingY})"
       >
         ${(0,_common_utils__WEBPACK_IMPORTED_MODULE_0__.flexLayout)({
                 items: [prefixIcon, titleText].filter((v) => Boolean(v)),
@@ -44256,14 +44207,14 @@ class Card {
             titleWidth,
         };
     }
-    renderSubTitle() {
+    function renderSubTitle() {
         const repoTitleText = `
     <text
       x="0"
       y="5"
       class="sub-title-header"
       data-testid="header"
-    >${this.repositoryNameTitle}</text>
+    >${repositoryNameTitle}</text>
   `;
         const gitPRIcon = `
     <svg
@@ -44315,7 +44266,7 @@ class Card {
         return `
       <g
         data-testid="card-title"
-        transform="translate(${this.paddingX}, ${this.paddingY + 30})"
+        transform="translate(${paddingX}, ${paddingY + 30})"
       >
         ${(0,_common_utils__WEBPACK_IMPORTED_MODULE_0__.flexLayout)({
             items: [githubIcon, repoTitleText],
@@ -44325,26 +44276,26 @@ class Card {
       </g>
       <g
         data-testid="card-title"
-        transform="translate(${this.paddingX + 235}, ${this.paddingY + 30})"
+        transform="translate(${paddingX + 235}, ${paddingY + 30})"
       >
         ${(0,_common_utils__WEBPACK_IMPORTED_MODULE_0__.flexLayout)({
-            items: [!this.hideContributorRank && gitPRIcon, starIcon],
+            items: columns.map((col) => iconMap[col]),
             gap: 50,
             direction: 'row',
         }).join('')}
       </g>
     `;
     }
-    renderGradient() {
-        if (typeof this.colors.bgColor !== 'object')
+    function renderGradient() {
+        if (typeof colors.bgColor !== 'object')
             return '';
-        const gradients = this.colors.bgColor.slice(1);
-        return typeof this.colors.bgColor === 'object'
+        const gradients = colors.bgColor.slice(1);
+        return typeof colors.bgColor === 'object'
             ? `
         <defs>
           <linearGradient
             id="gradient"
-            gradientTransform="rotate(${this.colors.bgColor[0]})"
+            gradientTransform="rotate(${colors.bgColor[0]})"
             gradientUnits="userSpaceOnUse"
           >
             ${gradients.map((grad, index) => {
@@ -44356,16 +44307,16 @@ class Card {
         `
             : '';
     }
-    render(body) {
-        const { title, titleWidth } = this.hideTitle
-            ? { title: '', titleWidth: 0 }
-            : this.renderTitle();
-        const width = Math.max(this.width, titleWidth);
-        return `
+    const { title: resolvedTitle, titleWidth } = hide_title
+        ? { title: '', titleWidth: 0 }
+        : renderTitle();
+    width = Math.max(width, titleWidth);
+    width += paddingX;
+    return `
       <svg
         width="${width}"
-        height="${this.height}"
-        viewBox="0 0 ${width} ${this.height}"
+        height="${height}"
+        viewBox="0 0 ${width} ${height}"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -44375,58 +44326,55 @@ class Card {
         <a xlink:href="https://github.com/HwangTaehyun/github-contributor-stats" 
         xlink:title="github-contributor-stats(new tab)"
         target="_blank">
-          <title id="titleId">${this.a11yTitle}</title>
-          <desc id="descId">${this.a11yDesc}</desc>
+          <title id="titleId">${a11yLabel?.title}</title>
+          <desc id="descId">${a11yLabel?.desc}</desc>
           <style>
             .header {
               font: 600 18px 'Segoe UI', Ubuntu, Sans-Serif;
-              fill: ${this.colors?.titleColor};
+              fill: ${colors?.titleColor};
               animation: fadeInAnimation 0.8s ease-in-out forwards;
             }
             .sub-title-header {
               font: 800 14px 'Segoe UI', Ubuntu, Sans-Serif;
-              fill: ${this.colors?.titleColor};
+              fill: ${colors?.titleColor};
               animation: fadeInAnimation 0.8s ease-in-out forwards;
             }
             @supports(-moz-appearance: auto) {
               /* Selector detects Firefox */
               .header { font-size: 15.5px; }
             }
-            ${this.css}
+            ${css}
 
             ${ false ? 0 : (0,_getStyles__WEBPACK_IMPORTED_MODULE_1__.getAnimations)()}
-            ${this.animations === false
-            ? `* { animation-duration: 0s !important; animation-delay: 0s !important; }`
-            : ''}
+            ${animations === false
+        ? `* { animation-duration: 0s !important; animation-delay: 0s !important; }`
+        : ''}
           </style>
 
-          ${this.renderGradient()}
+          ${renderGradient()}
 
           <rect
             data-testid="card-bg"
             x="0.5"
             y="0.5"
-            rx="${this.border_radius}"
+            rx="${border_radius}"
             height="99%"
-            stroke="${this.colors.borderColor}"
-            width="${this.width - 1}"
-            fill="${typeof this.colors.bgColor === 'object'
-            ? 'url(#gradient)'
-            : this.colors.bgColor}"
-            stroke-opacity="${this.hideBorder ? 0 : 1}"
+            stroke="${colors.borderColor}"
+            width="${width - 1}"
+            fill="${typeof colors.bgColor === 'object' ? 'url(#gradient)' : colors.bgColor}"
+            stroke-opacity="${hide_border ? 0 : 1}"
           />
-          ${this.hideTitle ? '' : title}
-          ${this.hideTitle ? '' : this.renderSubTitle()}
+          ${hide_title ? '' : resolvedTitle}
+          ${hide_title ? '' : renderSubTitle()}
           <g
             data-testid="main-card-body"
-            transform="translate(0, ${this.hideTitle ? this.paddingX : this.paddingY + 20 + 30})"
+            transform="translate(0, ${hide_title ? paddingX : paddingY + 20 + 30})"
           >
             ${body}
           </g>
         </a>
       </svg>
     `;
-    }
 }
 
 
