@@ -44467,41 +44467,28 @@ class I18n {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "commonSchema": () => (/* binding */ commonSchema),
-/* harmony export */   "emptyStringToUndefined": () => (/* binding */ emptyStringToUndefined)
+/* harmony export */   "emptyStringToUndefined": () => (/* binding */ emptyStringToUndefined),
+/* harmony export */   "parseArray": () => (/* binding */ parseArray),
+/* harmony export */   "parseBoolean": () => (/* binding */ parseBoolean)
 /* harmony export */ });
 /* harmony import */ var zod__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! zod */ "./node_modules/zod/index.js");
 /* harmony import */ var themes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! themes */ "./themes/index.ts");
 
 
-const parseBoolean = (value) => {
-    if (value === 'true') {
-        return true;
-    }
-    else if (value === 'false') {
-        return false;
-    }
-    else if (value === undefined || value === null) {
-        return undefined;
-    }
-    else {
-        return Boolean(value);
-    }
-};
+const parseBoolean = zod__WEBPACK_IMPORTED_MODULE_1__["default"]["enum"](["true", "false"]).optional().transform((value) => value === "true");
+const parseArray = zod__WEBPACK_IMPORTED_MODULE_1__["default"].string()
+    .optional()
+    .transform((val) => (val?.split(',') ?? []));
 const emptyStringToUndefined = zod__WEBPACK_IMPORTED_MODULE_1__["default"].string()
     .optional()
     .transform((val) => val || undefined);
 const commonSchema = zod__WEBPACK_IMPORTED_MODULE_1__["default"].object({
     username: zod__WEBPACK_IMPORTED_MODULE_1__["default"].string().min(1, 'Username is required'),
-    combine_all_yearly_contributions: zod__WEBPACK_IMPORTED_MODULE_1__["default"].string()
-        .optional()
-        .default('true')
-        .transform(parseBoolean),
-    hide_contributor_rank: zod__WEBPACK_IMPORTED_MODULE_1__["default"].string().optional().default('true').transform(parseBoolean),
+    combine_all_yearly_contributions: parseBoolean.default("true"),
+    hide_contributor_rank: parseBoolean.default('true'),
     order_by: zod__WEBPACK_IMPORTED_MODULE_1__["default"]["enum"](['stars', 'contribution_rank']).optional().default('stars'),
     limit: zod__WEBPACK_IMPORTED_MODULE_1__["default"].coerce.number().int().optional().default(-1),
-    hide: zod__WEBPACK_IMPORTED_MODULE_1__["default"].string()
-        .optional()
-        .transform((val) => (val ? val.split(',') : [])),
+    hide: parseArray,
     theme: zod__WEBPACK_IMPORTED_MODULE_1__["default"]["enum"](themes__WEBPACK_IMPORTED_MODULE_0__.themeNames)
         .optional()
         .default('default'),
@@ -44511,8 +44498,8 @@ const commonSchema = zod__WEBPACK_IMPORTED_MODULE_1__["default"].object({
     bg_color: emptyStringToUndefined,
     border_color: emptyStringToUndefined,
     border_radius: zod__WEBPACK_IMPORTED_MODULE_1__["default"].coerce.number().nonnegative().optional(),
-    hide_title: zod__WEBPACK_IMPORTED_MODULE_1__["default"].string().optional().transform(parseBoolean),
-    hide_border: zod__WEBPACK_IMPORTED_MODULE_1__["default"].string().optional().transform(parseBoolean),
+    hide_title: parseBoolean,
+    hide_border: parseBoolean,
     custom_title: emptyStringToUndefined,
     locale: emptyStringToUndefined.transform((val) => val?.toLowerCase()),
 });
