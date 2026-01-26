@@ -28,8 +28,8 @@ jobs:
         with:
           username: Atry
           output-file: github-contributor-stats.svg
-          combine-all-yearly-contributions: 'true'
-          hide-contributor-rank: 'false'
+          columns: 'star_rank,contribution_rank'
+          combine-all-yearly-contributions: true
 
       - name: Commit and push if changed
         uses: actions4git/add-commit-push@v1

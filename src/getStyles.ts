@@ -51,9 +51,9 @@ export const getStyles = ({
   show_icons,
   progress,
 }: {
-  titleColor?: string | string[];
-  textColor?: string | string[];
-  iconColor?: string | string[];
+  titleColor?: string;
+  textColor?: string;
+  iconColor?: string;
   show_icons?: boolean;
   progress?: number;
 }) => {
@@ -69,12 +69,8 @@ export const getStyles = ({
       opacity: 0;
       animation: fadeInAnimation 0.3s ease-in-out forwards;
     }
-    .rank-text {
+    .cell-text {
       font: 800 18px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${textColor}; 
-      animation: scaleInAnimation 0.3s ease-in-out forwards;
-    }
-    .contribution-rank-text {
-      font: 800 18px 'Segoe UI', Ubuntu, Sans-Serif; fill: rgb(0, 128, 255); 
       animation: scaleInAnimation 0.3s ease-in-out forwards;
     }
     

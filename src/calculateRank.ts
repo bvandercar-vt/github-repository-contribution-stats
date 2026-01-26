@@ -1,6 +1,7 @@
 import type { Contributor } from 'getContributors';
 
-export type Rank = 'S+' | 'S' | 'A+' | 'A' | 'B+' | 'B';
+export const ranks = ['S+', 'S', 'A+', 'A', 'B+', 'B'] as const;
+export type Rank = (typeof ranks)[number];
 
 const RANK_THRESHOLDS_STARGAZERS = {
   'S+': 10000,

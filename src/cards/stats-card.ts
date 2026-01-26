@@ -1,8 +1,4 @@
-import {
-  calculateStarsRank,
-  calculateContributionsRank,
-  type Rank,
-} from '@/calculateRank';
+import { calculateStarsRank, calculateContributionsRank, ranks } from '@/calculateRank';
 import { renderCard } from '@/common/Card';
 import { I18n } from '@/common/I18n';
 import { type Columns, type OrderByOptions } from '@/common/schema';
@@ -35,12 +31,12 @@ let maxWidth = 0;
 const createRow = ({
   imageBase64,
   name,
-  ranks,
+  valueCells: valueCellCriteria,
   index,
 }: {
   imageBase64: string;
   name: string;
-  ranks: Rank[];
+  valueCells: (string | undefined)[];
   index: number;
 }) => {
   const staggerDelay = (index + 3) * 150;
@@ -49,23 +45,49 @@ const createRow = ({
   offset += offset === 230 ? 5 : 15;
 
   const circleRadius = 14;
-  const rankItems = ranks.map((rank) => {
-    const item = `
-    <g data-testid="rank-circle" transform="translate(${offset}, 0)">
-      <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="${circleRadius}" />
-      <g class="rank-text">
-        <text x="${rank.includes('+') ? 4 : 7.2}" y="18.5">
-        ${rank}
-       </text>
-      </g>
+  const xAlign = 4;
+  const yAlign = 18.5;
+  const cellWidths: number[] = [];
+
+  const renderCellText = (val: string, x: number, y: number) => `
+   <g class="cell-text">
+      <text x="${val.includes('+') ? x : 7.2}" y="${y}">
+      ${val}
+      </text>
     </g>
     `;
-    maxWidth = Math.max(maxWidth, offset + circleRadius * 2);
+
+  const getValueCellContent = (val: string | undefined) => {
+    if (val == undefined) {
+      return { item: '', width: 0 };
+    }
+    if ((ranks as readonly string[]).includes(val)) {
+      return {
+        item: `
+    <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="${circleRadius}" />
+    ${renderCellText(val, val.includes('+') ? xAlign : 7.2, yAlign)}
+    `,
+        width: circleRadius * 2,
+      };
+    }
+    return { item: renderCellText(val, xAlign, yAlign), width: measureText(val, 18) };
+  };
+
+  const valueCells = valueCellCriteria.map((val) => {
+    const { item, width } = getValueCellContent(val);
+    cellWidths.push(width);
+    maxWidth = Math.max(maxWidth, offset + width);
+    const fullItem = `
+    <g data-testid="value-cell" transform="translate(${offset}, 0)">
+        ${item}
+    </g>
+        `;
     offset += 50;
-    return item;
+    return fullItem;
   });
 
-  return `
+  return {
+    content: `
     <g class="stagger" style="animation-delay: ${staggerDelay}ms" transform="translate(25, 0)">
       <defs>
         <clipPath id="myCircle">
@@ -76,9 +98,11 @@ const createRow = ({
       <g transform="translate(30,16)">
         <text class="stat bold">${name}</text>
       </g>
-      ${rankItems}
+      ${valueCells}
     </g>
-  `;
+  `,
+    cellWidths,
+  };
 };
 
 export type ContributionsStats = Pick<
@@ -192,6 +216,7 @@ export const renderContributorStatsCard = async (
     }
   }
 
+  const allCellWidths: number[][] = [];
   const calculatedStats = contributorStats
     .map(({ url, name, stargazerCount, numContributions }, index) => {
       const contributionRank =
@@ -232,20 +257,25 @@ export const renderContributorStatsCard = async (
     .slice(0, limit > 0 ? limit : undefined);
 
   const statRows = calculatedStats.map((stat, index) => {
-    const ranksMap = {
+    const columnValsMap = {
       star_rank: stat.starRank,
       contribution_rank: stat.contributionRank,
-    } satisfies Record<Columns, Rank | undefined>;
+      commits: stat.numContributions?.toString(),
+    } satisfies Record<Columns, string | undefined>;
 
     // create the text nodes, and pass index so that we can calculate the line spacing
-    return createRow({
+    const { content, cellWidths } = createRow({
       ...stat,
       index,
-      ranks: columns
-        .map((column) => ranksMap[column])
-        .filter((rank): rank is Rank => rank !== undefined),
+      valueCells: columns.map((c) => columnValsMap[c]),
     });
+    allCellWidths.push(cellWidths);
+    return content;
   });
+
+  const columnWidths: number[] = allCellWidths.reduce((acc, row) =>
+    acc.map((max, i) => Math.max(max, row[i])),
+  );
 
   // Calculate the card height depending on how many items there are
   // but if rank circle is visible clamp the minimum height to `150`
@@ -253,9 +283,9 @@ export const renderContributorStatsCard = async (
   const height = Math.max(30 + 45 + (statRows.length + 1) * (lheight + distanceY), 150);
 
   const cssStyles = getStyles({
-    titleColor,
-    textColor,
-    iconColor,
+    titleColor: titleColor as string,
+    textColor: textColor as string,
+    iconColor: iconColor as string,
     show_icons: true,
   });
 
@@ -271,7 +301,7 @@ export const renderContributorStatsCard = async (
       }).join('')}
     </svg>
   `,
-    columns,
+    columns: columns.map((column, i) => ({ column, width: columnWidths[i] })),
     width: maxWidth,
     height,
     border_radius,

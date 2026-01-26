@@ -19,7 +19,7 @@ export const emptyStringToUndefined = z
   .optional()
   .transform((val) => val || undefined);
 
-const columns = ['star_rank', 'contribution_rank'] as const;
+const columns = ['star_rank', 'contribution_rank', 'commits'] as const;
 
 export type Columns = (typeof columns)[number];
 

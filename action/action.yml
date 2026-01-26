@@ -14,12 +14,12 @@ inputs:
     description: 'Output SVG file path'
     required: false
     default: 'github-contributor-stats.svg'
+  columns:
+    description: 'Comma-separated list of columns to show. Options: "star_rank", "contribution_rank", "commits". Can be in the desired order.'
+    required: false
+    default: 'star_rank'
   combine-all-yearly-contributions:
     description: 'Combine contributions from all years'
-    required: false
-    default: 'true'
-  hide-contributor-rank:
-    description: 'Hide contributor rank (set to false to show, but slower)'
     required: false
     default: 'true'
   hide:

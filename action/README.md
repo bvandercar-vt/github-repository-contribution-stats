@@ -38,8 +38,8 @@ jobs:
         with:
           username: YOUR_USERNAME
           output-file: github-contributor-stats.svg
-          combine-all-yearly-contributions: 'true'
-          hide-contributor-rank: 'false'
+          columns: star_rank,contribution_rank
+          combine-all-yearly-contributions: true
 
       - uses: actions4git/add-commit-push@v1
         continue-on-error: true
@@ -57,8 +57,8 @@ jobs:
 |-------|-------------|----------|---------|
 | `username` | GitHub username to generate stats for | Yes | - |
 | `output-file` | Output SVG file path | No | `github-contributor-stats.svg` |
+| `columns` | Comma-separated list of columns to show. Options: "star_rank", "contribution_rank", "commits". Can be in the desired order. | No | "star_rank" |
 | `combine-all-yearly-contributions` | Combine contributions from all years | No | `true` |
-| `hide-contributor-rank` | Hide contributor rank (faster if true) | No | `true` |
 | `hide` | Comma-separated ranks to hide (e.g., "B,B+") | No | - |
 | `order-by` | Order by "stars" or "contributions" | No | `stars` |
 | `limit` | Max repositories to show (-1 for all) | No | `-1` |
