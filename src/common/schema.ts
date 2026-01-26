@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { ThemeNames, themeNames } from 'themes';
+import { themeNames, type ThemeNames } from 'themes';
 
 const parseBoolean = (value: string | undefined): boolean | undefined => {
   if (value === 'true') {

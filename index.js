@@ -43914,7 +43914,8 @@ const calculateContributionRank = (name, contributors, numOfMyContributions) => 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "calculateRank": () => (/* binding */ calculateRank)
+/* harmony export */   "calculateContributionsRank": () => (/* binding */ calculateContributionsRank),
+/* harmony export */   "calculateStarsRank": () => (/* binding */ calculateStarsRank)
 /* harmony export */ });
 const calculateRank = (stargazers) => {
     const RANK_S_PLUS_VALUE = 10000;
@@ -43952,15 +43953,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _calculateContributionRank__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @/calculateContributionRank */ "./src/calculateContributionRank.ts");
-/* harmony import */ var _calculateRank__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @/calculateRank */ "./src/calculateRank.ts");
-/* harmony import */ var _common_Card__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @/common/Card */ "./src/common/Card.ts");
-/* harmony import */ var _common_I18n__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @/common/I18n */ "./src/common/I18n.ts");
-/* harmony import */ var _common_utils__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @/common/utils */ "./src/common/utils.ts");
-/* harmony import */ var _getStyles__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @/getStyles */ "./src/getStyles.ts");
-/* harmony import */ var _translations__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @/translations */ "./src/translations.ts");
-/* harmony import */ var getContributors__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! getContributors */ "./getContributors.ts");
-
+/* harmony import */ var _calculateRank__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @/calculateRank */ "./src/calculateRank.ts");
+/* harmony import */ var _common_Card__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @/common/Card */ "./src/common/Card.ts");
+/* harmony import */ var _common_I18n__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @/common/I18n */ "./src/common/I18n.ts");
+/* harmony import */ var _common_utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @/common/utils */ "./src/common/utils.ts");
+/* harmony import */ var _getStyles__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @/getStyles */ "./src/getStyles.ts");
+/* harmony import */ var _translations__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @/translations */ "./src/translations.ts");
+/* harmony import */ var getContributors__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! getContributors */ "./getContributors.ts");
 
 
 
@@ -43972,9 +43971,9 @@ __webpack_require__.r(__webpack_exports__);
 const createTextNode = ({ imageBase64, name, rank, contributionRank, index, height }) => {
     const staggerDelay = (index + 3) * 150;
     const calculateTextWidth = (text) => {
-        return (0,_common_utils__WEBPACK_IMPORTED_MODULE_5__.measureText)(text, 18);
+        return (0,_common_utils__WEBPACK_IMPORTED_MODULE_4__.measureText)(text, 18);
     };
-    let offset = (0,_common_utils__WEBPACK_IMPORTED_MODULE_5__.clampValue)(calculateTextWidth(name), 230, 400);
+    let offset = (0,_common_utils__WEBPACK_IMPORTED_MODULE_4__.clampValue)(calculateTextWidth(name), 230, 400);
     offset += offset === 230 ? 5 : 15;
     let offset2 = offset + 50;
     const contributionRankText = contributionRank?.includes('+')
@@ -44032,7 +44031,7 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
     const authToken = token || process.env.GITHUB_PERSONAL_ACCESS_TOKEN || '';
     const orderBy = order_by;
     const lheight = parseInt(String(line_height), 10);
-    const { titleColor, textColor, iconColor, bgColor, borderColor } = (0,_common_utils__WEBPACK_IMPORTED_MODULE_5__.getCardColors)({
+    const { titleColor, textColor, iconColor, bgColor, borderColor } = (0,_common_utils__WEBPACK_IMPORTED_MODULE_4__.getCardColors)({
         title_color,
         icon_color,
         text_color,
@@ -44041,18 +44040,18 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
         theme,
     });
     const apostrophe = ['x', 's'].includes(name.slice(-1).toLocaleLowerCase()) ? '' : 's';
-    const i18n = new _common_I18n__WEBPACK_IMPORTED_MODULE_4__.I18n({
+    const i18n = new _common_I18n__WEBPACK_IMPORTED_MODULE_3__.I18n({
         locale,
-        translations: (0,_translations__WEBPACK_IMPORTED_MODULE_7__.statCardLocales)({ name, apostrophe }),
+        translations: (0,_translations__WEBPACK_IMPORTED_MODULE_6__.statCardLocales)({ name, apostrophe }),
     });
     const imageBase64s = await Promise.all(Object.keys(contributorStats).map((key, index) => {
         const url = new URL(contributorStats[key].owner.avatarUrl);
         url.searchParams.append('s', '50');
-        return (0,_common_utils__WEBPACK_IMPORTED_MODULE_5__.getImageBase64FromURL)(url.toString());
+        return (0,_common_utils__WEBPACK_IMPORTED_MODULE_4__.getImageBase64FromURL)(url.toString());
     }));
     let allContributorsByRepo;
     if (!hide_contributor_rank) {
-        const fetchContributors = contributor_fetcher || getContributors__WEBPACK_IMPORTED_MODULE_8__.getContributors;
+        const fetchContributors = contributor_fetcher || getContributors__WEBPACK_IMPORTED_MODULE_7__.getContributors;
         allContributorsByRepo = [];
         for (const key of Object.keys(contributorStats)) {
             const nameWithOwner = contributorStats[key].nameWithOwner;
@@ -44060,7 +44059,7 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
             allContributorsByRepo.push(contributors);
         }
     }
-    const rankValues = {
+    const RANK_VALUES = {
         'S+': 5,
         S: 4,
         'A+': 3,
@@ -44112,7 +44111,7 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
         progress: true,
     });
     const width = 495;
-    const card = new _common_Card__WEBPACK_IMPORTED_MODULE_3__.Card({
+    const card = new _common_Card__WEBPACK_IMPORTED_MODULE_2__.Card({
         customTitle: custom_title,
         defaultTitle: i18n.t('statcard.title'),
         titlePrefixIcon: '',
@@ -44133,7 +44132,7 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
     card.setCSS(cssStyles);
     return card.render(`
     <svg overflow="visible">
-      ${(0,_common_utils__WEBPACK_IMPORTED_MODULE_5__.flexLayout)({
+      ${(0,_common_utils__WEBPACK_IMPORTED_MODULE_4__.flexLayout)({
         items: statItems,
         gap: lheight + distanceY,
         direction: 'column',

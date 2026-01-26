@@ -1,7 +1,10 @@
 import _ from 'lodash';
 
-import { calculateContributionRank } from '@/calculateContributionRank';
-import { calculateRank } from '@/calculateRank';
+import {
+  calculateStarsRank,
+  calculateContributionsRank,
+  type Ranks,
+} from '@/calculateRank';
 import { Card } from '@/common/Card';
 import { I18n } from '@/common/I18n';
 import {
@@ -211,26 +214,26 @@ export const renderContributorStatsCard = async (
     }
   }
 
-  const rankValues = {
+  const RANK_VALUES = {
     'S+': 5,
     S: 4,
     'A+': 3,
     A: 2,
     'B+': 1,
     B: 0,
-  };
+  } satisfies Record<Ranks, number>;
 
   type TransformedContributionStat = {
     name: string;
     imageBase64: string;
     url: string;
     stars: number;
-    contributionRank: ReturnType<typeof calculateContributionRank> | undefined;
+    contributionRank: Ranks | undefined;
     rank: string;
   };
 
   const getContributionRank = (i: TransformedContributionStat) =>
-    i.contributionRank === undefined ? -1 : rankValues[i.contributionRank];
+    i.contributionRank === undefined ? -1 : RANK_VALUES[i.contributionRank];
 
   const sortFunction = (a: TransformedContributionStat, b: TransformedContributionStat) =>
     order_by == 'stars'
@@ -248,12 +251,12 @@ export const renderContributorStatsCard = async (
           contributionRank:
             hide_contributor_rank || numOfMyContributions === undefined
               ? undefined
-              : calculateContributionRank(
+              : calculateContributionsRank(
                   name,
                   allContributorsByRepo[index],
                   numOfMyContributions,
                 ),
-          rank: calculateRank(stargazerCount),
+          rank: calculateStarsRank(stargazerCount),
         } as const),
     )
     .filter((repository) => !hide.includes(repository.rank))
