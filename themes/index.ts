@@ -473,3 +473,5 @@ export const themes = {
 } satisfies Record<string, Theme>;
 
 export type ThemeNames = keyof typeof themes;
+
+export const themeNames = Object.keys(themes) as ThemeNames[];

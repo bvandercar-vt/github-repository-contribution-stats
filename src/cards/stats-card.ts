@@ -15,6 +15,7 @@ import { type Repository } from '@/fetchContributorStats';
 import { getStyles } from '@/getStyles';
 import { statCardLocales } from '@/translations';
 import { getContributors, type Contributor } from 'getContributors';
+import { type ThemeNames } from 'themes';
 
 const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
 
@@ -163,7 +164,7 @@ export const renderContributorStatsCard = async (
     /**
      * @default 'default'
      */
-    theme?: string;
+    theme?: ThemeNames;
     locale?: string;
     /**
      * @default none

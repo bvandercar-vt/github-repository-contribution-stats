@@ -12,6 +12,8 @@ import {
 import { fetchAllContributorStats } from '../../src/fetchAllContributorStats';
 import { fetchContributorStats } from '../../src/fetchContributorStats';
 
+import { commonSchema, emptyStringToUndefined } from '@/common/schema';
+
 // Rate-limited contributor fetcher
 let requestCount = 0;
 let lastRequestTime = 0;
@@ -162,57 +164,34 @@ function createRateLimitedFetcher(): ContributorFetcher {
   };
 }
 
-// Input validation schema
-const inputSchema = z.object({
-  username: z.string().min(1, 'Username is required'),
-  output_file: z.string().default('github-contributor-stats.svg'),
-  combine_all_yearly_contributions: z.boolean().default(true),
-  hide_contributor_rank: z.boolean().default(true),
-  hide: z.array(z.string()).default([]),
-  order_by: z.enum(['stars', 'contribution_rank']).default('stars'),
-  limit: z.number().int().min(-1).default(-1),
-  theme: z.string().default('default'),
-  title_color: z.string().optional(),
-  text_color: z.string().optional(),
-  icon_color: z.string().optional(),
-  bg_color: z.string().optional(),
-  border_color: z.string().optional(),
-  border_radius: z.number().nonnegative().optional(),
-  hide_title: z.boolean().default(false),
-  hide_border: z.boolean().default(false),
-  custom_title: z.string().optional(),
-  locale: z.string().optional(),
+const inputSchema = commonSchema.extend({
+  output_file: emptyStringToUndefined.default('github-contributor-stats.svg'),
 });
 
 type ValidatedInputs = z.infer<typeof inputSchema>;
 
 function parseInputs(): ValidatedInputs {
-  const rawInputs = {
-    username: core.getInput('username', { required: true }),
-    output_file: core.getInput('output-file') || 'github-contributor-stats.svg',
-    combine_all_yearly_contributions:
-      core.getInput('combine-all-yearly-contributions') !== 'false',
-    hide_contributor_rank: core.getInput('hide-contributor-rank') !== 'false',
-    hide: core.getInput('hide').split(',').filter(Boolean),
-    order_by: core.getInput('order-by') || 'stars',
-    limit: parseInt(core.getInput('limit') || '-1', 10),
-    theme: core.getInput('theme') || 'default',
-    title_color: core.getInput('title-color') || undefined,
-    text_color: core.getInput('text-color') || undefined,
-    icon_color: core.getInput('icon-color') || undefined,
-    bg_color: core.getInput('bg-color') || undefined,
-    border_color: core.getInput('border-color') || undefined,
-    border_radius: core.getInput('border-radius')
-      ? parseFloat(core.getInput('border-radius'))
-      : undefined,
-    hide_title: core.getInput('hide-title') === 'true',
-    hide_border: core.getInput('hide-border') === 'true',
-    custom_title: core.getInput('custom-title') || undefined,
-    locale: core.getInput('locale') || undefined,
-  };
-
   try {
-    return inputSchema.parse(rawInputs);
+    return inputSchema.parse({
+      username: core.getInput('userame', { required: true }),
+      output_file: core.getInput('output-file'),
+      combine_all_yearly_contributions: core.getInput('combine-all-yearly-contributions'),
+      hide_contributor_rank: core.getInput('hide-contributor-rank'),
+      hide: core.getInput('hide'),
+      order_by: core.getInput('order-by'),
+      limit: core.getInput('limit'),
+      theme: core.getInput('theme'),
+      title_color: core.getInput('title-color'),
+      text_color: core.getInput('text-color'),
+      icon_color: core.getInput('icon-color'),
+      bg_color: core.getInput('bg-color'),
+      border_color: core.getInput('border-color'),
+      border_radius: core.getInput('border-radius'),
+      hide_title: core.getInput('hide-title'),
+      hide_border: core.getInput('hide-border'),
+      custom_title: core.getInput('custom-title'),
+      locale: core.getInput('locale'),
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       const errorMessage = error.issues

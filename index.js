@@ -44458,6 +44458,69 @@ class I18n {
 
 /***/ }),
 
+/***/ "./src/common/schema.ts":
+/*!******************************!*\
+  !*** ./src/common/schema.ts ***!
+  \******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "commonSchema": () => (/* binding */ commonSchema),
+/* harmony export */   "emptyStringToUndefined": () => (/* binding */ emptyStringToUndefined)
+/* harmony export */ });
+/* harmony import */ var zod__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! zod */ "./node_modules/zod/index.js");
+/* harmony import */ var themes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! themes */ "./themes/index.ts");
+
+
+const parseBoolean = (value) => {
+    if (value === 'true') {
+        return true;
+    }
+    else if (value === 'false') {
+        return false;
+    }
+    else if (value === undefined || value === null) {
+        return undefined;
+    }
+    else {
+        return Boolean(value);
+    }
+};
+const emptyStringToUndefined = zod__WEBPACK_IMPORTED_MODULE_1__["default"].string()
+    .optional()
+    .transform((val) => val || undefined);
+const commonSchema = zod__WEBPACK_IMPORTED_MODULE_1__["default"].object({
+    username: zod__WEBPACK_IMPORTED_MODULE_1__["default"].string().min(1, 'Username is required'),
+    combine_all_yearly_contributions: zod__WEBPACK_IMPORTED_MODULE_1__["default"].string()
+        .optional()
+        .default('true')
+        .transform(parseBoolean),
+    hide_contributor_rank: zod__WEBPACK_IMPORTED_MODULE_1__["default"].string().optional().default('true').transform(parseBoolean),
+    order_by: zod__WEBPACK_IMPORTED_MODULE_1__["default"]["enum"](['stars', 'contribution_rank']).optional().default('stars'),
+    limit: zod__WEBPACK_IMPORTED_MODULE_1__["default"].coerce.number().int().optional().default(-1),
+    hide: zod__WEBPACK_IMPORTED_MODULE_1__["default"].string()
+        .optional()
+        .transform((val) => (val ? val.split(',') : [])),
+    theme: zod__WEBPACK_IMPORTED_MODULE_1__["default"]["enum"](themes__WEBPACK_IMPORTED_MODULE_0__.themeNames)
+        .optional()
+        .default('default'),
+    title_color: emptyStringToUndefined,
+    text_color: emptyStringToUndefined,
+    icon_color: emptyStringToUndefined,
+    bg_color: emptyStringToUndefined,
+    border_color: emptyStringToUndefined,
+    border_radius: zod__WEBPACK_IMPORTED_MODULE_1__["default"].coerce.number().nonnegative().optional(),
+    hide_title: zod__WEBPACK_IMPORTED_MODULE_1__["default"].string().optional().transform(parseBoolean),
+    hide_border: zod__WEBPACK_IMPORTED_MODULE_1__["default"].string().optional().transform(parseBoolean),
+    custom_title: emptyStringToUndefined,
+    locale: emptyStringToUndefined.transform((val) => val?.toLowerCase()),
+});
+
+
+/***/ }),
+
 /***/ "./src/common/utils.ts":
 /*!*****************************!*\
   !*** ./src/common/utils.ts ***!
@@ -44467,9 +44530,9 @@ class I18n {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "CONSTANTS": () => (/* binding */ CONSTANTS),
 /* harmony export */   "CustomError": () => (/* binding */ CustomError),
 /* harmony export */   "SECONDARY_ERROR_MESSAGES": () => (/* binding */ SECONDARY_ERROR_MESSAGES),
+/* harmony export */   "TIMES_S": () => (/* binding */ TIMES_S),
 /* harmony export */   "clampValue": () => (/* binding */ clampValue),
 /* harmony export */   "encodeHTML": () => (/* binding */ encodeHTML),
 /* harmony export */   "flexLayout": () => (/* binding */ flexLayout),
@@ -44477,8 +44540,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "getImageBase64FromURL": () => (/* binding */ getImageBase64FromURL),
 /* harmony export */   "kFormatter": () => (/* binding */ kFormatter),
 /* harmony export */   "measureText": () => (/* binding */ measureText),
-/* harmony export */   "parseArray": () => (/* binding */ parseArray),
-/* harmony export */   "parseBoolean": () => (/* binding */ parseBoolean),
 /* harmony export */   "renderError": () => (/* binding */ renderError)
 /* harmony export */ });
 /* harmony import */ var themes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! themes */ "./themes/index.ts");
@@ -44557,19 +44618,18 @@ const flexLayout = ({ items, gap, direction, sizes = [] }) => {
         if (direction === 'column') {
             transform = `translate(0, ${lastSize})`;
         }
-        lastSize += (size + gap);
+        lastSize += size + gap;
         return `<g transform="${transform}">${item}</g>`;
     });
 };
-const getCardColors = ({ title_color, text_color, icon_color, bg_color, border_color, theme, fallbackTheme = 'default', }) => {
-    const defaultTheme = themes__WEBPACK_IMPORTED_MODULE_0__.themes[fallbackTheme];
-    const selectedTheme = themes__WEBPACK_IMPORTED_MODULE_0__.themes[theme] || defaultTheme;
-    const defaultBorderColor = selectedTheme.border_color || defaultTheme.border_color;
-    const titleColor = fallbackColor(title_color || selectedTheme.title_color, '#' + defaultTheme.title_color);
-    const iconColor = fallbackColor(icon_color || selectedTheme.icon_color, '#' + defaultTheme.icon_color);
-    const textColor = fallbackColor(text_color || selectedTheme.text_color, '#' + defaultTheme.text_color);
-    const bgColor = fallbackColor(bg_color || selectedTheme.bg_color, '#' + defaultTheme.bg_color);
-    const borderColor = fallbackColor(border_color || defaultBorderColor, '#' + defaultBorderColor);
+const getCardColors = ({ title_color, text_color, icon_color, bg_color, border_color, theme: themeName, }) => {
+    const theme = themes__WEBPACK_IMPORTED_MODULE_0__.themes[themeName];
+    const defaultTheme = themes__WEBPACK_IMPORTED_MODULE_0__.themes["default"];
+    const titleColor = fallbackColor(title_color || theme.title_color, '#' + defaultTheme.title_color);
+    const iconColor = fallbackColor(icon_color || theme.icon_color, '#' + defaultTheme.icon_color);
+    const textColor = fallbackColor(text_color || theme.text_color, '#' + defaultTheme.text_color);
+    const bgColor = fallbackColor(bg_color || theme.bg_color, '#' + defaultTheme.bg_color);
+    const borderColor = fallbackColor(border_color || theme.border_color, '#' + defaultTheme.border_color);
     return { titleColor, iconColor, textColor, bgColor, borderColor };
 };
 const noop = () => { };
@@ -45384,6 +45444,7 @@ function isLocaleAvailable(locale) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "themeNames": () => (/* binding */ themeNames),
 /* harmony export */   "themes": () => (/* binding */ themes)
 /* harmony export */ });
 const themes = {
@@ -45851,6 +45912,7 @@ const themes = {
         bg_color: '35,4158d0,c850c0,ffcc70',
     },
 };
+const themeNames = Object.keys(themes);
 
 
 /***/ }),
@@ -54177,34 +54239,16 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const querySchema = zod__WEBPACK_IMPORTED_MODULE_7__.object({
-    username: zod__WEBPACK_IMPORTED_MODULE_7__.string(),
-    hide: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional().transform(_common_utils__WEBPACK_IMPORTED_MODULE_3__.parseArray),
-    hide_title: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional().transform(_common_utils__WEBPACK_IMPORTED_MODULE_3__.parseBoolean),
-    hide_border: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional().transform(_common_utils__WEBPACK_IMPORTED_MODULE_3__.parseBoolean),
-    hide_contributor_rank: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional().transform(_common_utils__WEBPACK_IMPORTED_MODULE_3__.parseBoolean),
-    order_by: zod__WEBPACK_IMPORTED_MODULE_7__["enum"](['stars', 'contribution_rank']).optional(),
-    line_height: zod__WEBPACK_IMPORTED_MODULE_7__.coerce.number().int().optional(),
-    title_color: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional(),
-    icon_color: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional(),
-    text_color: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional(),
-    bg_color: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional(),
-    custom_title: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional(),
-    border_radius: zod__WEBPACK_IMPORTED_MODULE_7__.coerce.number().optional(),
-    border_color: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional(),
-    theme: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional(),
-    cache_seconds: zod__WEBPACK_IMPORTED_MODULE_7__.coerce.number().int().optional(),
-    locale: zod__WEBPACK_IMPORTED_MODULE_7__.string()
-        .optional()
-        .transform((val) => val?.toLowerCase()),
-    combine_all_yearly_contributions: zod__WEBPACK_IMPORTED_MODULE_7__.string().optional(),
-    limit: zod__WEBPACK_IMPORTED_MODULE_7__.coerce.number().int().optional(),
+
+const querySchema = _common_schema__WEBPACK_IMPORTED_MODULE_3__.commonSchema.extend({
+    line_height: zod__WEBPACK_IMPORTED_MODULE_8__.coerce.number().int().optional(),
+    cache_seconds: zod__WEBPACK_IMPORTED_MODULE_8__.coerce.number().int().optional(),
 });
 const app = express__WEBPACK_IMPORTED_MODULE_1___default()();
 app.use(compression__WEBPACK_IMPORTED_MODULE_0___default()());
 app.get('/api', async (req, res) => {
     const parsedQuery = querySchema.parse(req.query);
-    const { locale, combine_all_yearly_contributions, username, cache_seconds } = parsedQuery;
+    const { locale, combine_all_yearly_contributions, username, cache_seconds = _common_utils__WEBPACK_IMPORTED_MODULE_4__.TIMES_S.FOUR_HOURS, } = parsedQuery;
     res.set('Content-Type', 'image/svg+xml');
     if (locale && !(0,_translations__WEBPACK_IMPORTED_MODULE_4__.isLocaleAvailable)(locale)) {
         return res.send((0,_common_utils__WEBPACK_IMPORTED_MODULE_1__.renderError)('Something went wrong', 'Language not found'));

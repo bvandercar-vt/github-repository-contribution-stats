@@ -59,24 +59,6 @@ function isValidHexColor(hexColor: string) {
   ).test(hexColor);
 }
 
-export const parseBoolean = (value: string | undefined): boolean | undefined => {
-  if (value === 'true') {
-    return true;
-  } else if (value === 'false') {
-    return false;
-  } else if (value === undefined || value === null) {
-    return undefined;
-  } else {
-    return Boolean(value);
-  }
-};
-
-export const parseArray = (str: string | undefined): string[] => {
-  if (!str) return [];
-  if (typeof str !== 'string') return [];
-  return str.split(',');
-};
-
 /**
  * @param {number} number
  * @param {number} min
@@ -149,7 +131,7 @@ export const flexLayout = ({
     if (direction === 'column') {
       transform = `translate(0, ${lastSize})`;
     }
-    lastSize += ((size as number) + gap) as number;
+    lastSize += size + gap;
     return `<g transform="${transform}">${item}</g>`;
   });
 };
@@ -174,43 +156,37 @@ export const getCardColors = ({
   icon_color,
   bg_color,
   border_color,
-  theme,
-  fallbackTheme = 'default',
+  theme: themeName,
 }: {
   title_color?: string;
   text_color?: string;
   icon_color?: string;
   bg_color?: string;
   border_color?: string;
-  theme: ThemeNames | string;
-  fallbackTheme?: ThemeNames;
+  theme: ThemeNames;
 }) => {
-  const defaultTheme: Theme = themes[fallbackTheme];
-  const selectedTheme: Theme = themes[theme as ThemeNames] || defaultTheme;
-  const defaultBorderColor = selectedTheme.border_color || defaultTheme.border_color;
+  const theme: Theme = themes[themeName];
+  const defaultTheme = themes['default'];
 
   // get the color provided by the user else the theme color
   // finally if both colors are invalid fallback to default theme
   const titleColor = fallbackColor(
-    title_color || selectedTheme.title_color,
+    title_color || theme.title_color,
     '#' + defaultTheme.title_color,
   );
   const iconColor = fallbackColor(
-    icon_color || selectedTheme.icon_color,
+    icon_color || theme.icon_color,
     '#' + defaultTheme.icon_color,
   );
   const textColor = fallbackColor(
-    text_color || selectedTheme.text_color,
+    text_color || theme.text_color,
     '#' + defaultTheme.text_color,
   );
-  const bgColor = fallbackColor(
-    bg_color || selectedTheme.bg_color,
-    '#' + defaultTheme.bg_color,
-  );
+  const bgColor = fallbackColor(bg_color || theme.bg_color, '#' + defaultTheme.bg_color);
 
   const borderColor = fallbackColor(
-    border_color || defaultBorderColor,
-    '#' + defaultBorderColor,
+    border_color || theme.border_color,
+    '#' + defaultTheme.border_color,
   );
 
   return { titleColor, iconColor, textColor, bgColor, borderColor };
@@ -218,40 +194,7 @@ export const getCardColors = ({
 
 export type CardColors = ReturnType<typeof getCardColors>;
 
-/**
- * @param {string} text
- * @param {number} width
- * @param {number} maxLines
- * @returns {string[]}
- */
-// function wrapTextMultiline(text, width = 59, maxLines = 3) {
-//   const fullWidthComma = '，';
-//   const encoded = encodeHTML(text);
-//   const isChinese = encoded.includes(fullWidthComma);
-
-//   let wrapped = [];
-
-//   if (isChinese) {
-//     wrapped = encoded.split(fullWidthComma); // Chinese full punctuation
-//   } else {
-//     wrapped = wrap(encoded, {
-//       width,
-//     }).split('\n'); // Split wrapped lines to get an array of lines
-//   }
-
-//   const lines = wrapped.map((line) => (line as string).trim()).slice(0, maxLines); // Only consider maxLines lines
-
-//   // Add "..." to the last line if the text exceeds maxLines
-//   if (wrapped.length > maxLines) {
-//     lines[maxLines - 1] += '...';
-//   }
-
-//   // Remove empty lines if text fits in less than maxLines lines
-//   const multiLineText = lines.filter(Boolean);
-//   return multiLineText;
-// }
-
-export const CONSTANTS = {
+export const TIMES_S = {
   THIRTY_MINUTES: 1800,
   TWO_HOURS: 7200,
   FOUR_HOURS: 14400,
