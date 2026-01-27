@@ -8,10 +8,18 @@ jobs:
         with:
           username: Atry
           output-file: github-contributor-stats.svg
-          columns:
-            - name: star_rank
-            - name: contribution_rank
-              hide: B
-            - name: commits
-              minimum: 2
+          columns: >
+            [
+              {
+                "name": "star_rank"
+              },
+              {
+                "name": "contribution_rank",
+                "hide": "B"
+              },
+              {
+                "name": "commits",
+                "minimum": 2
+              }
+            ]
           combine-all-yearly-contributions: true
