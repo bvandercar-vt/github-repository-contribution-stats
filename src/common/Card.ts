@@ -24,6 +24,8 @@ export function renderCard({
   body: string;
   columns: Array<{ column: ColumnName; width: number }>;
   /**
+   * Note: Minimum width will be adjusted based on title length
+   * Note: Padding will be added to the width
    * @default 100
    */
   width?: number;
@@ -200,7 +202,7 @@ export function renderCard({
     ? { title: '', titleWidth: 0 }
     : renderTitle();
   width = Math.max(width, titleWidth);
-  width += paddingX;
+  width += paddingX * 2;
 
   return `
       <svg
