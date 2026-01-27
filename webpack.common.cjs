@@ -25,6 +25,9 @@ module.exports = {
       util: require.resolve('util'),
     },
   },
+  optimization: {
+    minimize: false,
+  },
   module: {
     rules: [
       {
