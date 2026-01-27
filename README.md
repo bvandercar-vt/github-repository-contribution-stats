@@ -91,7 +91,7 @@ Use `&theme=THEME_NAME` parameter like so :-
 
 dark, radical, merko, gruvbox, tokyonight, onedark, cobalt, synthwave, highcontrast, dracula
 
-You can look at a preview for [all available themes](./themes/README.md) or checkout the [theme config file](./themes/index.js) & **you can also contribute new themes** if you like :D
+You can look at a preview for [all available themes](./themes/README.md) or checkout the [theme config file](./themes/index.ts) & **you can also contribute new themes** if you like :D
 
 > Note: The minimum of cache_seconds is currently 4 hours as a temporary fix for PATs exhaustion.
 

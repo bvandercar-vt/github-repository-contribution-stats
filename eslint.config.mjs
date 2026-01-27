@@ -38,7 +38,7 @@ export default defineConfig(
   {
     // Global ignores
     ignores: [
-      'index.js', // built by webpack
+      'index.*js', // built by webpack
       '**/dist/**',
       'node_modules/**',
     ],

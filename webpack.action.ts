@@ -1,11 +1,16 @@
-const path = require('path');
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const TsconfigPathsWebpackPlugin = require('tsconfig-paths-webpack-plugin');
+import TsconfigPathsWebpackPlugin from 'tsconfig-paths-webpack-plugin';
+import type webpack from 'webpack';
 
-module.exports = {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const config: webpack.Configuration = {
   output: {
-    path: path.resolve(__dirname),
-    filename: 'index.js',
+    path: path.resolve(__dirname, 'action', 'dist'),
+    filename: 'index.cjs',
   },
   target: 'node',
   stats: {
@@ -13,17 +18,14 @@ module.exports = {
     errorDetails: true,
     errorStack: true,
   },
-  mode: 'development',
+  mode: 'production',
   entry: {
-    index: './api/main.ts',
+    index: './action/src/index.ts',
   },
   devtool: 'source-map',
   resolve: {
     extensions: ['.ts', '.js'],
     plugins: [new TsconfigPathsWebpackPlugin()],
-    fallback: {
-      util: require.resolve('util'),
-    },
   },
   optimization: {
     minimize: false,
@@ -49,3 +51,5 @@ module.exports = {
   },
   ignoreWarnings: [/Failed to parse source map/],
 };
+
+export default config;

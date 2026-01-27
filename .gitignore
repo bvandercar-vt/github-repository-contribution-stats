@@ -12,7 +12,8 @@
 # production
 /build
 /main
-index.js.map
+*.map
+
 # misc
 .DS_Store
 .env
@@ -34,6 +35,3 @@ release
 
 # output
 output
-
-# action build artifacts (keep action/dist/ for GitHub Action)
-action/dist/*.map

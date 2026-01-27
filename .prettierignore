@@ -3,7 +3,7 @@
 package-lock.json
 yarn.lock.json
 # output by webpack
-/index.js
+/index.*js
 
 # too many changes right now, can uncomment and review changes if wanted
 action/README.md
