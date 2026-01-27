@@ -49065,8 +49065,8 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
     }
     const allCellWidths = [];
     const calculatedStats = contributorStats
-        .map(({ url, name, stargazerCount, numContributedCommits, numContributedPrs }, index) => {
-        if (exclude.some((pattern) => (0,_common_utils__WEBPACK_IMPORTED_MODULE_3__.matchWildcard)(name, pattern))) {
+        .map(({ url, name, nameWithOwner, stargazerCount, numContributedCommits, numContributedPrs, }, index) => {
+        if (exclude.some((pattern) => (0,_common_utils__WEBPACK_IMPORTED_MODULE_3__.matchWildcard)(nameWithOwner, pattern))) {
             return undefined;
         }
         for (const [given, minimum] of [
