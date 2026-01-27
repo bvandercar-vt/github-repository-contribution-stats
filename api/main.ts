@@ -2,11 +2,11 @@ import compression from 'compression';
 import express from 'express';
 import { z } from 'zod';
 
-import { renderContributorStatsCard } from '@/cards/stats-card';
 import { commonInputSchema, mergeHideIntoColumnCriteria } from '@/common/schema';
 import { clampValue, TIMES_S, CustomError, renderError } from '@/common/utils';
 import { fetchAllContributorStats } from '@/fetchAllContributorStats';
 import { fetchContributorStats } from '@/fetchContributorStats';
+import { renderContributorStatsCard } from '@/svg-rendering/stats-card';
 import { isLocaleAvailable } from '@/translations';
 
 // Query parameter validation schema

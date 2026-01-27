@@ -1,5 +1,5 @@
 import { mockYamlParse } from '../__helpers__/mock_yaml_parse';
-import { parseInputs, type ValidatedInputs } from '../parse-input';
+import { parseInputs, type ValidatedInputs } from '../parseInputs';
 
 const fixturesFolder = `${__dirname}/../__fixtures__`;
 

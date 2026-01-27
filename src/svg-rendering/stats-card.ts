@@ -1,36 +1,20 @@
 import { type ThemeNames } from '../../themes';
 
-import { calculateStarsRank, calculateContributionsRank, ranks } from '@/calculateRank';
-import { renderCard } from '@/common/Card';
+import { ranks } from '@/calculateRank';
 import { I18n } from '@/common/I18n';
 import type { ColumnCriteria } from '@/common/schema';
 import { type ColumnName, type OrderByOptions } from '@/common/schema';
-import {
-  clampValue,
-  flexLayout,
-  getCardColors,
-  getImageBase64FromURL,
-  measureText,
-  getColumnCriteria,
-  matchWildcard,
-} from '@/common/utils';
-import { fetchContributors, type Contributor } from '@/fetchContributors';
-import { type Repository } from '@/fetchContributorStats';
+import { clampValue, flexLayout, getCardColors, measureText } from '@/common/utils';
+import { fetchContributors } from '@/fetchContributors';
 import { getStyles } from '@/getStyles';
+import type { ContributionsStats, ContributorFetcher } from '@/processStats';
+import { processStats } from '@/processStats';
+import { renderCard } from '@/svg-rendering/_outer_card';
 import { statCardLocales } from '@/translations';
-
-const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
-
-// Type for custom contributor fetcher function
-export type ContributorFetcher = (
-  username: string,
-  nameWithOwner: string,
-  token: string,
-) => Promise<Contributor[]>;
 
 let maxWidth = 0;
 
-const createRow = ({
+const renderRow = ({
   imageBase64,
   name,
   valueCells: valueCellCriteria,
@@ -107,14 +91,6 @@ const createRow = ({
   };
 };
 
-export type ContributionsStats = Pick<
-  Repository,
-  'name' | 'owner' | 'nameWithOwner' | 'url' | 'stargazerCount'
-> & {
-  numContributedCommits?: number;
-  numContributedPrs?: number;
-};
-
 export const renderContributorStatsCard = async (
   username: string,
   name: string,
@@ -178,6 +154,15 @@ export const renderContributorStatsCard = async (
     contributor_fetcher?: ContributorFetcher;
   } = {},
 ) => {
+  const calculatedStats = await processStats(contributorStats, {
+    username,
+    columns,
+    order_by,
+    limit,
+    exclude,
+    contributor_fetcher,
+  });
+
   const lheight = parseInt(String(line_height), 10);
 
   // returns theme based colors with proper overrides and defaults
@@ -196,99 +181,7 @@ export const renderContributorStatsCard = async (
     translations: statCardLocales({ name, apostrophe }),
   });
 
-  const imageBase64s = await Promise.all(
-    Object.values(contributorStats).map((contributorStat) => {
-      const url = new URL(contributorStat.owner.avatarUrl);
-      url.searchParams.append('s', '50');
-      return getImageBase64FromURL(url.toString());
-    }),
-  );
-
-  const starRankCriteria = getColumnCriteria(columns, 'star_rank');
-  const contributorRankCriteria = getColumnCriteria(columns, 'contribution_rank');
-  const commitsCriteria = getColumnCriteria(columns, 'commits');
-  const pullRequestsCriteria = getColumnCriteria(columns, 'pull_requests');
-
-  let allContributorsByRepo: Contributor[][];
-  if (contributorRankCriteria) {
-    // Fetch sequentially to respect rate limiting (not in parallel with Promise.all)
-    allContributorsByRepo = [];
-    for (const { nameWithOwner } of Object.values(contributorStats)) {
-      const contributors = await contributor_fetcher(username, nameWithOwner, token!);
-      allContributorsByRepo.push(contributors);
-    }
-  }
-
   const allCellWidths: number[][] = [];
-  const calculatedStats = contributorStats
-    .map(
-      (
-        {
-          url,
-          name,
-          nameWithOwner,
-          stargazerCount,
-          numContributedCommits,
-          numContributedPrs,
-        },
-        index,
-      ) => {
-        if (exclude.some((pattern) => matchWildcard(nameWithOwner, pattern))) {
-          return undefined;
-        }
-
-        for (const [given, minimum] of [
-          [numContributedCommits, commitsCriteria?.minimum],
-          [numContributedPrs, pullRequestsCriteria?.minimum],
-        ] as const) {
-          if (minimum !== undefined && given !== undefined && given < minimum) {
-            return undefined;
-          }
-        }
-
-        const contributionRank =
-          contributorRankCriteria && numContributedCommits !== undefined
-            ? calculateContributionsRank(
-                name,
-                allContributorsByRepo[index],
-                numContributedCommits,
-              )
-            : undefined;
-
-        if (
-          contributionRank &&
-          contributorRankCriteria?.hide.includes(contributionRank)
-        ) {
-          return undefined;
-        }
-
-        const starRank = starRankCriteria
-          ? calculateStarsRank(stargazerCount)
-          : undefined;
-
-        if (starRank && starRankCriteria?.hide.includes(starRank)) {
-          return undefined;
-        }
-
-        return {
-          name,
-          imageBase64: imageBase64s[index],
-          url,
-          contributionRank,
-          numContributedCommits,
-          numStars: stargazerCount,
-          numContributedPrs,
-          starRank,
-        };
-      },
-    )
-    .filter((s): s is Exclude<typeof s, undefined> => s !== undefined)
-    .sort((a, b) =>
-      order_by == 'stars'
-        ? b.numStars - a.numStars
-        : (b.numContributedCommits ?? 0) - (a.numContributedCommits ?? 0),
-    )
-    .slice(0, limit > 0 ? limit : undefined);
 
   const statRows = calculatedStats.map((stat, index) => {
     const columnValsMap = {
@@ -299,7 +192,7 @@ export const renderContributorStatsCard = async (
     } satisfies Record<ColumnName, string | undefined>;
 
     // create the text nodes, and pass index so that we can calculate the line spacing
-    const { content, cellWidths } = createRow({
+    const { content, cellWidths } = renderRow({
       ...stat,
       index,
       valueCells: columns.map((c) => columnValsMap[c.name]),

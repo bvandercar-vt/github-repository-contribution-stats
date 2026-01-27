@@ -1,4 +1,4 @@
-import { type ColumnName } from './schema';
+import { type ColumnName } from '../common/schema';
 
 import { type CardColors, encodeHTML, flexLayout, measureText } from '@/common/utils';
 import { getAnimations } from '@/getStyles';
