@@ -1,7 +1,11 @@
 import axios from 'axios';
 import _ from 'lodash';
 
-import type { Repository, UserResponse } from './fetchContributorStats';
+import {
+  repositoryQuery,
+  type Repository,
+  type UserResponse,
+} from './fetchContributorStats';
 
 const MAX_REPOS_PER_QUERY = 100;
 
@@ -10,11 +14,19 @@ interface TimeRange {
   to: string;
 }
 
-interface RepoContribution {
-  nameWithOwner: string;
+export type ContributionsByRepository = {
+  contributions: { totalCount: number };
   repository: Repository;
-  contributions: number;
-}
+};
+
+export type ContributionResponse = {
+  commitContributionsByRepository: ContributionsByRepository[];
+  pullRequestContributionsByRepository: ContributionsByRepository[];
+};
+
+export type UserContributionsResponse = UserResponse<{
+  contributionsCollection: ContributionResponse;
+}>;
 
 /**
  * Fetch contributions for a specific time range
@@ -22,18 +34,9 @@ interface RepoContribution {
 async function fetchContributionsForRange(
   username: string,
   range: TimeRange,
-): Promise<RepoContribution[]> {
+): Promise<ContributionResponse> {
   const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
-  const response = await axios.post<
-    UserResponse<{
-      contributionsCollection: {
-        commitContributionsByRepository: Array<{
-          contributions: { totalCount: number };
-          repository: Repository;
-        }>;
-      };
-    }>
-  >(
+  const response = await axios.post<UserContributionsResponse>(
     'https://api.github.com/graphql',
     {
       query: `query {
@@ -44,26 +47,15 @@ async function fetchContributionsForRange(
                 totalCount
               }
               repository {
-                owner {
-                  id
-                  avatarUrl
-                }
-                isInOrganization
-                url
-                homepageUrl
-                name
-                nameWithOwner
-                stargazerCount
-                openGraphImageUrl
-                defaultBranchRef {
-                  target {
-                    ... on Commit {
-                      history {
-                        totalCount
-                      }
-                    }
-                  }
-                }
+                ${repositoryQuery}
+              }
+            }
+            pullRequestContributionsByRepository(maxRepositories: ${MAX_REPOS_PER_QUERY}) {
+              contributions {
+                totalCount
+              }
+              repository {
+                ${repositoryQuery}
               }
             }
           }
@@ -78,14 +70,7 @@ async function fetchContributionsForRange(
     },
   );
 
-  const commitContributionsByRepository =
-    response.data.data.user.contributionsCollection.commitContributionsByRepository;
-
-  return commitContributionsByRepository.map(({ contributions, repository }) => ({
-    nameWithOwner: repository.nameWithOwner,
-    repository,
-    contributions: contributions.totalCount,
-  }));
+  return response.data.data.user.contributionsCollection;
 }
 
 /**
@@ -145,11 +130,15 @@ async function fetchContributionsWithSplitting(
   username: string,
   range: TimeRange,
   depth: number = 0,
-): Promise<RepoContribution[]> {
+): Promise<ContributionResponse> {
   const results = await fetchContributionsForRange(username, range);
 
   // If we hit the limit and can split further, split the range
-  if (results.length >= MAX_REPOS_PER_QUERY && depth < 4) {
+  if (
+    (results.pullRequestContributionsByRepository.length >= MAX_REPOS_PER_QUERY ||
+      results.commitContributionsByRepository.length >= MAX_REPOS_PER_QUERY) &&
+    depth < 4
+  ) {
     const subRanges = splitTimeRange(range);
 
     // If we can't split further, just return what we have
@@ -164,11 +153,26 @@ async function fetchContributionsWithSplitting(
       ),
     );
 
-    return subResults.flat();
+    return {
+      commitContributionsByRepository: subResults.flatMap(
+        (c) => c.commitContributionsByRepository,
+      ),
+      pullRequestContributionsByRepository: subResults.flatMap(
+        (c) => c.pullRequestContributionsByRepository,
+      ),
+    };
   }
 
   return results;
 }
+
+export type UserContributorStatsResponse = UserResponse<{
+  id: string;
+  name: string;
+  contributionsCollection: {
+    contributionYears: number[];
+  };
+}>;
 
 /**
  * The Fetch All Contributor Stats Function.
@@ -194,15 +198,7 @@ export async function fetchAllContributorStats(username: string) {
         },
       },
     },
-  } = await axios.post<
-    UserResponse<{
-      id: string;
-      name: string;
-      contributionsCollection: {
-        contributionYears: number[];
-      };
-    }>
-  >(
+  } = await axios.post<UserContributorStatsResponse>(
     'https://api.github.com/graphql',
     {
       query: `query {
@@ -237,22 +233,37 @@ export async function fetchAllContributorStats(username: string) {
   const allContributions = yearlyContributions.flat();
 
   // Group by repository and sum contributions
-  const nodes = _.chain(allContributions)
-    .groupBy('nameWithOwner')
-    .map((contributions) => {
-      const totalCount = _.sumBy(contributions, 'contributions');
-      return {
-        ...contributions[0].repository,
-        numContributions: totalCount,
-      };
-    })
-    .value();
+  const getStatsByName = (items: ContributionsByRepository[]) =>
+    _.chain(items)
+      .groupBy((item) => item.repository.nameWithOwner)
+      .map((contributions) => {
+        const totalCount = _.sumBy(contributions, (c) => c.contributions.totalCount);
+        return {
+          ...contributions[0].repository,
+          numContributions: totalCount,
+        };
+      })
+      .value();
+
+  const commitsRepositories = getStatsByName(
+    allContributions.flatMap((c) => c.commitContributionsByRepository),
+  );
+
+  const pullRequestsRepositories = getStatsByName(
+    allContributions.flatMap((c) => c.pullRequestContributionsByRepository),
+  );
 
   return {
     id,
     name,
     repositoriesContributedTo: {
-      nodes,
+      nodes: commitsRepositories.map((repo) => ({
+        ...repo,
+        numContributedCommits: repo.numContributions,
+        numContributedPrs: pullRequestsRepositories.find(
+          (prRepo) => prRepo.nameWithOwner === repo.nameWithOwner,
+        )?.numContributions,
+      })),
     },
   };
 }

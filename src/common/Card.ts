@@ -144,6 +144,7 @@ export function renderCard({
       contribution_rank: { icon: gitPRIcon, title: 'Contribution Rank' },
       star_rank: { icon: starIcon, title: 'Star Rank' },
       commits: { icon: commitsIcon, title: 'Commits' },
+      pull_requests: { icon: gitPRIcon, title: 'Pull Requests' },
     } satisfies Record<ColumnName, { icon: string; title?: string }>;
 
     return `

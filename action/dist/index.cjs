@@ -22,36 +22,68 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.issue = exports.issueCommand = void 0;
+exports.issueCommand = issueCommand;
+exports.issue = issue;
 const os = __importStar(__webpack_require__(2037));
 const utils_1 = __webpack_require__(4570);
 /**
- * Commands
+ * Issues a command to the GitHub Actions runner
+ *
+ * @param command - The command name to issue
+ * @param properties - Additional properties for the command (key-value pairs)
+ * @param message - The message to include with the command
+ * @remarks
+ * This function outputs a specially formatted string to stdout that the Actions
+ * runner interprets as a command. These commands can control workflow behavior,
+ * set outputs, create annotations, mask values, and more.
  *
  * Command Format:
  *   ::name key=value,key=value::message
  *
- * Examples:
- *   ::warning::This is the message
- *   ::set-env name=MY_VAR::some value
+ * @example
+ * ```typescript
+ * // Issue a warning annotation
+ * issueCommand('warning', {}, 'This is a warning message');
+ * // Output: ::warning::This is a warning message
+ *
+ * // Set an environment variable
+ * issueCommand('set-env', { name: 'MY_VAR' }, 'some value');
+ * // Output: ::set-env name=MY_VAR::some value
+ *
+ * // Add a secret mask
+ * issueCommand('add-mask', {}, 'secretValue123');
+ * // Output: ::add-mask::secretValue123
+ * ```
+ *
+ * @internal
+ * This is an internal utility function that powers the public API functions
+ * such as setSecret, warning, error, and exportVariable.
  */
 function issueCommand(command, properties, message) {
     const cmd = new Command(command, properties, message);
     process.stdout.write(cmd.toString() + os.EOL);
 }
-exports.issueCommand = issueCommand;
 function issue(name, message = '') {
     issueCommand(name, {}, message);
 }
-exports.issue = issue;
 const CMD_STRING = '::';
 class Command {
     constructor(command, properties, message) {
@@ -125,13 +157,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -142,7 +184,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.platform = exports.toPlatformPath = exports.toWin32Path = exports.toPosixPath = exports.markdownSummary = exports.summary = exports.getIDToken = exports.getState = exports.saveState = exports.group = exports.endGroup = exports.startGroup = exports.info = exports.notice = exports.warning = exports.error = exports.debug = exports.isDebug = exports.setFailed = exports.setCommandEcho = exports.setOutput = exports.getBooleanInput = exports.getMultilineInput = exports.getInput = exports.addPath = exports.setSecret = exports.exportVariable = exports.ExitCode = void 0;
+exports.platform = exports.toPlatformPath = exports.toWin32Path = exports.toPosixPath = exports.markdownSummary = exports.summary = exports.ExitCode = void 0;
+exports.exportVariable = exportVariable;
+exports.setSecret = setSecret;
+exports.addPath = addPath;
+exports.getInput = getInput;
+exports.getMultilineInput = getMultilineInput;
+exports.getBooleanInput = getBooleanInput;
+exports.setOutput = setOutput;
+exports.setCommandEcho = setCommandEcho;
+exports.setFailed = setFailed;
+exports.isDebug = isDebug;
+exports.debug = debug;
+exports.error = error;
+exports.warning = warning;
+exports.notice = notice;
+exports.info = info;
+exports.startGroup = startGroup;
+exports.endGroup = endGroup;
+exports.group = group;
+exports.saveState = saveState;
+exports.getState = getState;
+exports.getIDToken = getIDToken;
 const command_1 = __webpack_require__(5265);
 const file_command_1 = __webpack_require__(3108);
 const utils_1 = __webpack_require__(4570);
@@ -181,15 +244,38 @@ function exportVariable(name, val) {
     }
     (0, command_1.issueCommand)('set-env', { name }, convertedVal);
 }
-exports.exportVariable = exportVariable;
 /**
  * Registers a secret which will get masked from logs
- * @param secret value of the secret
+ *
+ * @param secret - Value of the secret to be masked
+ * @remarks
+ * This function instructs the Actions runner to mask the specified value in any
+ * logs produced during the workflow run. Once registered, the secret value will
+ * be replaced with asterisks (***) whenever it appears in console output, logs,
+ * or error messages.
+ *
+ * This is useful for protecting sensitive information such as:
+ * - API keys
+ * - Access tokens
+ * - Authentication credentials
+ * - URL parameters containing signatures (SAS tokens)
+ *
+ * Note that masking only affects future logs; any previous appearances of the
+ * secret in logs before calling this function will remain unmasked.
+ *
+ * @example
+ * ```typescript
+ * // Register an API token as a secret
+ * const apiToken = "abc123xyz456";
+ * setSecret(apiToken);
+ *
+ * // Now any logs containing this value will show *** instead
+ * console.log(`Using token: ${apiToken}`); // Outputs: "Using token: ***"
+ * ```
  */
 function setSecret(secret) {
     (0, command_1.issueCommand)('add-mask', {}, secret);
 }
-exports.setSecret = setSecret;
 /**
  * Prepends inputPath to the PATH (for this action and future actions)
  * @param inputPath
@@ -204,7 +290,6 @@ function addPath(inputPath) {
     }
     process.env['PATH'] = `${inputPath}${path.delimiter}${process.env['PATH']}`;
 }
-exports.addPath = addPath;
 /**
  * Gets the value of an input.
  * Unless trimWhitespace is set to false in InputOptions, the value is also trimmed.
@@ -224,7 +309,6 @@ function getInput(name, options) {
     }
     return val.trim();
 }
-exports.getInput = getInput;
 /**
  * Gets the values of an multiline input.  Each value is also trimmed.
  *
@@ -242,7 +326,6 @@ function getMultilineInput(name, options) {
     }
     return inputs.map(input => input.trim());
 }
-exports.getMultilineInput = getMultilineInput;
 /**
  * Gets the input value of the boolean type in the YAML 1.2 "core schema" specification.
  * Support boolean input list: `true | True | TRUE | false | False | FALSE` .
@@ -264,7 +347,6 @@ function getBooleanInput(name, options) {
     throw new TypeError(`Input does not meet YAML 1.2 "Core Schema" specification: ${name}\n` +
         `Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
 }
-exports.getBooleanInput = getBooleanInput;
 /**
  * Sets the value of an output.
  *
@@ -280,7 +362,6 @@ function setOutput(name, value) {
     process.stdout.write(os.EOL);
     (0, command_1.issueCommand)('set-output', { name }, (0, utils_1.toCommandValue)(value));
 }
-exports.setOutput = setOutput;
 /**
  * Enables or disables the echoing of commands into stdout for the rest of the step.
  * Echoing is disabled by default if ACTIONS_STEP_DEBUG is not set.
@@ -289,7 +370,6 @@ exports.setOutput = setOutput;
 function setCommandEcho(enabled) {
     (0, command_1.issue)('echo', enabled ? 'on' : 'off');
 }
-exports.setCommandEcho = setCommandEcho;
 //-----------------------------------------------------------------------
 // Results
 //-----------------------------------------------------------------------
@@ -302,7 +382,6 @@ function setFailed(message) {
     process.exitCode = ExitCode.Failure;
     error(message);
 }
-exports.setFailed = setFailed;
 //-----------------------------------------------------------------------
 // Logging Commands
 //-----------------------------------------------------------------------
@@ -312,7 +391,6 @@ exports.setFailed = setFailed;
 function isDebug() {
     return process.env['RUNNER_DEBUG'] === '1';
 }
-exports.isDebug = isDebug;
 /**
  * Writes debug message to user log
  * @param message debug message
@@ -320,7 +398,6 @@ exports.isDebug = isDebug;
 function debug(message) {
     (0, command_1.issueCommand)('debug', {}, message);
 }
-exports.debug = debug;
 /**
  * Adds an error issue
  * @param message error issue message. Errors will be converted to string via toString()
@@ -329,7 +406,6 @@ exports.debug = debug;
 function error(message, properties = {}) {
     (0, command_1.issueCommand)('error', (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
 }
-exports.error = error;
 /**
  * Adds a warning issue
  * @param message warning issue message. Errors will be converted to string via toString()
@@ -338,7 +414,6 @@ exports.error = error;
 function warning(message, properties = {}) {
     (0, command_1.issueCommand)('warning', (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
 }
-exports.warning = warning;
 /**
  * Adds a notice issue
  * @param message notice issue message. Errors will be converted to string via toString()
@@ -347,7 +422,6 @@ exports.warning = warning;
 function notice(message, properties = {}) {
     (0, command_1.issueCommand)('notice', (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
 }
-exports.notice = notice;
 /**
  * Writes info to log with console.log.
  * @param message info message
@@ -355,7 +429,6 @@ exports.notice = notice;
 function info(message) {
     process.stdout.write(message + os.EOL);
 }
-exports.info = info;
 /**
  * Begin an output group.
  *
@@ -366,14 +439,12 @@ exports.info = info;
 function startGroup(name) {
     (0, command_1.issue)('group', name);
 }
-exports.startGroup = startGroup;
 /**
  * End an output group.
  */
 function endGroup() {
     (0, command_1.issue)('endgroup');
 }
-exports.endGroup = endGroup;
 /**
  * Wrap an asynchronous function call in a group.
  *
@@ -395,7 +466,6 @@ function group(name, fn) {
         return result;
     });
 }
-exports.group = group;
 //-----------------------------------------------------------------------
 // Wrapper action state
 //-----------------------------------------------------------------------
@@ -413,7 +483,6 @@ function saveState(name, value) {
     }
     (0, command_1.issueCommand)('save-state', { name }, (0, utils_1.toCommandValue)(value));
 }
-exports.saveState = saveState;
 /**
  * Gets the value of an state set by this action's main execution.
  *
@@ -423,13 +492,11 @@ exports.saveState = saveState;
 function getState(name) {
     return process.env[`STATE_${name}`] || '';
 }
-exports.getState = getState;
 function getIDToken(aud) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield oidc_utils_1.OidcClient.getIDToken(aud);
     });
 }
-exports.getIDToken = getIDToken;
 /**
  * Summary exports
  */
@@ -477,15 +544,26 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.prepareKeyValueMessage = exports.issueFileCommand = void 0;
+exports.issueFileCommand = issueFileCommand;
+exports.prepareKeyValueMessage = prepareKeyValueMessage;
 // We use any as a valid input type
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const crypto = __importStar(__webpack_require__(6113));
@@ -504,7 +582,6 @@ function issueFileCommand(command, message) {
         encoding: 'utf8'
     });
 }
-exports.issueFileCommand = issueFileCommand;
 function prepareKeyValueMessage(key, value) {
     const delimiter = `ghadelimiter_${crypto.randomUUID()}`;
     const convertedValue = (0, utils_1.toCommandValue)(value);
@@ -519,7 +596,6 @@ function prepareKeyValueMessage(key, value) {
     }
     return `${key}<<${delimiter}${os.EOL}${convertedValue}${os.EOL}${delimiter}`;
 }
-exports.prepareKeyValueMessage = prepareKeyValueMessage;
 //# sourceMappingURL=file-command.js.map
 
 /***/ }),
@@ -566,8 +642,8 @@ class OidcClient {
         return runtimeUrl;
     }
     static getCall(id_token_url) {
-        var _a;
         return __awaiter(this, void 0, void 0, function* () {
+            var _a;
             const httpclient = OidcClient.createHttpClient();
             const res = yield httpclient
                 .getJson(id_token_url)
@@ -629,15 +705,27 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.toPlatformPath = exports.toWin32Path = exports.toPosixPath = void 0;
+exports.toPosixPath = toPosixPath;
+exports.toWin32Path = toWin32Path;
+exports.toPlatformPath = toPlatformPath;
 const path = __importStar(__webpack_require__(1017));
 /**
  * toPosixPath converts the given path to the posix form. On Windows, \\ will be
@@ -649,7 +737,6 @@ const path = __importStar(__webpack_require__(1017));
 function toPosixPath(pth) {
     return pth.replace(/[\\]/g, '/');
 }
-exports.toPosixPath = toPosixPath;
 /**
  * toWin32Path converts the given path to the win32 form. On Linux, / will be
  * replaced with \\.
@@ -660,7 +747,6 @@ exports.toPosixPath = toPosixPath;
 function toWin32Path(pth) {
     return pth.replace(/[/]/g, '\\');
 }
-exports.toWin32Path = toWin32Path;
 /**
  * toPlatformPath converts the given path to a platform-specific path. It does
  * this by replacing instances of / and \ with the platform-specific path
@@ -672,7 +758,6 @@ exports.toWin32Path = toWin32Path;
 function toPlatformPath(pth) {
     return pth.replace(/[/\\]/g, path.sep);
 }
-exports.toPlatformPath = toPlatformPath;
 //# sourceMappingURL=path-utils.js.map
 
 /***/ }),
@@ -698,13 +783,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -718,7 +813,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getDetails = exports.isLinux = exports.isMacOS = exports.isWindows = exports.arch = exports.platform = void 0;
+exports.isLinux = exports.isMacOS = exports.isWindows = exports.arch = exports.platform = void 0;
+exports.getDetails = getDetails;
 const os_1 = __importDefault(__webpack_require__(2037));
 const exec = __importStar(__webpack_require__(27));
 const getWindowsInfo = () => __awaiter(void 0, void 0, void 0, function* () {
@@ -773,7 +869,6 @@ function getDetails() {
             isLinux: exports.isLinux });
     });
 }
-exports.getDetails = getDetails;
 //# sourceMappingURL=platform.js.map
 
 /***/ }),
@@ -1076,7 +1171,8 @@ exports.summary = _summary;
 // We use any as a valid input type
 /* eslint-disable @typescript-eslint/no-explicit-any */
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.toCommandProperties = exports.toCommandValue = void 0;
+exports.toCommandValue = toCommandValue;
+exports.toCommandProperties = toCommandProperties;
 /**
  * Sanitizes an input into a string so it can be passed into issueCommand safely
  * @param input input to sanitize into a string
@@ -1090,7 +1186,6 @@ function toCommandValue(input) {
     }
     return JSON.stringify(input);
 }
-exports.toCommandValue = toCommandValue;
 /**
  *
  * @param annotationProperties
@@ -1110,7 +1205,6 @@ function toCommandProperties(annotationProperties) {
         endColumn: annotationProperties.endColumn
     };
 }
-exports.toCommandProperties = toCommandProperties;
 //# sourceMappingURL=utils.js.map
 
 /***/ }),
@@ -1122,7 +1216,11 @@ exports.toCommandProperties = toCommandProperties;
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -1132,13 +1230,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -1149,7 +1257,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getExecOutput = exports.exec = void 0;
+exports.exec = exec;
+exports.getExecOutput = getExecOutput;
 const string_decoder_1 = __webpack_require__(1576);
 const tr = __importStar(__webpack_require__(4171));
 /**
@@ -1175,7 +1284,6 @@ function exec(commandLine, args, options) {
         return runner.exec();
     });
 }
-exports.exec = exec;
 /**
  * Exec a command and get the output.
  * Output will be streamed to the live console.
@@ -1187,8 +1295,8 @@ exports.exec = exec;
  * @returns   Promise<ExecOutput>   exit code, stdout, and stderr
  */
 function getExecOutput(commandLine, args, options) {
-    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
+        var _a, _b;
         let stdout = '';
         let stderr = '';
         //Using string decoder covers the case where a mult-byte character is split
@@ -1220,7 +1328,6 @@ function getExecOutput(commandLine, args, options) {
         };
     });
 }
-exports.getExecOutput = getExecOutput;
 //# sourceMappingURL=exec.js.map
 
 /***/ }),
@@ -1232,7 +1339,11 @@ exports.getExecOutput = getExecOutput;
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -1242,13 +1353,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -1259,7 +1380,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.argStringToArray = exports.ToolRunner = void 0;
+exports.ToolRunner = void 0;
+exports.argStringToArray = argStringToArray;
 const os = __importStar(__webpack_require__(2037));
 const events = __importStar(__webpack_require__(2361));
 const child = __importStar(__webpack_require__(2081));
@@ -1491,10 +1613,7 @@ class ToolRunner extends events.EventEmitter {
             }
         }
         reverse += '"';
-        return reverse
-            .split('')
-            .reverse()
-            .join('');
+        return reverse.split('').reverse().join('');
     }
     _uvQuoteCmdArg(arg) {
         // Tool runner wraps child_process.spawn() and needs to apply the same quoting as
@@ -1570,10 +1689,7 @@ class ToolRunner extends events.EventEmitter {
             }
         }
         reverse += '"';
-        return reverse
-            .split('')
-            .reverse()
-            .join('');
+        return reverse.split('').reverse().join('');
     }
     _cloneExecOptions(options) {
         options = options || {};
@@ -1777,7 +1893,6 @@ function argStringToArray(argString) {
     }
     return args;
 }
-exports.argStringToArray = argStringToArray;
 class ExecState extends events.EventEmitter {
     constructor(options, toolPath) {
         super();
@@ -1806,7 +1921,7 @@ class ExecState extends events.EventEmitter {
             this._setResult();
         }
         else if (this.processExited) {
-            this.timeout = timers_1.setTimeout(ExecState.HandleTimeout, this.delay, this);
+            this.timeout = (0, timers_1.setTimeout)(ExecState.HandleTimeout, this.delay, this);
         }
     }
     _debug(message) {
@@ -1839,8 +1954,7 @@ class ExecState extends events.EventEmitter {
             return;
         }
         if (!state.processClosed && state.processExited) {
-            const message = `The STDIO streams did not close within ${state.delay /
-                1000} seconds of the exit event from process '${state.toolPath}'. This may indicate a child process inherited the STDIO streams and has not yet exited.`;
+            const message = `The STDIO streams did not close within ${state.delay / 1000} seconds of the exit event from process '${state.toolPath}'. This may indicate a child process inherited the STDIO streams and has not yet exited.`;
             state._debug(message);
         }
         state._setResult();
@@ -1960,13 +2074,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -1977,7 +2101,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.HttpClient = exports.isHttps = exports.HttpClientResponse = exports.HttpClientError = exports.getProxyUrl = exports.MediaTypes = exports.Headers = exports.HttpCodes = void 0;
+exports.HttpClient = exports.HttpClientResponse = exports.HttpClientError = exports.MediaTypes = exports.Headers = exports.HttpCodes = void 0;
+exports.getProxyUrl = getProxyUrl;
+exports.isHttps = isHttps;
 const http = __importStar(__webpack_require__(3685));
 const https = __importStar(__webpack_require__(5687));
 const pm = __importStar(__webpack_require__(7960));
@@ -2030,7 +2156,6 @@ function getProxyUrl(serverUrl) {
     const proxyUrl = pm.getProxyUrl(new URL(serverUrl));
     return proxyUrl ? proxyUrl.href : '';
 }
-exports.getProxyUrl = getProxyUrl;
 const HttpRedirectCodes = [
     HttpCodes.MovedPermanently,
     HttpCodes.ResourceMoved,
@@ -2091,7 +2216,6 @@ function isHttps(requestUrl) {
     const parsedUrl = new URL(requestUrl);
     return parsedUrl.protocol === 'https:';
 }
-exports.isHttps = isHttps;
 class HttpClient {
     constructor(userAgent, handlers, requestOptions) {
         this._ignoreSslError = false;
@@ -2102,7 +2226,7 @@ class HttpClient {
         this._maxRetries = 1;
         this._keepAlive = false;
         this._disposed = false;
-        this.userAgent = userAgent;
+        this.userAgent = this._getUserAgentWithOrchestrationId(userAgent);
         this.handlers = handlers || [];
         this.requestOptions = requestOptions;
         if (requestOptions) {
@@ -2174,36 +2298,39 @@ class HttpClient {
      * Gets a typed object from an endpoint
      * Be aware that not found returns a null.  Other errors (4xx, 5xx) reject the promise
      */
-    getJson(requestUrl, additionalHeaders = {}) {
-        return __awaiter(this, void 0, void 0, function* () {
+    getJson(requestUrl_1) {
+        return __awaiter(this, arguments, void 0, function* (requestUrl, additionalHeaders = {}) {
             additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
             const res = yield this.get(requestUrl, additionalHeaders);
             return this._processResponse(res, this.requestOptions);
         });
     }
-    postJson(requestUrl, obj, additionalHeaders = {}) {
-        return __awaiter(this, void 0, void 0, function* () {
+    postJson(requestUrl_1, obj_1) {
+        return __awaiter(this, arguments, void 0, function* (requestUrl, obj, additionalHeaders = {}) {
             const data = JSON.stringify(obj, null, 2);
             additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
-            additionalHeaders[Headers.ContentType] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.ContentType, MediaTypes.ApplicationJson);
+            additionalHeaders[Headers.ContentType] =
+                this._getExistingOrDefaultContentTypeHeader(additionalHeaders, MediaTypes.ApplicationJson);
             const res = yield this.post(requestUrl, data, additionalHeaders);
             return this._processResponse(res, this.requestOptions);
         });
     }
-    putJson(requestUrl, obj, additionalHeaders = {}) {
-        return __awaiter(this, void 0, void 0, function* () {
+    putJson(requestUrl_1, obj_1) {
+        return __awaiter(this, arguments, void 0, function* (requestUrl, obj, additionalHeaders = {}) {
             const data = JSON.stringify(obj, null, 2);
             additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
-            additionalHeaders[Headers.ContentType] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.ContentType, MediaTypes.ApplicationJson);
+            additionalHeaders[Headers.ContentType] =
+                this._getExistingOrDefaultContentTypeHeader(additionalHeaders, MediaTypes.ApplicationJson);
             const res = yield this.put(requestUrl, data, additionalHeaders);
             return this._processResponse(res, this.requestOptions);
         });
     }
-    patchJson(requestUrl, obj, additionalHeaders = {}) {
-        return __awaiter(this, void 0, void 0, function* () {
+    patchJson(requestUrl_1, obj_1) {
+        return __awaiter(this, arguments, void 0, function* (requestUrl, obj, additionalHeaders = {}) {
             const data = JSON.stringify(obj, null, 2);
             additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
-            additionalHeaders[Headers.ContentType] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.ContentType, MediaTypes.ApplicationJson);
+            additionalHeaders[Headers.ContentType] =
+                this._getExistingOrDefaultContentTypeHeader(additionalHeaders, MediaTypes.ApplicationJson);
             const res = yield this.patch(requestUrl, data, additionalHeaders);
             return this._processResponse(res, this.requestOptions);
         });
@@ -2432,12 +2559,73 @@ class HttpClient {
         }
         return lowercaseKeys(headers || {});
     }
+    /**
+     * Gets an existing header value or returns a default.
+     * Handles converting number header values to strings since HTTP headers must be strings.
+     * Note: This returns string | string[] since some headers can have multiple values.
+     * For headers that must always be a single string (like Content-Type), use the
+     * specialized _getExistingOrDefaultContentTypeHeader method instead.
+     */
     _getExistingOrDefaultHeader(additionalHeaders, header, _default) {
         let clientHeader;
         if (this.requestOptions && this.requestOptions.headers) {
-            clientHeader = lowercaseKeys(this.requestOptions.headers)[header];
+            const headerValue = lowercaseKeys(this.requestOptions.headers)[header];
+            if (headerValue) {
+                clientHeader =
+                    typeof headerValue === 'number' ? headerValue.toString() : headerValue;
+            }
         }
-        return additionalHeaders[header] || clientHeader || _default;
+        const additionalValue = additionalHeaders[header];
+        if (additionalValue !== undefined) {
+            return typeof additionalValue === 'number'
+                ? additionalValue.toString()
+                : additionalValue;
+        }
+        if (clientHeader !== undefined) {
+            return clientHeader;
+        }
+        return _default;
+    }
+    /**
+     * Specialized version of _getExistingOrDefaultHeader for Content-Type header.
+     * Always returns a single string (not an array) since Content-Type should be a single value.
+     * Converts arrays to comma-separated strings and numbers to strings to ensure type safety.
+     * This was split from _getExistingOrDefaultHeader to provide stricter typing for callers
+     * that assign the result to places expecting a string (e.g., additionalHeaders[Headers.ContentType]).
+     */
+    _getExistingOrDefaultContentTypeHeader(additionalHeaders, _default) {
+        let clientHeader;
+        if (this.requestOptions && this.requestOptions.headers) {
+            const headerValue = lowercaseKeys(this.requestOptions.headers)[Headers.ContentType];
+            if (headerValue) {
+                if (typeof headerValue === 'number') {
+                    clientHeader = String(headerValue);
+                }
+                else if (Array.isArray(headerValue)) {
+                    clientHeader = headerValue.join(', ');
+                }
+                else {
+                    clientHeader = headerValue;
+                }
+            }
+        }
+        const additionalValue = additionalHeaders[Headers.ContentType];
+        // Return the first non-undefined value, converting numbers or arrays to strings if necessary
+        if (additionalValue !== undefined) {
+            if (typeof additionalValue === 'number') {
+                return String(additionalValue);
+            }
+            else if (Array.isArray(additionalValue)) {
+                return additionalValue.join(', ');
+            }
+            else {
+                return additionalValue;
+            }
+        }
+        if (clientHeader !== undefined) {
+            return clientHeader;
+        }
+        return _default;
     }
     _getAgent(parsedUrl) {
         let agent;
@@ -2517,6 +2705,17 @@ class HttpClient {
             });
         }
         return proxyAgent;
+    }
+    _getUserAgentWithOrchestrationId(userAgent) {
+        const baseUserAgent = userAgent || 'actions/http-client';
+        const orchId = process.env['ACTIONS_ORCHESTRATION_ID'];
+        if (orchId) {
+            // Sanitize the orchestration ID to ensure it contains only valid characters
+            // Valid characters: 0-9, a-z, _, -, .
+            const sanitizedId = orchId.replace(/[^a-z0-9_.-]/gi, '_');
+            return `${baseUserAgent} actions_orchestration_id/${sanitizedId}`;
+        }
+        return baseUserAgent;
     }
     _performExponentialBackoff(retryNumber) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -2603,7 +2802,8 @@ const lowercaseKeys = (obj) => Object.keys(obj).reduce((c, k) => ((c[k.toLowerCa
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.checkBypass = exports.getProxyUrl = void 0;
+exports.getProxyUrl = getProxyUrl;
+exports.checkBypass = checkBypass;
 function getProxyUrl(reqUrl) {
     const usingSsl = reqUrl.protocol === 'https:';
     if (checkBypass(reqUrl)) {
@@ -2630,7 +2830,6 @@ function getProxyUrl(reqUrl) {
         return undefined;
     }
 }
-exports.getProxyUrl = getProxyUrl;
 function checkBypass(reqUrl) {
     if (!reqUrl.hostname) {
         return false;
@@ -2674,7 +2873,6 @@ function checkBypass(reqUrl) {
     }
     return false;
 }
-exports.checkBypass = checkBypass;
 function isLoopbackAddress(host) {
     const hostLower = host.toLowerCase();
     return (hostLower === 'localhost' ||
@@ -2706,7 +2904,11 @@ class DecodedURL extends URL {
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -2716,13 +2918,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -2734,21 +2946,49 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 var _a;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getCmdPath = exports.tryGetExecutablePath = exports.isRooted = exports.isDirectory = exports.exists = exports.READONLY = exports.UV_FS_O_EXLOCK = exports.IS_WINDOWS = exports.unlink = exports.symlink = exports.stat = exports.rmdir = exports.rm = exports.rename = exports.readlink = exports.readdir = exports.open = exports.mkdir = exports.lstat = exports.copyFile = exports.chmod = void 0;
+exports.READONLY = exports.UV_FS_O_EXLOCK = exports.IS_WINDOWS = exports.unlink = exports.symlink = exports.stat = exports.rmdir = exports.rm = exports.rename = exports.readdir = exports.open = exports.mkdir = exports.lstat = exports.copyFile = exports.chmod = void 0;
+exports.readlink = readlink;
+exports.exists = exists;
+exports.isDirectory = isDirectory;
+exports.isRooted = isRooted;
+exports.tryGetExecutablePath = tryGetExecutablePath;
+exports.getCmdPath = getCmdPath;
 const fs = __importStar(__webpack_require__(7147));
 const path = __importStar(__webpack_require__(1017));
 _a = fs.promises
 // export const {open} = 'fs'
-, exports.chmod = _a.chmod, exports.copyFile = _a.copyFile, exports.lstat = _a.lstat, exports.mkdir = _a.mkdir, exports.open = _a.open, exports.readdir = _a.readdir, exports.readlink = _a.readlink, exports.rename = _a.rename, exports.rm = _a.rm, exports.rmdir = _a.rmdir, exports.stat = _a.stat, exports.symlink = _a.symlink, exports.unlink = _a.unlink;
+, exports.chmod = _a.chmod, exports.copyFile = _a.copyFile, exports.lstat = _a.lstat, exports.mkdir = _a.mkdir, exports.open = _a.open, exports.readdir = _a.readdir, exports.rename = _a.rename, exports.rm = _a.rm, exports.rmdir = _a.rmdir, exports.stat = _a.stat, exports.symlink = _a.symlink, exports.unlink = _a.unlink;
 // export const {open} = 'fs'
 exports.IS_WINDOWS = process.platform === 'win32';
+/**
+ * Custom implementation of readlink to ensure Windows junctions
+ * maintain trailing backslash for backward compatibility with Node.js < 24
+ *
+ * In Node.js 20, Windows junctions (directory symlinks) always returned paths
+ * with trailing backslashes. Node.js 24 removed this behavior, which breaks
+ * code that relied on this format for path operations.
+ *
+ * This implementation restores the Node 20 behavior by adding a trailing
+ * backslash to all junction results on Windows.
+ */
+function readlink(fsPath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const result = yield fs.promises.readlink(fsPath);
+        // On Windows, restore Node 20 behavior: add trailing backslash to all results
+        // since junctions on Windows are always directory links
+        if (exports.IS_WINDOWS && !result.endsWith('\\')) {
+            return `${result}\\`;
+        }
+        return result;
+    });
+}
 // See https://github.com/nodejs/node/blob/d0153aee367422d0858105abec186da4dff0a0c5/deps/uv/include/uv/win.h#L691
 exports.UV_FS_O_EXLOCK = 0x10000000;
 exports.READONLY = fs.constants.O_RDONLY;
 function exists(fsPath) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            yield exports.stat(fsPath);
+            yield (0, exports.stat)(fsPath);
         }
         catch (err) {
             if (err.code === 'ENOENT') {
@@ -2759,14 +2999,12 @@ function exists(fsPath) {
         return true;
     });
 }
-exports.exists = exists;
-function isDirectory(fsPath, useStat = false) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const stats = useStat ? yield exports.stat(fsPath) : yield exports.lstat(fsPath);
+function isDirectory(fsPath_1) {
+    return __awaiter(this, arguments, void 0, function* (fsPath, useStat = false) {
+        const stats = useStat ? yield (0, exports.stat)(fsPath) : yield (0, exports.lstat)(fsPath);
         return stats.isDirectory();
     });
 }
-exports.isDirectory = isDirectory;
 /**
  * On OSX/Linux, true if path starts with '/'. On Windows, true for paths like:
  * \, \hello, \\hello\share, C:, and C:\hello (and corresponding alternate separator cases).
@@ -2782,7 +3020,6 @@ function isRooted(p) {
     }
     return p.startsWith('/');
 }
-exports.isRooted = isRooted;
 /**
  * Best effort attempt to determine whether a file exists and is executable.
  * @param filePath    file path to check
@@ -2794,7 +3031,7 @@ function tryGetExecutablePath(filePath, extensions) {
         let stats = undefined;
         try {
             // test file exists
-            stats = yield exports.stat(filePath);
+            stats = yield (0, exports.stat)(filePath);
         }
         catch (err) {
             if (err.code !== 'ENOENT') {
@@ -2822,7 +3059,7 @@ function tryGetExecutablePath(filePath, extensions) {
             filePath = originalFilePath + extension;
             stats = undefined;
             try {
-                stats = yield exports.stat(filePath);
+                stats = yield (0, exports.stat)(filePath);
             }
             catch (err) {
                 if (err.code !== 'ENOENT') {
@@ -2836,7 +3073,7 @@ function tryGetExecutablePath(filePath, extensions) {
                     try {
                         const directory = path.dirname(filePath);
                         const upperName = path.basename(filePath).toUpperCase();
-                        for (const actualName of yield exports.readdir(directory)) {
+                        for (const actualName of yield (0, exports.readdir)(directory)) {
                             if (upperName === actualName.toUpperCase()) {
                                 filePath = path.join(directory, actualName);
                                 break;
@@ -2859,7 +3096,6 @@ function tryGetExecutablePath(filePath, extensions) {
         return '';
     });
 }
-exports.tryGetExecutablePath = tryGetExecutablePath;
 function normalizeSeparators(p) {
     p = p || '';
     if (exports.IS_WINDOWS) {
@@ -2876,15 +3112,18 @@ function normalizeSeparators(p) {
 //   256 128 64 32 16 8 4 2 1
 function isUnixExecutable(stats) {
     return ((stats.mode & 1) > 0 ||
-        ((stats.mode & 8) > 0 && stats.gid === process.getgid()) ||
-        ((stats.mode & 64) > 0 && stats.uid === process.getuid()));
+        ((stats.mode & 8) > 0 &&
+            process.getgid !== undefined &&
+            stats.gid === process.getgid()) ||
+        ((stats.mode & 64) > 0 &&
+            process.getuid !== undefined &&
+            stats.uid === process.getuid()));
 }
 // Get the path of cmd.exe in windows
 function getCmdPath() {
     var _a;
     return (_a = process.env['COMSPEC']) !== null && _a !== void 0 ? _a : `cmd.exe`;
 }
-exports.getCmdPath = getCmdPath;
 //# sourceMappingURL=io-util.js.map
 
 /***/ }),
@@ -2896,7 +3135,11 @@ exports.getCmdPath = getCmdPath;
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -2906,13 +3149,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -2923,7 +3176,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.findInPath = exports.which = exports.mkdirP = exports.rmRF = exports.mv = exports.cp = void 0;
+exports.cp = cp;
+exports.mv = mv;
+exports.rmRF = rmRF;
+exports.mkdirP = mkdirP;
+exports.which = which;
+exports.findInPath = findInPath;
 const assert_1 = __webpack_require__(9491);
 const path = __importStar(__webpack_require__(1017));
 const ioUtil = __importStar(__webpack_require__(7564));
@@ -2935,8 +3193,8 @@ const ioUtil = __importStar(__webpack_require__(7564));
  * @param     dest      destination path
  * @param     options   optional. See CopyOptions.
  */
-function cp(source, dest, options = {}) {
-    return __awaiter(this, void 0, void 0, function* () {
+function cp(source_1, dest_1) {
+    return __awaiter(this, arguments, void 0, function* (source, dest, options = {}) {
         const { force, recursive, copySourceDirectory } = readCopyOptions(options);
         const destStat = (yield ioUtil.exists(dest)) ? yield ioUtil.stat(dest) : null;
         // Dest is an existing file, but not forcing
@@ -2968,7 +3226,6 @@ function cp(source, dest, options = {}) {
         }
     });
 }
-exports.cp = cp;
 /**
  * Moves a path.
  *
@@ -2976,8 +3233,8 @@ exports.cp = cp;
  * @param     dest      destination path
  * @param     options   optional. See MoveOptions.
  */
-function mv(source, dest, options = {}) {
-    return __awaiter(this, void 0, void 0, function* () {
+function mv(source_1, dest_1) {
+    return __awaiter(this, arguments, void 0, function* (source, dest, options = {}) {
         if (yield ioUtil.exists(dest)) {
             let destExists = true;
             if (yield ioUtil.isDirectory(dest)) {
@@ -2998,7 +3255,6 @@ function mv(source, dest, options = {}) {
         yield ioUtil.rename(source, dest);
     });
 }
-exports.mv = mv;
 /**
  * Remove a path recursively with force
  *
@@ -3027,7 +3283,6 @@ function rmRF(inputPath) {
         }
     });
 }
-exports.rmRF = rmRF;
 /**
  * Make a directory.  Creates the full path with folders in between
  * Will throw if it fails
@@ -3037,11 +3292,10 @@ exports.rmRF = rmRF;
  */
 function mkdirP(fsPath) {
     return __awaiter(this, void 0, void 0, function* () {
-        assert_1.ok(fsPath, 'a path argument must be provided');
+        (0, assert_1.ok)(fsPath, 'a path argument must be provided');
         yield ioUtil.mkdir(fsPath, { recursive: true });
     });
 }
-exports.mkdirP = mkdirP;
 /**
  * Returns path of a tool had the tool actually been invoked.  Resolves via paths.
  * If you check and the tool does not exist, it will throw.
@@ -3075,7 +3329,6 @@ function which(tool, check) {
         return '';
     });
 }
-exports.which = which;
 /**
  * Returns a list of all occurrences of the given tool on the system path.
  *
@@ -3132,7 +3385,6 @@ function findInPath(tool) {
         return matches;
     });
 }
-exports.findInPath = findInPath;
 function readCopyOptions(options) {
     const force = options.force == null ? true : options.force;
     const recursive = Boolean(options.recursive);
@@ -6651,34 +6903,109 @@ CombinedStream.prototype._emitError = function(err) {
 /***/ 1227:
 /***/ ((module, exports, __webpack_require__) => {
 
+/* eslint-env browser */
+
 /**
  * This is the web browser implementation of `debug()`.
- *
- * Expose `debug()` as the module.
  */
 
-exports = module.exports = __webpack_require__(1658);
-exports.log = log;
 exports.formatArgs = formatArgs;
 exports.save = save;
 exports.load = load;
 exports.useColors = useColors;
-exports.storage = 'undefined' != typeof chrome
-               && 'undefined' != typeof chrome.storage
-                  ? chrome.storage.local
-                  : localstorage();
+exports.storage = localstorage();
+exports.destroy = (() => {
+	let warned = false;
+
+	return () => {
+		if (!warned) {
+			warned = true;
+			console.warn('Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.');
+		}
+	};
+})();
 
 /**
  * Colors.
  */
 
 exports.colors = [
-  'lightseagreen',
-  'forestgreen',
-  'goldenrod',
-  'dodgerblue',
-  'darkorchid',
-  'crimson'
+	'#0000CC',
+	'#0000FF',
+	'#0033CC',
+	'#0033FF',
+	'#0066CC',
+	'#0066FF',
+	'#0099CC',
+	'#0099FF',
+	'#00CC00',
+	'#00CC33',
+	'#00CC66',
+	'#00CC99',
+	'#00CCCC',
+	'#00CCFF',
+	'#3300CC',
+	'#3300FF',
+	'#3333CC',
+	'#3333FF',
+	'#3366CC',
+	'#3366FF',
+	'#3399CC',
+	'#3399FF',
+	'#33CC00',
+	'#33CC33',
+	'#33CC66',
+	'#33CC99',
+	'#33CCCC',
+	'#33CCFF',
+	'#6600CC',
+	'#6600FF',
+	'#6633CC',
+	'#6633FF',
+	'#66CC00',
+	'#66CC33',
+	'#9900CC',
+	'#9900FF',
+	'#9933CC',
+	'#9933FF',
+	'#99CC00',
+	'#99CC33',
+	'#CC0000',
+	'#CC0033',
+	'#CC0066',
+	'#CC0099',
+	'#CC00CC',
+	'#CC00FF',
+	'#CC3300',
+	'#CC3333',
+	'#CC3366',
+	'#CC3399',
+	'#CC33CC',
+	'#CC33FF',
+	'#CC6600',
+	'#CC6633',
+	'#CC9900',
+	'#CC9933',
+	'#CCCC00',
+	'#CCCC33',
+	'#FF0000',
+	'#FF0033',
+	'#FF0066',
+	'#FF0099',
+	'#FF00CC',
+	'#FF00FF',
+	'#FF3300',
+	'#FF3333',
+	'#FF3366',
+	'#FF3399',
+	'#FF33CC',
+	'#FF33FF',
+	'#FF6600',
+	'#FF6633',
+	'#FF9900',
+	'#FF9933',
+	'#FFCC00',
+	'#FFCC33'
 ];
 
 /**
@@ -6689,38 +7016,34 @@ exports.colors = [
  * TODO: add a `localStorage` variable to explicitly enable/disable colors
  */
 
+// eslint-disable-next-line complexity
 function useColors() {
-  // NB: In an Electron preload script, document will be defined but not fully
-  // initialized. Since we know we're in Chrome, we'll just detect this case
-  // explicitly
-  if (typeof window !== 'undefined' && window.process && window.process.type === 'renderer') {
-    return true;
-  }
+	// NB: In an Electron preload script, document will be defined but not fully
+	// initialized. Since we know we're in Chrome, we'll just detect this case
+	// explicitly
+	if (typeof window !== 'undefined' && window.process && (window.process.type === 'renderer' || window.process.__nwjs)) {
+		return true;
+	}
 
-  // is webkit? http://stackoverflow.com/a/16459606/376773
-  // document is undefined in react-native: https://github.com/facebook/react-native/pull/1632
-  return (typeof document !== 'undefined' && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance) ||
-    // is firebug? http://stackoverflow.com/a/398120/376773
-    (typeof window !== 'undefined' && window.console && (window.console.firebug || (window.console.exception && window.console.table))) ||
-    // is firefox >= v31?
-    // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
-    (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31) ||
-    // double check webkit in userAgent just in case we are in a worker
-    (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/));
+	// Internet Explorer and Edge do not support colors.
+	if (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/(edge|trident)\/(\d+)/)) {
+		return false;
+	}
+
+	let m;
+
+	// Is webkit? http://stackoverflow.com/a/16459606/376773
+	// document is undefined in react-native: https://github.com/facebook/react-native/pull/1632
+	// eslint-disable-next-line no-return-assign
+	return (typeof document !== 'undefined' && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance) ||
+		// Is firebug? http://stackoverflow.com/a/398120/376773
+		(typeof window !== 'undefined' && window.console && (window.console.firebug || (window.console.exception && window.console.table))) ||
+		// Is firefox >= v31?
+		// https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+		(typeof navigator !== 'undefined' && navigator.userAgent && (m = navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/)) && parseInt(m[1], 10) >= 31) ||
+		// Double check webkit in userAgent just in case we are in a worker
+		(typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/));
 }
-
-/**
- * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
- */
-
-exports.formatters.j = function(v) {
-  try {
-    return JSON.stringify(v);
-  } catch (err) {
-    return '[UnexpectedJSONParseError]: ' + err.message;
-  }
-};
-
 
 /**
  * Colorize log arguments if enabled.
@@ -6729,52 +7052,49 @@ exports.formatters.j = function(v) {
  */
 
 function formatArgs(args) {
-  var useColors = this.useColors;
+	args[0] = (this.useColors ? '%c' : '') +
+		this.namespace +
+		(this.useColors ? ' %c' : ' ') +
+		args[0] +
+		(this.useColors ? '%c ' : ' ') +
+		'+' + module.exports.humanize(this.diff);
 
-  args[0] = (useColors ? '%c' : '')
-    + this.namespace
-    + (useColors ? ' %c' : ' ')
-    + args[0]
-    + (useColors ? '%c ' : ' ')
-    + '+' + exports.humanize(this.diff);
+	if (!this.useColors) {
+		return;
+	}
 
-  if (!useColors) return;
+	const c = 'color: ' + this.color;
+	args.splice(1, 0, c, 'color: inherit');
 
-  var c = 'color: ' + this.color;
-  args.splice(1, 0, c, 'color: inherit')
+	// The final "%c" is somewhat tricky, because there could be other
+	// arguments passed either before or after the %c, so we need to
+	// figure out the correct index to insert the CSS into
+	let index = 0;
+	let lastC = 0;
+	args[0].replace(/%[a-zA-Z%]/g, match => {
+		if (match === '%%') {
+			return;
+		}
+		index++;
+		if (match === '%c') {
+			// We only are interested in the *last* %c
+			// (the user may have provided their own)
+			lastC = index;
+		}
+	});
 
-  // the final "%c" is somewhat tricky, because there could be other
-  // arguments passed either before or after the %c, so we need to
-  // figure out the correct index to insert the CSS into
-  var index = 0;
-  var lastC = 0;
-  args[0].replace(/%[a-zA-Z%]/g, function(match) {
-    if ('%%' === match) return;
-    index++;
-    if ('%c' === match) {
-      // we only are interested in the *last* %c
-      // (the user may have provided their own)
-      lastC = index;
-    }
-  });
-
-  args.splice(lastC, 0, c);
+	args.splice(lastC, 0, c);
 }
 
 /**
- * Invokes `console.log()` when available.
- * No-op when `console.log` is not a "function".
+ * Invokes `console.debug()` when available.
+ * No-op when `console.debug` is not a "function".
+ * If `console.debug` is not available, falls back
+ * to `console.log`.
  *
  * @api public
  */
-
-function log() {
-  // this hackery is required for IE8/9, where
-  // the `console.log` function doesn't have 'apply'
-  return 'object' === typeof console
-    && console.log
-    && Function.prototype.apply.call(console.log, console, arguments);
-}
+exports.log = console.debug || console.log || (() => {});
 
 /**
  * Save `namespaces`.
@@ -6782,15 +7102,17 @@ function log() {
  * @param {String} namespaces
  * @api private
  */
-
 function save(namespaces) {
-  try {
-    if (null == namespaces) {
-      exports.storage.removeItem('debug');
-    } else {
-      exports.storage.debug = namespaces;
-    }
-  } catch(e) {}
+	try {
+		if (namespaces) {
+			exports.storage.setItem('debug', namespaces);
+		} else {
+			exports.storage.removeItem('debug');
+		}
+	} catch (error) {
+		// Swallow
+		// XXX (@Qix-) should we be logging these?
+	}
 }
 
 /**
@@ -6799,26 +7121,22 @@ function save(namespaces) {
  * @return {String} returns the previously persisted debug modes
  * @api private
  */
-
 function load() {
-  var r;
-  try {
-    r = exports.storage.debug;
-  } catch(e) {}
+	let r;
+	try {
+		r = exports.storage.getItem('debug') || exports.storage.getItem('DEBUG') ;
+	} catch (error) {
+		// Swallow
+		// XXX (@Qix-) should we be logging these?
+	}
 
-  // If debug isn't set in LS, and we're in Electron, try to load $DEBUG
-  if (!r && typeof process !== 'undefined' && 'env' in process) {
-    r = process.env.DEBUG;
-  }
+	// If debug isn't set in LS, and we're in Electron, try to load $DEBUG
+	if (!r && typeof process !== 'undefined' && 'env' in process) {
+		r = process.env.DEBUG;
+	}
 
-  return r;
+	return r;
 }
-
-/**
- * Enable namespaces listed in `localStorage.debug` initially.
- */
-
-exports.enable(load());
 
 /**
  * Localstorage attempts to return the localstorage.
@@ -6832,219 +7150,330 @@ exports.enable(load());
  */
 
 function localstorage() {
-  try {
-    return window.localStorage;
-  } catch (e) {}
+	try {
+		// TVMLKit (Apple TV JS Runtime) does not have a window object, just localStorage in the global context
+		// The Browser also has localStorage in the global context.
+		return localStorage;
+	} catch (error) {
+		// Swallow
+		// XXX (@Qix-) should we be logging these?
+	}
 }
+
+module.exports = __webpack_require__(2447)(exports);
+
+const {formatters} = module.exports;
+
+/**
+ * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
+ */
+
+formatters.j = function (v) {
+	try {
+		return JSON.stringify(v);
+	} catch (error) {
+		return '[UnexpectedJSONParseError]: ' + error.message;
+	}
+};
 
 
 /***/ }),
 
-/***/ 1658:
-/***/ ((module, exports, __webpack_require__) => {
+/***/ 2447:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 
 /**
  * This is the common logic for both the Node.js and web browser
  * implementations of `debug()`.
- *
- * Expose `debug()` as the module.
  */
 
-exports = module.exports = createDebug.debug = createDebug['default'] = createDebug;
-exports.coerce = coerce;
-exports.disable = disable;
-exports.enable = enable;
-exports.enabled = enabled;
-exports.humanize = __webpack_require__(7824);
+function setup(env) {
+	createDebug.debug = createDebug;
+	createDebug.default = createDebug;
+	createDebug.coerce = coerce;
+	createDebug.disable = disable;
+	createDebug.enable = enable;
+	createDebug.enabled = enabled;
+	createDebug.humanize = __webpack_require__(7824);
+	createDebug.destroy = destroy;
 
-/**
- * The currently active debug mode names, and names to skip.
- */
+	Object.keys(env).forEach(key => {
+		createDebug[key] = env[key];
+	});
 
-exports.names = [];
-exports.skips = [];
+	/**
+	* The currently active debug mode names, and names to skip.
+	*/
 
-/**
- * Map of special "%n" handling functions, for the debug "format" argument.
- *
- * Valid key names are a single, lower or upper-case letter, i.e. "n" and "N".
- */
+	createDebug.names = [];
+	createDebug.skips = [];
 
-exports.formatters = {};
+	/**
+	* Map of special "%n" handling functions, for the debug "format" argument.
+	*
+	* Valid key names are a single, lower or upper-case letter, i.e. "n" and "N".
+	*/
+	createDebug.formatters = {};
 
-/**
- * Previous log timestamp.
- */
+	/**
+	* Selects a color for a debug namespace
+	* @param {String} namespace The namespace string for the debug instance to be colored
+	* @return {Number|String} An ANSI color code for the given namespace
+	* @api private
+	*/
+	function selectColor(namespace) {
+		let hash = 0;
 
-var prevTime;
+		for (let i = 0; i < namespace.length; i++) {
+			hash = ((hash << 5) - hash) + namespace.charCodeAt(i);
+			hash |= 0; // Convert to 32bit integer
+		}
 
-/**
- * Select a color.
- * @param {String} namespace
- * @return {Number}
- * @api private
- */
+		return createDebug.colors[Math.abs(hash) % createDebug.colors.length];
+	}
+	createDebug.selectColor = selectColor;
 
-function selectColor(namespace) {
-  var hash = 0, i;
+	/**
+	* Create a debugger with the given `namespace`.
+	*
+	* @param {String} namespace
+	* @return {Function}
+	* @api public
+	*/
+	function createDebug(namespace) {
+		let prevTime;
+		let enableOverride = null;
+		let namespacesCache;
+		let enabledCache;
 
-  for (i in namespace) {
-    hash  = ((hash << 5) - hash) + namespace.charCodeAt(i);
-    hash |= 0; // Convert to 32bit integer
-  }
+		function debug(...args) {
+			// Disabled?
+			if (!debug.enabled) {
+				return;
+			}
 
-  return exports.colors[Math.abs(hash) % exports.colors.length];
+			const self = debug;
+
+			// Set `diff` timestamp
+			const curr = Number(new Date());
+			const ms = curr - (prevTime || curr);
+			self.diff = ms;
+			self.prev = prevTime;
+			self.curr = curr;
+			prevTime = curr;
+
+			args[0] = createDebug.coerce(args[0]);
+
+			if (typeof args[0] !== 'string') {
+				// Anything else let's inspect with %O
+				args.unshift('%O');
+			}
+
+			// Apply any `formatters` transformations
+			let index = 0;
+			args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format) => {
+				// If we encounter an escaped % then don't increase the array index
+				if (match === '%%') {
+					return '%';
+				}
+				index++;
+				const formatter = createDebug.formatters[format];
+				if (typeof formatter === 'function') {
+					const val = args[index];
+					match = formatter.call(self, val);
+
+					// Now we need to remove `args[index]` since it's inlined in the `format`
+					args.splice(index, 1);
+					index--;
+				}
+				return match;
+			});
+
+			// Apply env-specific formatting (colors, etc.)
+			createDebug.formatArgs.call(self, args);
+
+			const logFn = self.log || createDebug.log;
+			logFn.apply(self, args);
+		}
+
+		debug.namespace = namespace;
+		debug.useColors = createDebug.useColors();
+		debug.color = createDebug.selectColor(namespace);
+		debug.extend = extend;
+		debug.destroy = createDebug.destroy; // XXX Temporary. Will be removed in the next major release.
+
+		Object.defineProperty(debug, 'enabled', {
+			enumerable: true,
+			configurable: false,
+			get: () => {
+				if (enableOverride !== null) {
+					return enableOverride;
+				}
+				if (namespacesCache !== createDebug.namespaces) {
+					namespacesCache = createDebug.namespaces;
+					enabledCache = createDebug.enabled(namespace);
+				}
+
+				return enabledCache;
+			},
+			set: v => {
+				enableOverride = v;
+			}
+		});
+
+		// Env-specific initialization logic for debug instances
+		if (typeof createDebug.init === 'function') {
+			createDebug.init(debug);
+		}
+
+		return debug;
+	}
+
+	function extend(namespace, delimiter) {
+		const newDebug = createDebug(this.namespace + (typeof delimiter === 'undefined' ? ':' : delimiter) + namespace);
+		newDebug.log = this.log;
+		return newDebug;
+	}
+
+	/**
+	* Enables a debug mode by namespaces. This can include modes
+	* separated by a colon and wildcards.
+	*
+	* @param {String} namespaces
+	* @api public
+	*/
+	function enable(namespaces) {
+		createDebug.save(namespaces);
+		createDebug.namespaces = namespaces;
+
+		createDebug.names = [];
+		createDebug.skips = [];
+
+		const split = (typeof namespaces === 'string' ? namespaces : '')
+			.trim()
+			.replace(/\s+/g, ',')
+			.split(',')
+			.filter(Boolean);
+
+		for (const ns of split) {
+			if (ns[0] === '-') {
+				createDebug.skips.push(ns.slice(1));
+			} else {
+				createDebug.names.push(ns);
+			}
+		}
+	}
+
+	/**
+	 * Checks if the given string matches a namespace template, honoring
+	 * asterisks as wildcards.
+	 *
+	 * @param {String} search
+	 * @param {String} template
+	 * @return {Boolean}
+	 */
+	function matchesTemplate(search, template) {
+		let searchIndex = 0;
+		let templateIndex = 0;
+		let starIndex = -1;
+		let matchIndex = 0;
+
+		while (searchIndex < search.length) {
+			if (templateIndex < template.length && (template[templateIndex] === search[searchIndex] || template[templateIndex] === '*')) {
+				// Match character or proceed with wildcard
+				if (template[templateIndex] === '*') {
+					starIndex = templateIndex;
+					matchIndex = searchIndex;
+					templateIndex++; // Skip the '*'
+				} else {
+					searchIndex++;
+					templateIndex++;
+				}
+			} else if (starIndex !== -1) { // eslint-disable-line no-negated-condition
+				// Backtrack to the last '*' and try to match more characters
+				templateIndex = starIndex + 1;
+				matchIndex++;
+				searchIndex = matchIndex;
+			} else {
+				return false; // No match
+			}
+		}
+
+		// Handle trailing '*' in template
+		while (templateIndex < template.length && template[templateIndex] === '*') {
+			templateIndex++;
+		}
+
+		return templateIndex === template.length;
+	}
+
+	/**
+	* Disable debug output.
+	*
+	* @return {String} namespaces
+	* @api public
+	*/
+	function disable() {
+		const namespaces = [
+			...createDebug.names,
+			...createDebug.skips.map(namespace => '-' + namespace)
+		].join(',');
+		createDebug.enable('');
+		return namespaces;
+	}
+
+	/**
+	* Returns true if the given mode name is enabled, false otherwise.
+	*
+	* @param {String} name
+	* @return {Boolean}
+	* @api public
+	*/
+	function enabled(name) {
+		for (const skip of createDebug.skips) {
+			if (matchesTemplate(name, skip)) {
+				return false;
+			}
+		}
+
+		for (const ns of createDebug.names) {
+			if (matchesTemplate(name, ns)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	* Coerce `val`.
+	*
+	* @param {Mixed} val
+	* @return {Mixed}
+	* @api private
+	*/
+	function coerce(val) {
+		if (val instanceof Error) {
+			return val.stack || val.message;
+		}
+		return val;
+	}
+
+	/**
+	* XXX DO NOT USE. This is a temporary stub function.
+	* XXX It WILL be removed in the next major release.
+	*/
+	function destroy() {
+		console.warn('Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.');
+	}
+
+	createDebug.enable(createDebug.load());
+
+	return createDebug;
 }
 
-/**
- * Create a debugger with the given `namespace`.
- *
- * @param {String} namespace
- * @return {Function}
- * @api public
- */
-
-function createDebug(namespace) {
-
-  function debug() {
-    // disabled?
-    if (!debug.enabled) return;
-
-    var self = debug;
-
-    // set `diff` timestamp
-    var curr = +new Date();
-    var ms = curr - (prevTime || curr);
-    self.diff = ms;
-    self.prev = prevTime;
-    self.curr = curr;
-    prevTime = curr;
-
-    // turn the `arguments` into a proper Array
-    var args = new Array(arguments.length);
-    for (var i = 0; i < args.length; i++) {
-      args[i] = arguments[i];
-    }
-
-    args[0] = exports.coerce(args[0]);
-
-    if ('string' !== typeof args[0]) {
-      // anything else let's inspect with %O
-      args.unshift('%O');
-    }
-
-    // apply any `formatters` transformations
-    var index = 0;
-    args[0] = args[0].replace(/%([a-zA-Z%])/g, function(match, format) {
-      // if we encounter an escaped % then don't increase the array index
-      if (match === '%%') return match;
-      index++;
-      var formatter = exports.formatters[format];
-      if ('function' === typeof formatter) {
-        var val = args[index];
-        match = formatter.call(self, val);
-
-        // now we need to remove `args[index]` since it's inlined in the `format`
-        args.splice(index, 1);
-        index--;
-      }
-      return match;
-    });
-
-    // apply env-specific formatting (colors, etc.)
-    exports.formatArgs.call(self, args);
-
-    var logFn = debug.log || exports.log || console.log.bind(console);
-    logFn.apply(self, args);
-  }
-
-  debug.namespace = namespace;
-  debug.enabled = exports.enabled(namespace);
-  debug.useColors = exports.useColors();
-  debug.color = selectColor(namespace);
-
-  // env-specific initialization logic for debug instances
-  if ('function' === typeof exports.init) {
-    exports.init(debug);
-  }
-
-  return debug;
-}
-
-/**
- * Enables a debug mode by namespaces. This can include modes
- * separated by a colon and wildcards.
- *
- * @param {String} namespaces
- * @api public
- */
-
-function enable(namespaces) {
-  exports.save(namespaces);
-
-  exports.names = [];
-  exports.skips = [];
-
-  var split = (typeof namespaces === 'string' ? namespaces : '').split(/[\s,]+/);
-  var len = split.length;
-
-  for (var i = 0; i < len; i++) {
-    if (!split[i]) continue; // ignore empty strings
-    namespaces = split[i].replace(/\*/g, '.*?');
-    if (namespaces[0] === '-') {
-      exports.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
-    } else {
-      exports.names.push(new RegExp('^' + namespaces + '$'));
-    }
-  }
-}
-
-/**
- * Disable debug output.
- *
- * @api public
- */
-
-function disable() {
-  exports.enable('');
-}
-
-/**
- * Returns true if the given mode name is enabled, false otherwise.
- *
- * @param {String} name
- * @return {Boolean}
- * @api public
- */
-
-function enabled(name) {
-  var i, len;
-  for (i = 0, len = exports.skips.length; i < len; i++) {
-    if (exports.skips[i].test(name)) {
-      return false;
-    }
-  }
-  for (i = 0, len = exports.names.length; i < len; i++) {
-    if (exports.names[i].test(name)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
- * Coerce `val`.
- *
- * @param {Mixed} val
- * @return {Mixed}
- * @api private
- */
-
-function coerce(val) {
-  if (val instanceof Error) return val.stack || val.message;
-  return val;
-}
+module.exports = setup;
 
 
 /***/ }),
@@ -7053,14 +7482,14 @@ function coerce(val) {
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
- * Detect Electron renderer process, which is node, but we should
+ * Detect Electron renderer / nwjs process, which is node, but we should
  * treat as a browser.
  */
 
-if (typeof process !== 'undefined' && process.type === 'renderer') {
-  module.exports = __webpack_require__(1227);
+if (typeof process === 'undefined' || process.type === 'renderer' || process.browser === true || process.__nwjs) {
+	module.exports = __webpack_require__(1227);
 } else {
-  module.exports = __webpack_require__(39);
+	module.exports = __webpack_require__(39);
 }
 
 
@@ -7073,22 +7502,23 @@ if (typeof process !== 'undefined' && process.type === 'renderer') {
  * Module dependencies.
  */
 
-var tty = __webpack_require__(6224);
-var util = __webpack_require__(3837);
+const tty = __webpack_require__(6224);
+const util = __webpack_require__(3837);
 
 /**
  * This is the Node.js implementation of `debug()`.
- *
- * Expose `debug()` as the module.
  */
 
-exports = module.exports = __webpack_require__(1658);
 exports.init = init;
 exports.log = log;
 exports.formatArgs = formatArgs;
 exports.save = save;
 exports.load = load;
 exports.useColors = useColors;
+exports.destroy = util.deprecate(
+	() => {},
+	'Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.'
+);
 
 /**
  * Colors.
@@ -7096,79 +7526,137 @@ exports.useColors = useColors;
 
 exports.colors = [6, 2, 3, 4, 5, 1];
 
+try {
+	// Optional dependency (as in, doesn't need to be installed, NOT like optionalDependencies in package.json)
+	// eslint-disable-next-line import/no-extraneous-dependencies
+	const supportsColor = __webpack_require__(2130);
+
+	if (supportsColor && (supportsColor.stderr || supportsColor).level >= 2) {
+		exports.colors = [
+			20,
+			21,
+			26,
+			27,
+			32,
+			33,
+			38,
+			39,
+			40,
+			41,
+			42,
+			43,
+			44,
+			45,
+			56,
+			57,
+			62,
+			63,
+			68,
+			69,
+			74,
+			75,
+			76,
+			77,
+			78,
+			79,
+			80,
+			81,
+			92,
+			93,
+			98,
+			99,
+			112,
+			113,
+			128,
+			129,
+			134,
+			135,
+			148,
+			149,
+			160,
+			161,
+			162,
+			163,
+			164,
+			165,
+			166,
+			167,
+			168,
+			169,
+			170,
+			171,
+			172,
+			173,
+			178,
+			179,
+			184,
+			185,
+			196,
+			197,
+			198,
+			199,
+			200,
+			201,
+			202,
+			203,
+			204,
+			205,
+			206,
+			207,
+			208,
+			209,
+			214,
+			215,
+			220,
+			221
+		];
+	}
+} catch (error) {
+	// Swallow - we only care if `supports-color` is available; it doesn't have to be.
+}
+
 /**
  * Build up the default `inspectOpts` object from the environment variables.
  *
  *   $ DEBUG_COLORS=no DEBUG_DEPTH=10 DEBUG_SHOW_HIDDEN=enabled node script.js
  */
 
-exports.inspectOpts = Object.keys(process.env).filter(function (key) {
-  return /^debug_/i.test(key);
-}).reduce(function (obj, key) {
-  // camel-case
-  var prop = key
-    .substring(6)
-    .toLowerCase()
-    .replace(/_([a-z])/g, function (_, k) { return k.toUpperCase() });
+exports.inspectOpts = Object.keys(process.env).filter(key => {
+	return /^debug_/i.test(key);
+}).reduce((obj, key) => {
+	// Camel-case
+	const prop = key
+		.substring(6)
+		.toLowerCase()
+		.replace(/_([a-z])/g, (_, k) => {
+			return k.toUpperCase();
+		});
 
-  // coerce string value into JS value
-  var val = process.env[key];
-  if (/^(yes|on|true|enabled)$/i.test(val)) val = true;
-  else if (/^(no|off|false|disabled)$/i.test(val)) val = false;
-  else if (val === 'null') val = null;
-  else val = Number(val);
+	// Coerce string value into JS value
+	let val = process.env[key];
+	if (/^(yes|on|true|enabled)$/i.test(val)) {
+		val = true;
+	} else if (/^(no|off|false|disabled)$/i.test(val)) {
+		val = false;
+	} else if (val === 'null') {
+		val = null;
+	} else {
+		val = Number(val);
+	}
 
-  obj[prop] = val;
-  return obj;
+	obj[prop] = val;
+	return obj;
 }, {});
-
-/**
- * The file descriptor to write the `debug()` calls to.
- * Set the `DEBUG_FD` env variable to override with another value. i.e.:
- *
- *   $ DEBUG_FD=3 node script.js 3>debug.log
- */
-
-var fd = parseInt(process.env.DEBUG_FD, 10) || 2;
-
-if (1 !== fd && 2 !== fd) {
-  util.deprecate(function(){}, 'except for stderr(2) and stdout(1), any other usage of DEBUG_FD is deprecated. Override debug.log if you want to use a different log function (https://git.io/debug_fd)')()
-}
-
-var stream = 1 === fd ? process.stdout :
-             2 === fd ? process.stderr :
-             createWritableStdioStream(fd);
 
 /**
  * Is stdout a TTY? Colored output is enabled when `true`.
  */
 
 function useColors() {
-  return 'colors' in exports.inspectOpts
-    ? Boolean(exports.inspectOpts.colors)
-    : tty.isatty(fd);
+	return 'colors' in exports.inspectOpts ?
+		Boolean(exports.inspectOpts.colors) :
+		tty.isatty(process.stderr.fd);
 }
-
-/**
- * Map %o to `util.inspect()`, all on a single line.
- */
-
-exports.formatters.o = function(v) {
-  this.inspectOpts.colors = this.useColors;
-  return util.inspect(v, this.inspectOpts)
-    .split('\n').map(function(str) {
-      return str.trim()
-    }).join(' ');
-};
-
-/**
- * Map %o to `util.inspect()`, allowing multiple lines if needed.
- */
-
-exports.formatters.O = function(v) {
-  this.inspectOpts.colors = this.useColors;
-  return util.inspect(v, this.inspectOpts);
-};
 
 /**
  * Adds ANSI color escape codes if enabled.
@@ -7177,27 +7665,33 @@ exports.formatters.O = function(v) {
  */
 
 function formatArgs(args) {
-  var name = this.namespace;
-  var useColors = this.useColors;
+	const {namespace: name, useColors} = this;
 
-  if (useColors) {
-    var c = this.color;
-    var prefix = '  \u001b[3' + c + ';1m' + name + ' ' + '\u001b[0m';
+	if (useColors) {
+		const c = this.color;
+		const colorCode = '\u001B[3' + (c < 8 ? c : '8;5;' + c);
+		const prefix = `  ${colorCode};1m${name} \u001B[0m`;
 
-    args[0] = prefix + args[0].split('\n').join('\n' + prefix);
-    args.push('\u001b[3' + c + 'm+' + exports.humanize(this.diff) + '\u001b[0m');
-  } else {
-    args[0] = new Date().toUTCString()
-      + ' ' + name + ' ' + args[0];
-  }
+		args[0] = prefix + args[0].split('\n').join('\n' + prefix);
+		args.push(colorCode + 'm+' + module.exports.humanize(this.diff) + '\u001B[0m');
+	} else {
+		args[0] = getDate() + name + ' ' + args[0];
+	}
+}
+
+function getDate() {
+	if (exports.inspectOpts.hideDate) {
+		return '';
+	}
+	return new Date().toISOString() + ' ';
 }
 
 /**
- * Invokes `util.format()` with the specified arguments and writes to `stream`.
+ * Invokes `util.formatWithOptions()` with the specified arguments and writes to stderr.
  */
 
-function log() {
-  return stream.write(util.format.apply(util, arguments) + '\n');
+function log(...args) {
+	return process.stderr.write(util.formatWithOptions(exports.inspectOpts, ...args) + '\n');
 }
 
 /**
@@ -7206,15 +7700,14 @@ function log() {
  * @param {String} namespaces
  * @api private
  */
-
 function save(namespaces) {
-  if (null == namespaces) {
-    // If you set a process.env field to null or undefined, it gets cast to the
-    // string 'null' or 'undefined'. Just delete instead.
-    delete process.env.DEBUG;
-  } else {
-    process.env.DEBUG = namespaces;
-  }
+	if (namespaces) {
+		process.env.DEBUG = namespaces;
+	} else {
+		// If you set a process.env field to null or undefined, it gets cast to the
+		// string 'null' or 'undefined'. Just delete instead.
+		delete process.env.DEBUG;
+	}
 }
 
 /**
@@ -7225,75 +7718,7 @@ function save(namespaces) {
  */
 
 function load() {
-  return process.env.DEBUG;
-}
-
-/**
- * Copied from `node/src/node.js`.
- *
- * XXX: It's lame that node doesn't expose this API out-of-the-box. It also
- * relies on the undocumented `tty_wrap.guessHandleType()` which is also lame.
- */
-
-function createWritableStdioStream (fd) {
-  var stream;
-  var tty_wrap = process.binding('tty_wrap');
-
-  // Note stream._type is used for test-module-load-list.js
-
-  switch (tty_wrap.guessHandleType(fd)) {
-    case 'TTY':
-      stream = new tty.WriteStream(fd);
-      stream._type = 'tty';
-
-      // Hack to have stream not keep the event loop alive.
-      // See https://github.com/joyent/node/issues/1726
-      if (stream._handle && stream._handle.unref) {
-        stream._handle.unref();
-      }
-      break;
-
-    case 'FILE':
-      var fs = __webpack_require__(7147);
-      stream = new fs.SyncWriteStream(fd, { autoClose: false });
-      stream._type = 'fs';
-      break;
-
-    case 'PIPE':
-    case 'TCP':
-      var net = __webpack_require__(1808);
-      stream = new net.Socket({
-        fd: fd,
-        readable: false,
-        writable: true
-      });
-
-      // FIXME Should probably have an option in net.Socket to create a
-      // stream from an existing fd which is writable only. But for now
-      // we'll just add this hack and set the `readable` member to false.
-      // Test: ./node test/fixtures/echo.js < /etc/passwd
-      stream.readable = false;
-      stream.read = null;
-      stream._type = 'pipe';
-
-      // FIXME Hack to have stream not keep the event loop alive.
-      // See https://github.com/joyent/node/issues/1726
-      if (stream._handle && stream._handle.unref) {
-        stream._handle.unref();
-      }
-      break;
-
-    default:
-      // Probably an error on in uv_guess_handle()
-      throw new Error('Implement me. Unknown stream file type!');
-  }
-
-  // For supporting legacy API we put the FD here.
-  stream.fd = fd;
-
-  stream._isStdio = true;
-
-  return stream;
+	return process.env.DEBUG;
 }
 
 /**
@@ -7303,20 +7728,39 @@ function createWritableStdioStream (fd) {
  * differently for a particular `debug` instance.
  */
 
-function init (debug) {
-  debug.inspectOpts = {};
+function init(debug) {
+	debug.inspectOpts = {};
 
-  var keys = Object.keys(exports.inspectOpts);
-  for (var i = 0; i < keys.length; i++) {
-    debug.inspectOpts[keys[i]] = exports.inspectOpts[keys[i]];
-  }
+	const keys = Object.keys(exports.inspectOpts);
+	for (let i = 0; i < keys.length; i++) {
+		debug.inspectOpts[keys[i]] = exports.inspectOpts[keys[i]];
+	}
 }
 
+module.exports = __webpack_require__(2447)(exports);
+
+const {formatters} = module.exports;
+
 /**
- * Enable namespaces listed in `process.env.DEBUG` initially.
+ * Map %o to `util.inspect()`, all on a single line.
  */
 
-exports.enable(load());
+formatters.o = function (v) {
+	this.inspectOpts.colors = this.useColors;
+	return util.inspect(v, this.inspectOpts)
+		.split('\n')
+		.map(str => str.trim())
+		.join(' ');
+};
+
+/**
+ * Map %O to `util.inspect()`, allowing multiple lines if needed.
+ */
+
+formatters.O = function (v) {
+	this.inspectOpts.colors = this.useColors;
+	return util.inspect(v, this.inspectOpts);
+};
 
 
 /***/ }),
@@ -8582,6 +9026,22 @@ module.exports = function(dst, src) {
   });
 
   return dst;
+};
+
+
+/***/ }),
+
+/***/ 6560:
+/***/ ((module) => {
+
+"use strict";
+
+
+module.exports = (flag, argv = process.argv) => {
+	const prefix = flag.startsWith('-') ? '' : (flag.length === 1 ? '-' : '--');
+	const position = argv.indexOf(prefix + flag);
+	const terminatorPosition = argv.indexOf('--');
+	return position !== -1 && (terminatorPosition === -1 || position < terminatorPosition);
 };
 
 
@@ -26061,6 +26521,7 @@ var s = 1000;
 var m = s * 60;
 var h = m * 60;
 var d = h * 24;
+var w = d * 7;
 var y = d * 365.25;
 
 /**
@@ -26077,12 +26538,12 @@ var y = d * 365.25;
  * @api public
  */
 
-module.exports = function(val, options) {
+module.exports = function (val, options) {
   options = options || {};
   var type = typeof val;
   if (type === 'string' && val.length > 0) {
     return parse(val);
-  } else if (type === 'number' && isNaN(val) === false) {
+  } else if (type === 'number' && isFinite(val)) {
     return options.long ? fmtLong(val) : fmtShort(val);
   }
   throw new Error(
@@ -26104,7 +26565,7 @@ function parse(str) {
   if (str.length > 100) {
     return;
   }
-  var match = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(
+  var match = /^(-?(?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|weeks?|w|years?|yrs?|y)?$/i.exec(
     str
   );
   if (!match) {
@@ -26119,6 +26580,10 @@ function parse(str) {
     case 'yr':
     case 'y':
       return n * y;
+    case 'weeks':
+    case 'week':
+    case 'w':
+      return n * w;
     case 'days':
     case 'day':
     case 'd':
@@ -26161,16 +26626,17 @@ function parse(str) {
  */
 
 function fmtShort(ms) {
-  if (ms >= d) {
+  var msAbs = Math.abs(ms);
+  if (msAbs >= d) {
     return Math.round(ms / d) + 'd';
   }
-  if (ms >= h) {
+  if (msAbs >= h) {
     return Math.round(ms / h) + 'h';
   }
-  if (ms >= m) {
+  if (msAbs >= m) {
     return Math.round(ms / m) + 'm';
   }
-  if (ms >= s) {
+  if (msAbs >= s) {
     return Math.round(ms / s) + 's';
   }
   return ms + 'ms';
@@ -26185,26 +26651,173 @@ function fmtShort(ms) {
  */
 
 function fmtLong(ms) {
-  return plural(ms, d, 'day') ||
-    plural(ms, h, 'hour') ||
-    plural(ms, m, 'minute') ||
-    plural(ms, s, 'second') ||
-    ms + ' ms';
+  var msAbs = Math.abs(ms);
+  if (msAbs >= d) {
+    return plural(ms, msAbs, d, 'day');
+  }
+  if (msAbs >= h) {
+    return plural(ms, msAbs, h, 'hour');
+  }
+  if (msAbs >= m) {
+    return plural(ms, msAbs, m, 'minute');
+  }
+  if (msAbs >= s) {
+    return plural(ms, msAbs, s, 'second');
+  }
+  return ms + ' ms';
 }
 
 /**
  * Pluralization helper.
  */
 
-function plural(ms, n, name) {
-  if (ms < n) {
-    return;
-  }
-  if (ms < n * 1.5) {
-    return Math.floor(ms / n) + ' ' + name;
-  }
-  return Math.ceil(ms / n) + ' ' + name + 's';
+function plural(ms, msAbs, n, name) {
+  var isPlural = msAbs >= n * 1.5;
+  return Math.round(ms / n) + ' ' + name + (isPlural ? 's' : '');
 }
+
+
+/***/ }),
+
+/***/ 2130:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+const os = __webpack_require__(2037);
+const tty = __webpack_require__(6224);
+const hasFlag = __webpack_require__(6560);
+
+const {env} = process;
+
+let forceColor;
+if (hasFlag('no-color') ||
+	hasFlag('no-colors') ||
+	hasFlag('color=false') ||
+	hasFlag('color=never')) {
+	forceColor = 0;
+} else if (hasFlag('color') ||
+	hasFlag('colors') ||
+	hasFlag('color=true') ||
+	hasFlag('color=always')) {
+	forceColor = 1;
+}
+
+if ('FORCE_COLOR' in env) {
+	if (env.FORCE_COLOR === 'true') {
+		forceColor = 1;
+	} else if (env.FORCE_COLOR === 'false') {
+		forceColor = 0;
+	} else {
+		forceColor = env.FORCE_COLOR.length === 0 ? 1 : Math.min(parseInt(env.FORCE_COLOR, 10), 3);
+	}
+}
+
+function translateLevel(level) {
+	if (level === 0) {
+		return false;
+	}
+
+	return {
+		level,
+		hasBasic: true,
+		has256: level >= 2,
+		has16m: level >= 3
+	};
+}
+
+function supportsColor(haveStream, streamIsTTY) {
+	if (forceColor === 0) {
+		return 0;
+	}
+
+	if (hasFlag('color=16m') ||
+		hasFlag('color=full') ||
+		hasFlag('color=truecolor')) {
+		return 3;
+	}
+
+	if (hasFlag('color=256')) {
+		return 2;
+	}
+
+	if (haveStream && !streamIsTTY && forceColor === undefined) {
+		return 0;
+	}
+
+	const min = forceColor || 0;
+
+	if (env.TERM === 'dumb') {
+		return min;
+	}
+
+	if (process.platform === 'win32') {
+		// Windows 10 build 10586 is the first Windows release that supports 256 colors.
+		// Windows 10 build 14931 is the first release that supports 16m/TrueColor.
+		const osRelease = os.release().split('.');
+		if (
+			Number(osRelease[0]) >= 10 &&
+			Number(osRelease[2]) >= 10586
+		) {
+			return Number(osRelease[2]) >= 14931 ? 3 : 2;
+		}
+
+		return 1;
+	}
+
+	if ('CI' in env) {
+		if (['TRAVIS', 'CIRCLECI', 'APPVEYOR', 'GITLAB_CI', 'GITHUB_ACTIONS', 'BUILDKITE'].some(sign => sign in env) || env.CI_NAME === 'codeship') {
+			return 1;
+		}
+
+		return min;
+	}
+
+	if ('TEAMCITY_VERSION' in env) {
+		return /^(9\.(0*[1-9]\d*)\.|\d{2,}\.)/.test(env.TEAMCITY_VERSION) ? 1 : 0;
+	}
+
+	if (env.COLORTERM === 'truecolor') {
+		return 3;
+	}
+
+	if ('TERM_PROGRAM' in env) {
+		const version = parseInt((env.TERM_PROGRAM_VERSION || '').split('.')[0], 10);
+
+		switch (env.TERM_PROGRAM) {
+			case 'iTerm.app':
+				return version >= 3 ? 3 : 2;
+			case 'Apple_Terminal':
+				return 2;
+			// No default
+		}
+	}
+
+	if (/-256(color)?$/i.test(env.TERM)) {
+		return 2;
+	}
+
+	if (/^screen|^xterm|^vt100|^vt220|^rxvt|color|ansi|cygwin|linux/i.test(env.TERM)) {
+		return 1;
+	}
+
+	if ('COLORTERM' in env) {
+		return 1;
+	}
+
+	return min;
+}
+
+function getSupportLevel(stream) {
+	const level = supportsColor(stream, stream && stream.isTTY);
+	return translateLevel(level);
+}
+
+module.exports = {
+	supportsColor: getSupportLevel,
+	stdout: translateLevel(supportsColor(true, tty.isatty(1))),
+	stderr: translateLevel(supportsColor(true, tty.isatty(2)))
+};
 
 
 /***/ }),
@@ -50631,8 +51244,6 @@ var __webpack_exports__ = {};
 (() => {
 "use strict";
 
-// UNUSED EXPORTS: parseActionInputs
-
 // NAMESPACE OBJECT: ./node_modules/zod/v3/external.js
 var external_namespaceObject = {};
 __webpack_require__.r(external_namespaceObject);
@@ -50752,1526 +51363,9 @@ var external_fs_ = __webpack_require__(7147);
 var external_path_ = __webpack_require__(1017);
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __webpack_require__(2225);
-;// CONCATENATED MODULE: ./src/calculateRank.ts
-const ranks = ['S+', 'S', 'A+', 'A', 'B+', 'B'];
-const RANK_THRESHOLDS_STARGAZERS = {
-    'S+': 10000,
-    S: 1000,
-    'A+': 500,
-    A: 100,
-    'B+': 50,
-    B: 0,
-};
-const calculateStarsRank = (stargazers) => {
-    for (const [rank, threshold] of Object.entries(RANK_THRESHOLDS_STARGAZERS)) {
-        if (stargazers >= threshold) {
-            return rank;
-        }
-    }
-    return 'B';
-};
-const RANK_THRESHOLDS_CONTRIBUTIONS = {
-    'S+': 90,
-    S: 80,
-    'A+': 70,
-    A: 60,
-    'B+': 50,
-    B: 0,
-};
-const calculateContributionsRank = (name, contributors, numContributions) => {
-    contributors = contributors.filter((contributor) => contributor.type === 'User');
-    const numOfOverRankContributors = contributors.filter((contributor) => contributor.contributions > numContributions);
-    const rankOfContribution = ((contributors.length - numOfOverRankContributors.length) / contributors.length) *
-        100;
-    for (const [rank, threshold] of Object.entries(RANK_THRESHOLDS_CONTRIBUTIONS)) {
-        if (rankOfContribution >= threshold) {
-            return rank;
-        }
-    }
-    return 'B';
-};
-
 // EXTERNAL MODULE: ./node_modules/lodash/lodash.js
 var lodash = __webpack_require__(6486);
 var lodash_default = /*#__PURE__*/__webpack_require__.n(lodash);
-;// CONCATENATED MODULE: ./themes/index.ts
-const themes = {
-    default: {
-        title_color: '2f80ed',
-        icon_color: '4c71f2',
-        text_color: '434d58',
-        bg_color: 'fffefe',
-        border_color: 'e4e2e2',
-    },
-    default_repocard: {
-        title_color: '2f80ed',
-        icon_color: '586069',
-        text_color: '434d58',
-        bg_color: 'fffefe',
-    },
-    transparent: {
-        title_color: '006AFF',
-        icon_color: '0579C3',
-        text_color: '417E87',
-        bg_color: 'ffffff00',
-    },
-    shadow_red: {
-        title_color: '9A0000',
-        text_color: '444',
-        icon_color: '4F0000',
-        border_color: '4F0000',
-        bg_color: 'ffffff00',
-    },
-    shadow_green: {
-        title_color: '007A00',
-        text_color: '444',
-        icon_color: '003D00',
-        border_color: '003D00',
-        bg_color: 'ffffff00',
-    },
-    shadow_blue: {
-        title_color: '00779A',
-        text_color: '444',
-        icon_color: '004450',
-        border_color: '004490',
-        bg_color: 'ffffff00',
-    },
-    dark: {
-        title_color: 'fff',
-        icon_color: '79ff97',
-        text_color: '9f9f9f',
-        bg_color: '151515',
-    },
-    radical: {
-        title_color: 'fe428e',
-        icon_color: 'f8d847',
-        text_color: 'a9fef7',
-        bg_color: '141321',
-    },
-    merko: {
-        title_color: 'abd200',
-        icon_color: 'b7d364',
-        text_color: '68b587',
-        bg_color: '0a0f0b',
-    },
-    gruvbox: {
-        title_color: 'fabd2f',
-        icon_color: 'fe8019',
-        text_color: '8ec07c',
-        bg_color: '282828',
-    },
-    gruvbox_light: {
-        title_color: 'b57614',
-        icon_color: 'af3a03',
-        text_color: '427b58',
-        bg_color: 'fbf1c7',
-    },
-    tokyonight: {
-        title_color: '70a5fd',
-        icon_color: 'bf91f3',
-        text_color: '38bdae',
-        bg_color: '1a1b27',
-    },
-    onedark: {
-        title_color: 'e4bf7a',
-        icon_color: '8eb573',
-        text_color: 'df6d74',
-        bg_color: '282c34',
-    },
-    cobalt: {
-        title_color: 'e683d9',
-        icon_color: '0480ef',
-        text_color: '75eeb2',
-        bg_color: '193549',
-    },
-    synthwave: {
-        title_color: 'e2e9ec',
-        icon_color: 'ef8539',
-        text_color: 'e5289e',
-        bg_color: '2b213a',
-    },
-    highcontrast: {
-        title_color: 'e7f216',
-        icon_color: '00ffff',
-        text_color: 'fff',
-        bg_color: '000',
-    },
-    dracula: {
-        title_color: 'ff6e96',
-        icon_color: '79dafa',
-        text_color: 'f8f8f2',
-        bg_color: '282a36',
-    },
-    prussian: {
-        title_color: 'bddfff',
-        icon_color: '38a0ff',
-        text_color: '6e93b5',
-        bg_color: '172f45',
-    },
-    monokai: {
-        title_color: 'eb1f6a',
-        icon_color: 'e28905',
-        text_color: 'f1f1eb',
-        bg_color: '272822',
-    },
-    vue: {
-        title_color: '41b883',
-        icon_color: '41b883',
-        text_color: '273849',
-        bg_color: 'fffefe',
-    },
-    'vue-dark': {
-        title_color: '41b883',
-        icon_color: '41b883',
-        text_color: 'fffefe',
-        bg_color: '273849',
-    },
-    'shades-of-purple': {
-        title_color: 'fad000',
-        icon_color: 'b362ff',
-        text_color: 'a599e9',
-        bg_color: '2d2b55',
-    },
-    nightowl: {
-        title_color: 'c792ea',
-        icon_color: 'ffeb95',
-        text_color: '7fdbca',
-        bg_color: '011627',
-    },
-    buefy: {
-        title_color: '7957d5',
-        icon_color: 'ff3860',
-        text_color: '363636',
-        bg_color: 'ffffff',
-    },
-    'blue-green': {
-        title_color: '2f97c1',
-        icon_color: 'f5b700',
-        text_color: '0cf574',
-        bg_color: '040f0f',
-    },
-    algolia: {
-        title_color: '00AEFF',
-        icon_color: '2DDE98',
-        text_color: 'FFFFFF',
-        bg_color: '050F2C',
-    },
-    'great-gatsby': {
-        title_color: 'ffa726',
-        icon_color: 'ffb74d',
-        text_color: 'ffd95b',
-        bg_color: '000000',
-    },
-    darcula: {
-        title_color: 'BA5F17',
-        icon_color: '84628F',
-        text_color: 'BEBEBE',
-        bg_color: '242424',
-    },
-    bear: {
-        title_color: 'e03c8a',
-        icon_color: '00AEFF',
-        text_color: 'bcb28d',
-        bg_color: '1f2023',
-    },
-    'solarized-dark': {
-        title_color: '268bd2',
-        icon_color: 'b58900',
-        text_color: '859900',
-        bg_color: '002b36',
-    },
-    'solarized-light': {
-        title_color: '268bd2',
-        icon_color: 'b58900',
-        text_color: '859900',
-        bg_color: 'fdf6e3',
-    },
-    'chartreuse-dark': {
-        title_color: '7fff00',
-        icon_color: '00AEFF',
-        text_color: 'fff',
-        bg_color: '000',
-    },
-    nord: {
-        title_color: '81a1c1',
-        text_color: 'd8dee9',
-        icon_color: '88c0d0',
-        bg_color: '2e3440',
-    },
-    gotham: {
-        title_color: '2aa889',
-        icon_color: '599cab',
-        text_color: '99d1ce',
-        bg_color: '0c1014',
-    },
-    'material-palenight': {
-        title_color: 'c792ea',
-        icon_color: '89ddff',
-        text_color: 'a6accd',
-        bg_color: '292d3e',
-    },
-    graywhite: {
-        title_color: '24292e',
-        icon_color: '24292e',
-        text_color: '24292e',
-        bg_color: 'ffffff',
-    },
-    'vision-friendly-dark': {
-        title_color: 'ffb000',
-        icon_color: '785ef0',
-        text_color: 'ffffff',
-        bg_color: '000000',
-    },
-    'ayu-mirage': {
-        title_color: 'f4cd7c',
-        icon_color: '73d0ff',
-        text_color: 'c7c8c2',
-        bg_color: '1f2430',
-    },
-    'midnight-purple': {
-        title_color: '9745f5',
-        icon_color: '9f4bff',
-        text_color: 'ffffff',
-        bg_color: '000000',
-    },
-    calm: {
-        title_color: 'e07a5f',
-        icon_color: 'edae49',
-        text_color: 'ebcfb2',
-        bg_color: '373f51',
-    },
-    'flag-india': {
-        title_color: 'ff8f1c',
-        icon_color: '250E62',
-        text_color: '509E2F',
-        bg_color: 'ffffff',
-    },
-    omni: {
-        title_color: 'FF79C6',
-        icon_color: 'e7de79',
-        text_color: 'E1E1E6',
-        bg_color: '191622',
-    },
-    react: {
-        title_color: '61dafb',
-        icon_color: '61dafb',
-        text_color: 'ffffff',
-        bg_color: '20232a',
-    },
-    jolly: {
-        title_color: 'ff64da',
-        icon_color: 'a960ff',
-        text_color: 'ffffff',
-        bg_color: '291B3E',
-    },
-    maroongold: {
-        title_color: 'F7EF8A',
-        icon_color: 'F7EF8A',
-        text_color: 'E0AA3E',
-        bg_color: '260000',
-    },
-    yeblu: {
-        title_color: 'ffff00',
-        icon_color: 'ffff00',
-        text_color: 'ffffff',
-        bg_color: '002046',
-    },
-    blueberry: {
-        title_color: '82aaff',
-        icon_color: '89ddff',
-        text_color: '27e8a7',
-        bg_color: '242938',
-    },
-    slateorange: {
-        title_color: 'faa627',
-        icon_color: 'faa627',
-        text_color: 'ffffff',
-        bg_color: '36393f',
-    },
-    kacho_ga: {
-        title_color: 'bf4a3f',
-        icon_color: 'a64833',
-        text_color: 'd9c8a9',
-        bg_color: '402b23',
-    },
-    outrun: {
-        title_color: 'ffcc00',
-        icon_color: 'ff1aff',
-        text_color: '8080ff',
-        bg_color: '141439',
-    },
-    ocean_dark: {
-        title_color: '8957B2',
-        icon_color: 'FFFFFF',
-        text_color: '92D534',
-        bg_color: '151A28',
-    },
-    city_lights: {
-        title_color: '5D8CB3',
-        icon_color: '4798FF',
-        text_color: '718CA1',
-        bg_color: '1D252C',
-    },
-    github_dark: {
-        title_color: '58A6FF',
-        icon_color: '1F6FEB',
-        text_color: 'C3D1D9',
-        bg_color: '0D1117',
-    },
-    github_dark_dimmed: {
-        title_color: '539bf5',
-        icon_color: '539bf5',
-        text_color: 'ADBAC7',
-        bg_color: '24292F',
-        border_color: '373E47',
-    },
-    discord_old_blurple: {
-        title_color: '7289DA',
-        icon_color: '7289DA',
-        text_color: 'FFFFFF',
-        bg_color: '2C2F33',
-    },
-    aura_dark: {
-        title_color: 'ff7372',
-        icon_color: '6cffd0',
-        text_color: 'dbdbdb',
-        bg_color: '252334',
-    },
-    panda: {
-        title_color: '19f9d899',
-        icon_color: '19f9d899',
-        text_color: 'FF75B5',
-        bg_color: '31353a',
-    },
-    noctis_minimus: {
-        title_color: 'd3b692',
-        icon_color: '72b7c0',
-        text_color: 'c5cdd3',
-        bg_color: '1b2932',
-    },
-    cobalt2: {
-        title_color: 'ffc600',
-        icon_color: 'ffffff',
-        text_color: '0088ff',
-        bg_color: '193549',
-    },
-    swift: {
-        title_color: '000000',
-        icon_color: 'f05237',
-        text_color: '000000',
-        bg_color: 'f7f7f7',
-    },
-    aura: {
-        title_color: 'a277ff',
-        icon_color: 'ffca85',
-        text_color: '61ffca',
-        bg_color: '15141b',
-    },
-    apprentice: {
-        title_color: 'ffffff',
-        icon_color: 'ffffaf',
-        text_color: 'bcbcbc',
-        bg_color: '262626',
-    },
-    moltack: {
-        title_color: '86092C',
-        icon_color: '86092C',
-        text_color: '574038',
-        bg_color: 'F5E1C0',
-    },
-    codeSTACKr: {
-        title_color: 'ff652f',
-        icon_color: 'FFE400',
-        text_color: 'ffffff',
-        bg_color: '09131B',
-        border_color: '0c1a25',
-    },
-    rose_pine: {
-        title_color: '9ccfd8',
-        icon_color: 'ebbcba',
-        text_color: 'e0def4',
-        bg_color: '191724',
-    },
-    catppuccin_latte: {
-        title_color: '137980',
-        icon_color: '8839ef',
-        text_color: '4c4f69',
-        bg_color: 'eff1f5',
-    },
-    catppuccin_mocha: {
-        title_color: '94e2d5',
-        icon_color: 'cba6f7',
-        text_color: 'cdd6f4',
-        bg_color: '1e1e2e',
-    },
-    date_night: {
-        title_color: 'DA7885',
-        text_color: 'E1B2A2',
-        icon_color: 'BB8470',
-        border_color: '170F0C',
-        bg_color: '170F0C',
-    },
-    one_dark_pro: {
-        title_color: '61AFEF',
-        text_color: 'E5C06E',
-        icon_color: 'C678DD',
-        border_color: '3B4048',
-        bg_color: '23272E',
-    },
-    rose: {
-        title_color: '8d192b',
-        text_color: '862931',
-        icon_color: 'B71F36',
-        border_color: 'e9d8d4',
-        bg_color: 'e9d8d4',
-    },
-    holi: {
-        title_color: '5FABEE',
-        text_color: 'D6E7FF',
-        icon_color: '5FABEE',
-        border_color: '85A4C0',
-        bg_color: '030314',
-    },
-    neon: {
-        title_color: '00EAD3',
-        text_color: 'FF449F',
-        icon_color: '00EAD3',
-        border_color: 'ffffff',
-        bg_color: '000000',
-    },
-    blue_navy: {
-        title_color: '82AAFF',
-        text_color: '82AAFF',
-        icon_color: '82AAFF',
-        border_color: 'ffffff',
-        bg_color: '000000',
-    },
-    calm_pink: {
-        title_color: 'e07a5f',
-        text_color: 'edae49',
-        icon_color: 'ebcfb2',
-        border_color: 'e1bc29',
-        bg_color: '2b2d40',
-    },
-    ambient_gradient: {
-        title_color: 'ffffff',
-        text_color: 'ffffff',
-        icon_color: 'ffffff',
-        bg_color: '35,4158d0,c850c0,ffcc70',
-    },
-};
-const themeNames = Object.keys(themes);
-
-;// CONCATENATED MODULE: ./src/common/utils.ts
-
-
-const renderError = (message, secondaryMessage = '') => {
-    return `
-    <svg width="495" height="120" viewBox="0 0 495 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <style>
-    .text { font: 600 16px 'Segoe UI', Ubuntu, Sans-Serif; fill: #2F80ED }
-    .small { font: 600 12px 'Segoe UI', Ubuntu, Sans-Serif; fill: #252525 }
-    .gray { fill: #858585 }
-    </style>
-    <rect x="0.5" y="0.5" width="494" height="99%" rx="4.5" fill="#FFFEFE" stroke="#E4E2E2"/>
-    <text x="25" y="45" class="text">Something went wrong! file an issue at https://tiny.one/readme-stats</text>
-    <text data-testid="message" x="25" y="55" class="text small">
-      <tspan x="25" dy="18">${encodeHTML(message)}</tspan>
-      <tspan x="25" dy="18" class="gray">${secondaryMessage}</tspan>
-    </text>
-    </svg>
-  `;
-};
-const matchWildcard = (str, pattern) => new RegExp('^' +
-    lodash_default().escapeRegExp(pattern)
-        .replace(/\\\*/g, '.*')
-        .replace(/\\\?/g, '.') +
-    '$').test(str);
-const encodeHTML = (str) => {
-    return str
-        .replace(/[\u00A0-\u9999<>&](?!#)/gim, (i) => {
-        return '&#' + i.charCodeAt(0) + ';';
-    })
-        .replace(/\u0008/gim, '');
-};
-const kFormatter = (num) => {
-    return Math.abs(num) > 999
-        ? Math.sign(num) * parseFloat((Math.abs(num) / 1000).toFixed(1)) + 'k'
-        : Math.sign(num) * Math.abs(num);
-};
-function isValidHexColor(hexColor) {
-    return new RegExp(/^([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{3}|[A-Fa-f0-9]{4})$/).test(hexColor);
-}
-const clampValue = (number, min, max) => {
-    if (typeof number === 'string') {
-        number = parseInt(number);
-    }
-    if (Number.isNaN(number))
-        return min;
-    return Math.max(min, Math.min(number, max));
-};
-function isValidGradient(colors) {
-    return isValidHexColor(colors[1]) && isValidHexColor(colors[2]);
-}
-function fallbackColor(color, fallbackColor) {
-    if (!color) {
-        return fallbackColor;
-    }
-    const colors = color.split(',');
-    let gradient = null;
-    if (colors.length > 1 && isValidGradient(colors)) {
-        gradient = colors;
-    }
-    return (gradient ? gradient : isValidHexColor(color) && `#${color}`) || fallbackColor;
-}
-const flexLayout = ({ items, gap, direction, sizes = [], }) => {
-    let lastSize = 0;
-    return items.filter(Boolean).map((item, i) => {
-        const size = sizes[i] || 0;
-        let transform = `translate(${lastSize}, 0)`;
-        if (direction === 'column') {
-            transform = `translate(0, ${lastSize})`;
-        }
-        lastSize += size + gap;
-        return `<g transform="${transform}">${item}</g>`;
-    });
-};
-const getCardColors = ({ title_color, text_color, icon_color, bg_color, border_color, theme: themeName, }) => {
-    const theme = themes[themeName];
-    const defaultTheme = themes["default"];
-    const titleColor = fallbackColor(title_color || theme.title_color, '#' + defaultTheme.title_color);
-    const iconColor = fallbackColor(icon_color || theme.icon_color, '#' + defaultTheme.icon_color);
-    const textColor = fallbackColor(text_color || theme.text_color, '#' + defaultTheme.text_color);
-    const bgColor = fallbackColor(bg_color || theme.bg_color, '#' + defaultTheme.bg_color);
-    const borderColor = fallbackColor(border_color || theme.border_color, '#' + defaultTheme.border_color);
-    return { titleColor, iconColor, textColor, bgColor, borderColor };
-};
-const TIMES_S = {
-    THIRTY_MINUTES: 1800,
-    TWO_HOURS: 7200,
-    FOUR_HOURS: 14400,
-    ONE_DAY: 86400,
-};
-const SECONDARY_ERROR_MESSAGES = {
-    MAX_RETRY: 'Please add an env variable called PAT_1 with your github token in vercel',
-    USER_NOT_FOUND: 'Make sure the provided username is not an organization',
-};
-class CustomError extends Error {
-    type;
-    secondaryMessage;
-    constructor(message, type) {
-        super(message);
-        this.type = type;
-        this.secondaryMessage =
-            SECONDARY_ERROR_MESSAGES[type] || type;
-    }
-    static MAX_RETRY = (/* unused pure expression or super */ null && ('MAX_RETRY'));
-    static USER_NOT_FOUND = (/* unused pure expression or super */ null && ('USER_NOT_FOUND'));
-}
-const measureText = (str, fontSize = 10) => {
-    const widths = [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0.2796875, 0.2765625,
-        0.3546875, 0.5546875, 0.5546875, 0.8890625, 0.665625, 0.190625,
-        0.3328125, 0.3328125, 0.3890625, 0.5828125, 0.2765625, 0.3328125,
-        0.2765625, 0.3015625, 0.5546875, 0.5546875, 0.5546875, 0.5546875,
-        0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875,
-        0.2765625, 0.2765625, 0.584375, 0.5828125, 0.584375, 0.5546875,
-        1.0140625, 0.665625, 0.665625, 0.721875, 0.721875, 0.665625,
-        0.609375, 0.7765625, 0.721875, 0.2765625, 0.5, 0.665625,
-        0.5546875, 0.8328125, 0.721875, 0.7765625, 0.665625, 0.7765625,
-        0.721875, 0.665625, 0.609375, 0.721875, 0.665625, 0.94375,
-        0.665625, 0.665625, 0.609375, 0.2765625, 0.3546875, 0.2765625,
-        0.4765625, 0.5546875, 0.3328125, 0.5546875, 0.5546875, 0.5,
-        0.5546875, 0.5546875, 0.2765625, 0.5546875, 0.5546875, 0.221875,
-        0.240625, 0.5, 0.221875, 0.8328125, 0.5546875, 0.5546875,
-        0.5546875, 0.5546875, 0.3328125, 0.5, 0.2765625, 0.5546875,
-        0.5, 0.721875, 0.5, 0.5, 0.5, 0.3546875, 0.259375, 0.353125, 0.5890625,
-    ];
-    const avg = 0.5279276315789471;
-    return (str
-        .split('')
-        .map((c) => (c.charCodeAt(0) < widths.length ? widths[c.charCodeAt(0)] : avg))
-        .reduce((cur, acc) => acc + cur) * fontSize);
-};
-const getImageBase64FromURL = async (url) => {
-    const imageURLData = await fetch(url);
-    const buffer = await imageURLData.arrayBuffer();
-    const stringifiedBuffer = Buffer.from(buffer).toString('base64');
-    const contentType = imageURLData.headers.get('content-type');
-    const imageBase64 = `data:image/${contentType};base64,${stringifiedBuffer}`;
-    return new Promise((resolve) => {
-        resolve(imageBase64);
-    });
-};
-const getColumnCriteria = (columns, name) => columns.find((col) => col.name === name);
-
-;// CONCATENATED MODULE: ./src/getStyles.ts
-const calculateCircleProgress = (value) => {
-    const radius = 40;
-    const c = Math.PI * (radius * 2);
-    if (value < 0)
-        value = 0;
-    if (value > 100)
-        value = 100;
-    return ((100 - value) / 100) * c;
-};
-const getProgressAnimation = ({ progress }) => {
-    return `
-    @keyframes rankAnimation {
-      from {
-        stroke-dashoffset: ${calculateCircleProgress(0)};
-      }
-      to {
-        stroke-dashoffset: ${calculateCircleProgress(progress)};
-      }
-    }
-  `;
-};
-const getAnimations = () => {
-    return `
-    /* Animations */
-    @keyframes scaleInAnimation {
-      from {
-        transform: translate(0px, 0px) scale(0);
-      }
-      to {
-        transform: translate(0px, 0px) scale(1);
-      }
-    }
-    @keyframes fadeInAnimation {
-      from {
-        opacity: 0;
-      }
-      to {
-        opacity: 1;
-      }
-    }
-  `;
-};
-const getStyles = ({ titleColor, textColor, iconColor, show_icons, progress, }) => {
-    return `
-    .stat {
-      font: 600 14px 'Segoe UI', Ubuntu, "Helvetica Neue", Sans-Serif; fill: ${textColor};
-    }
-    @supports(-moz-appearance: auto) {
-      /* Selector detects Firefox */
-      .stat { font-size:12px; }
-    }
-    .stagger {
-      opacity: 0;
-      animation: fadeInAnimation 0.3s ease-in-out forwards;
-    }
-    .cell-text {
-      font: 800 18px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${textColor}; 
-      animation: scaleInAnimation 0.3s ease-in-out forwards;
-    }
-    
-    .bold { font-weight: 700 }
-    .icon {
-      fill: ${iconColor};
-      display: ${show_icons ? 'block' : 'none'};
-    }
-    
-    .rank-circle-rim {
-      stroke: ${titleColor};
-      fill: none;
-      stroke-width: 3;
-      opacity: 0.2;
-    }
-    ${ false || progress === undefined
-        ? ''
-        : getProgressAnimation({ progress })}
-  `;
-};
-
-;// CONCATENATED MODULE: ./src/common/Card.ts
-
-
-function renderCard({ customTitle, defaultTitle = '', titlePrefixIcon, body, columns, width = 100, height = 100, border_radius = 4.5, hide_border = false, hide_title = false, colors = {}, css = '', animations = true, }) {
-    height = hide_title ? height - 30 : height;
-    const title = encodeHTML(customTitle ?? defaultTitle);
-    const repositoryNameTitle = 'Repository';
-    const paddingX = 25;
-    const paddingY = 35;
-    function renderTitle() {
-        const titleText = `
-      <text
-        x="0"
-        y="0"
-        class="header"
-        data-testid="header"
-      >${title}</text>
-    `;
-        const prefixIconSize = 16;
-        const prefixIconGap = 25;
-        const prefixIcon = titlePrefixIcon
-            ? `
-      <svg
-        class="icon"
-        x="0"
-        y="-13"
-        viewBox="0 0 16 16"
-        version="1.1"
-        width="${prefixIconSize}"
-        height="${prefixIconSize}"
-      >
-        ${titlePrefixIcon}
-      </svg>
-    `
-            : undefined;
-        const titleWidth = paddingX +
-            (prefixIcon ? prefixIconSize + prefixIconGap : 0) +
-            measureText(title, 18);
-        return {
-            title: `
-      <g
-        data-testid="card-title"
-        transform="translate(${paddingX}, ${paddingY})"
-      >
-        ${flexLayout({
-                items: [prefixIcon, titleText].filter((v) => Boolean(v)),
-                gap: prefixIconGap,
-                direction: 'row',
-            }).join('')}
-      </g>
-    `,
-            titleWidth,
-        };
-    }
-    function renderSubTitle() {
-        const repoTitleText = `
-    <text
-      x="0"
-      y="5"
-      class="sub-title-header"
-      data-testid="header"
-    >${repositoryNameTitle}</text>
-  `;
-        const icon = (inner, width = 24, iconTitle) => `<svg
-      class="icon"
-      x="0"
-      y="-13"
-      viewBox="0 0 24 24"
-      version="1.1"
-      width="${width}"
-      height="24"
-      preserveAspectRatio="xMidYMid meet"
-    >
-      ${iconTitle ? `<title>${iconTitle}</title>` : ''}
-      ${inner}
-    </svg>`;
-        const githubIcon = `
-      <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-      <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-      <g id="SVGRepo_iconCarrier">
-        <path fill-rule="evenodd" d="M12 0a12 12 0 1 0 0 24 12 12 0 0 0 0-24zm3.163 21.783h-.093a.513.513 0 0 1-.382-.14.513.513 0 0 1-.14-.372v-1.406c.006-.467.01-.94.01-1.416a3.693 3.693 0 0 0-.151-1.028 1.832 1.832 0 0 0-.542-.875 8.014 8.014 0 0 0 2.038-.471 4.051 4.051 0 0 0 1.466-.964c.407-.427.71-.943.885-1.506a6.77 6.77 0 0 0 .3-2.13 4.138 4.138 0 0 0-.26-1.476 3.892 3.892 0 0 0-.795-1.284 2.81 2.81 0 0 0 .162-.582c.033-.2.05-.402.05-.604 0-.26-.03-.52-.09-.773a5.309 5.309 0 0 0-.221-.763.293.293 0 0 0-.111-.02h-.11c-.23.002-.456.04-.674.111a5.34 5.34 0 0 0-.703.26 6.503 6.503 0 0 0-.661.343c-.215.127-.405.249-.573.362a9.578 9.578 0 0 0-5.143 0 13.507 13.507 0 0 0-.572-.362 6.022 6.022 0 0 0-.672-.342 4.516 4.516 0 0 0-.705-.261 2.203 2.203 0 0 0-.662-.111h-.11a.29.29 0 0 0-.11.02 5.844 5.844 0 0 0-.23.763c-.054.254-.08.513-.081.773 0 .202.017.404.051.604.033.199.086.394.16.582A3.888 3.888 0 0 0 5.702 10a4.142 4.142 0 0 0-.263 1.476 6.871 6.871 0 0 0 .292 2.12c.181.563.483 1.08.884 1.516.415.422.915.75 1.466.964.653.25 1.337.41 2.033.476a1.828 1.828 0 0 0-.452.633 2.99 2.99 0 0 0-.2.744 2.754 2.754 0 0 1-1.175.27 1.788 1.788 0 0 1-1.065-.3 2.904 2.904 0 0 1-.752-.824 3.1 3.1 0 0 0-.292-.382 2.693 2.693 0 0 0-.372-.343 1.841 1.841 0 0 0-.432-.24 1.2 1.2 0 0 0-.481-.101c-.04.001-.08.005-.12.01a.649.649 0 0 0-.162.02.408.408 0 0 0-.13.06.116.116 0 0 0-.06.1.33.33 0 0 0 .14.242c.093.074.17.131.232.171l.03.021c.133.103.261.214.382.333.112.098.213.209.3.33.09.119.168.246.231.381.073.134.15.288.231.463.188.474.522.875.954 1.145.453.243.961.364 1.476.351.174 0 .349-.01.522-.03.172-.028.343-.057.515-.091v1.743a.5.5 0 0 1-.533.521h-.062a10.286 10.286 0 1 1 6.324 0v.005z">
-        </path>
-      </g>
-      `;
-        const gitPRIcon = `<path fill-rule="evenodd" clip-rule="evenodd" d="M14.7071 2.70711L13.4142 4H14C17.3137 4 20 6.68629 20 10V16.1707C21.1652 16.5825 22 17.6938 22 19C22 20.6569 20.6569 22 19 22C17.3431 22 16 20.6569 16 19C16 17.6938 16.8348 16.5825 18 16.1707V10C18 7.79086 16.2091 6 14 6H13.4142L14.7071 7.29289C15.0976 7.68342 15.0976 8.31658 14.7071 8.70711C14.3166 9.09763 13.6834 9.09763 13.2929 8.70711L10.2929 5.70711C9.90237 5.31658 9.90237 4.68342 10.2929 4.29289L13.2929 1.29289C13.6834 0.902369 14.3166 0.902369 14.7071 1.29289C15.0976 1.68342 15.0976 2.31658 14.7071 2.70711ZM18 19C18 18.4477 18.4477 18 19 18C19.5523 18 20 18.4477 20 19C20 19.5523 19.5523 20 19 20C18.4477 20 18 19.5523 18 19ZM6 4C5.44772 4 5 4.44772 5 5C5 5.55228 5.44772 6 6 6C6.55228 6 7 5.55228 7 5C7 4.44772 6.55228 4 6 4ZM7 7.82929C8.16519 7.41746 9 6.30622 9 5C9 3.34315 7.65685 2 6 2C4.34315 2 3 3.34315 3 5C3 6.30622 3.83481 7.41746 5 7.82929V16.1707C3.83481 16.5825 3 17.6938 3 19C3 20.6569 4.34315 22 6 22C7.65685 22 9 20.6569 9 19C9 17.6938 8.16519 16.5825 7 16.1707V7.82929ZM6 18C5.44772 18 5 18.4477 5 19C5 19.5523 5.44772 20 6 20C6.55228 20 7 19.5523 7 19C7 18.4477 6.55228 18 6 18Z"/>`;
-        const starIcon = '<path d="M11.2691 4.41115C11.5006 3.89177 11.6164 3.63208 11.7776 3.55211C11.9176 3.48263 12.082 3.48263 12.222 3.55211C12.3832 3.63208 12.499 3.89177 12.7305 4.41115L14.5745 8.54808C14.643 8.70162 14.6772 8.77839 14.7302 8.83718C14.777 8.8892 14.8343 8.93081 14.8982 8.95929C14.9705 8.99149 15.0541 9.00031 15.2213 9.01795L19.7256 9.49336C20.2911 9.55304 20.5738 9.58288 20.6997 9.71147C20.809 9.82316 20.8598 9.97956 20.837 10.1342C20.8108 10.3122 20.5996 10.5025 20.1772 10.8832L16.8125 13.9154C16.6877 14.0279 16.6252 14.0842 16.5857 14.1527C16.5507 14.2134 16.5288 14.2807 16.5215 14.3503C16.5132 14.429 16.5306 14.5112 16.5655 14.6757L17.5053 19.1064C17.6233 19.6627 17.6823 19.9408 17.5989 20.1002C17.5264 20.2388 17.3934 20.3354 17.2393 20.3615C17.0619 20.3915 16.8156 20.2495 16.323 19.9654L12.3995 17.7024C12.2539 17.6184 12.1811 17.5765 12.1037 17.56C12.0352 17.5455 11.9644 17.5455 11.8959 17.56C11.8185 17.5765 11.7457 17.6184 11.6001 17.7024L7.67662 19.9654C7.18404 20.2495 6.93775 20.3915 6.76034 20.3615C6.60623 20.3354 6.47319 20.2388 6.40075 20.1002C6.31736 19.9408 6.37635 19.6627 6.49434 19.1064L7.4341 14.6757C7.46898 14.5112 7.48642 14.429 7.47814 14.3503C7.47081 14.2807 7.44894 14.2134 7.41394 14.1527C7.37439 14.0842 7.31195 14.0279 7.18708 13.9154L3.82246 10.8832C3.40005 10.5025 3.18884 10.3122 3.16258 10.1342C3.13978 9.97956 3.19059 9.82316 3.29993 9.71147C3.42581 9.58288 3.70856 9.55304 4.27406 9.49336L8.77835 9.01795C8.94553 9.00031 9.02911 8.99149 9.10139 8.95929C9.16534 8.93081 9.2226 8.8892 9.26946 8.83718C9.32241 8.77839 9.35663 8.70162 9.42508 8.54808L11.2691 4.41115Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
-        const commitsIcon = '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M480-280q-73 0-127.5-45.5T284-440H80v-80h204q14-69 68.5-114.5T480-680q73 0 127.5 45.5T676-520h204v80H676q-14 69-68.5 114.5T480-280Zm0-80q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35Z"/></svg>';
-        const iconMap = {
-            contribution_rank: { icon: gitPRIcon, title: 'Contribution Rank' },
-            star_rank: { icon: starIcon, title: 'Star Rank' },
-            commits: { icon: commitsIcon, title: 'Commits' },
-        };
-        return `
-      <g
-        data-testid="card-title"
-        transform="translate(${paddingX}, ${paddingY + 30})"
-      >
-        ${flexLayout({
-            items: [icon(githubIcon), repoTitleText],
-            gap: 30,
-            direction: 'row',
-        }).join('')}
-      </g>
-      <g
-        data-testid="card-title"
-        transform="translate(${paddingX + 235}, ${paddingY + 30})"
-      >
-        ${flexLayout({
-            items: columns.map((col) => {
-                const { icon: iconPath, title: iconTitle } = iconMap[col.column];
-                return icon(iconPath, col.width, iconTitle);
-            }),
-            gap: 50,
-            direction: 'row',
-        }).join('')}
-      </g>
-    `;
-    }
-    function renderGradient() {
-        if (typeof colors.bgColor !== 'object')
-            return '';
-        const gradients = colors.bgColor.slice(1);
-        return typeof colors.bgColor === 'object'
-            ? `
-        <defs>
-          <linearGradient
-            id="gradient"
-            gradientTransform="rotate(${colors.bgColor[0]})"
-            gradientUnits="userSpaceOnUse"
-          >
-            ${gradients.map((grad, index) => {
-                const offset = (index * 100) / (gradients.length - 1);
-                return `<stop offset="${offset}%" stop-color="#${grad}" />`;
-            })}
-          </linearGradient>
-        </defs>
-        `
-            : '';
-    }
-    const { title: resolvedTitle, titleWidth } = hide_title
-        ? { title: '', titleWidth: 0 }
-        : renderTitle();
-    width = Math.max(width, titleWidth);
-    width += paddingX;
-    return `
-      <svg
-        width="${width}"
-        height="${height}"
-        viewBox="0 0 ${width} ${height}"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        xmlns:xlink="http://www.w3.org/1999/xlink"
-        role="img"
-        aria-labelledby="descId"
-      >
-        <style>
-          .header {
-            font: 600 18px 'Segoe UI', Ubuntu, Sans-Serif;
-            fill: ${colors?.titleColor};
-            animation: fadeInAnimation 0.8s ease-in-out forwards;
-          }
-          .sub-title-header {
-            font: 800 14px 'Segoe UI', Ubuntu, Sans-Serif;
-            fill: ${colors?.titleColor};
-            animation: fadeInAnimation 0.8s ease-in-out forwards;
-          }
-          @supports(-moz-appearance: auto) {
-            /* Selector detects Firefox */
-            .header { font-size: 15.5px; }
-          }
-          ${css}
-
-          ${ false ? 0 : getAnimations()}
-          ${animations === false
-        ? `* { animation-duration: 0s !important; animation-delay: 0s !important; }`
-        : ''}
-        </style>
-
-        ${renderGradient()}
-
-        <rect
-          data-testid="card-bg"
-          x="0.5"
-          y="0.5"
-          rx="${border_radius}"
-          height="99%"
-          stroke="${colors.borderColor}"
-          width="${width - 1}"
-          fill="${typeof colors.bgColor === 'object' ? 'url(#gradient)' : colors.bgColor}"
-          stroke-opacity="${hide_border ? 0 : 1}"
-        />
-        ${hide_title ? '' : resolvedTitle}
-        ${hide_title ? '' : renderSubTitle()}
-        <g
-          data-testid="main-card-body"
-          transform="translate(0, ${hide_title ? paddingX : paddingY + 20 + 30})"
-        >
-          ${body}
-        </g>
-      </svg>
-    `;
-}
-
-;// CONCATENATED MODULE: ./src/common/I18n.ts
-class I18n {
-    locale;
-    translations;
-    fallbackLocale;
-    constructor({ locale, translations, }) {
-        this.locale = locale;
-        this.translations = translations;
-        this.fallbackLocale = 'en';
-    }
-    t(str) {
-        if (!this.translations[str]) {
-            throw new Error(`${str} Translation string not found`);
-        }
-        if (!this.translations[str][this.locale || this.fallbackLocale]) {
-            throw new Error(`${str} Translation locale not found`);
-        }
-        return this.translations[str][this.locale || this.fallbackLocale];
-    }
-}
-
-;// CONCATENATED MODULE: ./src/fetchContributors.ts
-async function fetchContributors(username, nameWithOwner, token) {
-    const page = 1;
-    const url = `https://api.github.com/repos/${nameWithOwner}/contributors?page=${page}&per_page=100`;
-    const response = await fetch(url, {
-        headers: { Authorization: `token ${token}` },
-    });
-    console.log(response);
-    if (!response.ok)
-        return [];
-    const contributors = (await response.json());
-    return contributors;
-}
-
-;// CONCATENATED MODULE: ./src/translations.ts
-
-const statCardLocales = ({ name, apostrophe }) => {
-    const encodedName = encodeHTML(name);
-    return {
-        'statcard.title': {
-            ar: `${encodedName} إحصائيات غيت هاب`,
-            cn: `${encodedName} 的 GitHub 统计数据`,
-            'zh-tw': `${encodedName} 的 GitHub 統計數據`,
-            cs: `GitHub statistiky uživatele ${encodedName}`,
-            de: `${encodedName + apostrophe} GitHub-Statistiken`,
-            en: `${encodedName}'${apostrophe} GitHub Contributor Stats`,
-            bn: `${encodedName} এর GitHub পরিসংখ্যান`,
-            es: `Estadísticas de GitHub de ${encodedName}`,
-            fr: `Statistiques GitHub de ${encodedName}`,
-            hu: `${encodedName} GitHub statisztika`,
-            it: `Statistiche GitHub di ${encodedName}`,
-            ja: `${encodedName}の GitHub 統計`,
-            kr: `${encodedName}의 GitHub 기여 통계`,
-            nl: `${encodedName}'${apostrophe} GitHub-statistieken`,
-            'pt-pt': `Estatísticas do GitHub de ${encodedName}`,
-            'pt-br': `Estatísticas do GitHub de ${encodedName}`,
-            np: `${encodedName}'${apostrophe} गिटहब तथ्याङ्क`,
-            el: `Στατιστικά GitHub του ${encodedName}`,
-            ru: `Статистика GitHub пользователя ${encodedName}`,
-            'uk-ua': `Статистика GitHub користувача ${encodedName}`,
-            id: `Statistik GitHub ${encodedName}`,
-            ml: `${encodedName}'${apostrophe} ഗിറ്റ്ഹബ് സ്ഥിതിവിവരക്കണക്കുകൾ`,
-            my: `Statistik GitHub ${encodedName}`,
-            sk: `GitHub štatistiky používateľa ${encodedName}`,
-            tr: `${encodedName} Hesabının GitHub Yıldızları`,
-            pl: `Statystyki GitHub użytkownika ${encodedName}`,
-            uz: `${encodedName}ning Github'dagi statistikasi`,
-            vi: `Thống Kê GitHub ${encodedName}`,
-            se: `GitHubstatistik för ${encodedName}`,
-        },
-        'statcard.totalstars': {
-            ar: 'مجموع النجوم',
-            cn: '获标星数（star）',
-            'zh-tw': '獲標星數（star）',
-            cs: 'Celkem hvězd',
-            de: 'Insgesamt erhaltene Sterne',
-            en: 'Total Stars Earned',
-            bn: 'সর্বমোট Star',
-            es: 'Estrellas totales',
-            fr: "Total d'étoiles",
-            hu: 'Csillagok',
-            it: 'Stelle totali',
-            ja: 'スターされた数',
-            kr: '받은 스타 수',
-            nl: 'Totaal Sterren Ontvangen',
-            'pt-pt': 'Total de estrelas',
-            'pt-br': 'Total de estrelas',
-            np: 'कुल ताराहरू',
-            el: 'Σύνολο Αστεριών',
-            ru: 'Всего звезд',
-            'uk-ua': 'Всього зірок',
-            id: 'Total Bintang',
-            ml: 'ആകെ നക്ഷത്രങ്ങൾ',
-            my: 'Jumlah Bintang',
-            sk: 'Hviezdy',
-            tr: 'Toplam Yıldız',
-            pl: 'Liczba Gwiazdek dostanych',
-            uz: 'Yulduzchalar',
-            vi: 'Tổng Số Sao',
-            se: 'Antal intjänade stjärnor',
-        },
-        'statcard.commits': {
-            ar: 'مجموع الحفظ',
-            cn: '累计提交数（commit）',
-            'zh-tw': '累計提交數（commit）',
-            cs: 'Celkem commitů',
-            de: 'Anzahl Commits',
-            en: 'Total Commits',
-            bn: 'সর্বমোট Commit',
-            es: 'Commits totales',
-            fr: 'Total des Commits',
-            hu: 'Összes commit',
-            it: 'Commit totali',
-            ja: '合計コミット数',
-            kr: '전체 커밋 수',
-            nl: 'Aantal commits',
-            'pt-pt': 'Total de Commits',
-            'pt-br': 'Total de Commits',
-            np: 'कुल Commits',
-            el: 'Σύνολο Commits',
-            ru: 'Всего коммитов',
-            'uk-ua': 'Всього коммітов',
-            id: 'Total Komitmen',
-            ml: 'ആകെ കമ്മിറ്റുകൾ',
-            my: 'Jumlah Komitmen',
-            sk: 'Všetky commity',
-            tr: 'Toplam Commit',
-            pl: 'Wszystkie commity',
-            uz: "'Commit'lar",
-            vi: 'Tổng Số Cam Kết',
-            se: 'Totalt antal commits',
-        },
-        'statcard.prs': {
-            ar: 'مجموع طلبات السحب',
-            cn: '拉取请求数（PR）',
-            'zh-tw': '拉取請求數（PR）',
-            cs: 'Celkem PRs',
-            de: 'PRs Insgesamt',
-            en: 'Total PRs',
-            bn: 'সর্বমোট PR',
-            es: 'PRs totales',
-            fr: 'Total des PRs',
-            hu: 'Összes PR',
-            it: 'PR totali',
-            ja: '合計 PR',
-            kr: 'PR 횟수',
-            nl: "Aantal PR's",
-            'pt-pt': 'Total de PRs',
-            'pt-br': 'Total de PRs',
-            np: 'कुल PRs',
-            el: 'Σύνολο PRs',
-            ru: 'Всего pull request`ов',
-            'uk-ua': 'Всього pull request`iв',
-            id: 'Total Permintaan Tarik',
-            ml: 'ആകെ പുൾ അഭ്യർത്ഥനകൾ',
-            my: 'Jumlah PR',
-            sk: 'Všetky PR',
-            tr: 'Toplam PR',
-            pl: 'Wszystkie PR-y',
-            uz: "'Pull Request'lar",
-            vi: 'Tổng Số PR',
-            se: 'Totalt antal PR',
-        },
-        'statcard.issues': {
-            ar: 'مجموع التحسينات',
-            cn: '指出问题数（issue）',
-            'zh-tw': '指出問題數（issue）',
-            cs: 'Celkem problémů',
-            de: 'Anzahl Issues',
-            en: 'Total Issues',
-            bn: 'সর্বমোট Issue',
-            es: 'Issues totales',
-            fr: "Nombre total d'incidents",
-            hu: 'Összes hibajegy',
-            it: 'Segnalazioni totali',
-            ja: '合計 issue',
-            kr: '이슈 개수',
-            nl: 'Aantal kwesties',
-            'pt-pt': 'Total de Issues',
-            'pt-br': 'Total de Issues',
-            np: 'कुल मुद्दाहरू',
-            el: 'Σύνολο Ζητημάτων',
-            ru: 'Всего issue',
-            'uk-ua': 'Всього issue',
-            id: 'Total Masalah Dilaporkan',
-            ml: 'ആകെ ലക്കങ്ങൾ',
-            my: 'Jumlah Isu Dilaporkan',
-            sk: 'Všetky problémy',
-            tr: 'Toplam Hata',
-            pl: 'Wszystkie Issues',
-            uz: "'Issue'lar",
-            vi: 'Tổng Số Vấn Đề',
-            se: 'Total antal issues',
-        },
-        'statcard.contribs': {
-            ar: 'ساهم في',
-            cn: '参与项目数',
-            'zh-tw': '參與項目數',
-            cs: 'Přispěl k',
-            de: 'Beigetragen zu',
-            en: 'Contributed to',
-            bn: 'অবদান রেখেছেন',
-            es: 'Contribuciones en',
-            fr: 'Contribué à',
-            hu: 'Hozzájárulások',
-            it: 'Ha contribuito a',
-            ja: '貢献したリポジトリ',
-            kr: '전체 기여도',
-            nl: 'Bijgedragen aan',
-            'pt-pt': 'Contribuiu em',
-            'pt-br': 'Contribuiu para',
-            np: 'कुल योगदानहरू',
-            el: 'Συνεισφέρθηκε σε',
-            ru: 'Внёс вклад в',
-            'uk-ua': 'Вніс внесок у',
-            id: 'Berkontribusi ke',
-            ml: 'സമർപ്പിച്ചിരിക്കുന്നത്',
-            my: 'Menyumbang kepada',
-            sk: 'Účasti',
-            tr: 'Katkı Verildi',
-            pl: 'Kontrybucje',
-            uz: 'Hissa qoʻshgan',
-            vi: 'Đã Đóng Góp',
-            se: 'Bidragit till',
-        },
-    };
-};
-const repoCardLocales = {
-    'repocard.template': {
-        ar: 'قالب',
-        bn: 'টেমপ্লেট',
-        cn: '模板',
-        'zh-tw': '模板',
-        cs: 'Šablona',
-        de: 'Vorlage',
-        en: 'Template',
-        es: 'Plantilla',
-        fr: 'Modèle',
-        hu: 'Sablon',
-        it: 'Template',
-        ja: 'テンプレート',
-        kr: '템플릿',
-        nl: 'Sjabloon',
-        'pt-pt': 'Modelo',
-        'pt-br': 'Modelo',
-        np: 'टेम्पलेट',
-        el: 'Πρότυπο',
-        ru: 'Шаблон',
-        'uk-ua': 'Шаблон',
-        id: 'Pola',
-        ml: 'ടെംപ്ലേറ്റ്',
-        my: 'Templat',
-        sk: 'Šablóna',
-        tr: 'Şablon',
-        pl: 'Szablony',
-        vi: 'Mẫu',
-        se: 'Mall',
-    },
-    'repocard.archived': {
-        ar: 'محفوظ',
-        bn: 'আর্কাইভড',
-        cn: '已归档',
-        'zh-tw': '已歸檔',
-        cs: 'Archivováno',
-        de: 'Archiviert',
-        en: 'Archived',
-        es: 'Archivados',
-        fr: 'Archivé',
-        hu: 'Archivált',
-        it: 'Archiviata',
-        ja: 'アーカイブ済み',
-        kr: '보관됨',
-        nl: 'Gearchiveerd',
-        'pt-pt': 'Arquivados',
-        'pt-br': 'Arquivados',
-        np: 'अभिलेख राखियो',
-        el: 'Αρχειοθετημένα',
-        ru: 'Архивирован',
-        'uk-ua': 'Архивирован',
-        id: 'Arsip',
-        ml: 'ശേഖരിച്ചത്',
-        my: 'Arkib',
-        sk: 'Archivované',
-        tr: 'Arşiv',
-        pl: 'Zarchiwizowano',
-        vi: 'Đã Lưu Trữ',
-        se: 'Arkiverade',
-    },
-};
-const langCardLocales = {
-    'langcard.title': {
-        ar: 'أكثر اللغات إستخداماً',
-        cn: '最常用的语言',
-        'zh-tw': '最常用的語言',
-        cs: 'Nejpoužívanější jazyky',
-        de: 'Meist verwendete Sprachen',
-        bn: 'সর্বাধিক ব্যবহৃত ভাষা সমূহ',
-        en: 'Most Used Languages',
-        es: 'Lenguajes más usados',
-        fr: 'Langages les plus utilisés',
-        hu: 'Leggyakrabban használt nyelvek',
-        it: 'Linguaggi più utilizzati',
-        ja: '最もよく使っている言語',
-        kr: '가장 많이 사용된 언어',
-        nl: 'Meest gebruikte talen',
-        'pt-pt': 'Idiomas mais usados',
-        'pt-br': 'Linguagens mais usadas',
-        np: 'अधिक प्रयोग गरिएको भाषाहरू',
-        el: 'Οι περισσότερο χρησιμοποιούμενες γλώσσες',
-        ru: 'Наиболее часто используемые языки',
-        'uk-ua': 'Найбільш часто використовувані мови',
-        id: 'Bahasa Yang Paling Banyak Digunakan',
-        ml: 'കൂടുതൽ ഉപയോഗിച്ച ഭാഷകൾ',
-        my: 'Bahasa Paling Digunakan',
-        sk: 'Najviac používané jazyky',
-        tr: 'En Çok Kullanılan Diller',
-        pl: 'Najczęściej używane języki',
-        vi: 'Ngôn Ngữ Thường Sử Dụng',
-        se: 'Mest använda språken',
-    },
-};
-const wakatimeCardLocales = {
-    'wakatimecard.title': {
-        ar: 'إحصائيات واكا تايم',
-        cn: 'Wakatime 周统计',
-        'zh-tw': 'Wakatime 周統計',
-        cs: 'Statistiky Wakatime',
-        de: 'Wakatime Status',
-        en: 'Wakatime Stats',
-        bn: 'Wakatime স্ট্যাটাস',
-        es: 'Estadísticas de Wakatime',
-        fr: 'Statistiques de Wakatime',
-        hu: 'Wakatime statisztika',
-        it: 'Statistiche Wakatime',
-        ja: 'Wakatime ワカタイム統計',
-        kr: 'Wakatime 주간 통계',
-        nl: 'Wakatime-statistieken',
-        'pt-pt': 'Estatísticas Wakatime',
-        'pt-br': 'Estatísticas Wakatime',
-        np: 'Wakatime तथ्या .्क',
-        el: 'Στατιστικά Wakatime',
-        ru: 'Статистика Wakatime',
-        'uk-ua': 'Статистика Wakatime',
-        id: 'Status Wakatime',
-        ml: 'വേക്ക് ടൈം സ്ഥിതിവിവരക്കണക്കുകൾ',
-        my: 'Statistik Wakatime',
-        sk: 'Wakatime štatistika',
-        tr: 'Waketime İstatistikler',
-        pl: 'statystyki Wakatime',
-        vi: 'Thống Kê Wakatime',
-        se: 'Wakatime statistik',
-    },
-    'wakatimecard.nocodingactivity': {
-        ar: 'لا يوجد نشاط برمجي لهذا الأسبوع',
-        cn: '本周没有编程活动',
-        'zh-tw': '本周沒有編程活動',
-        cs: 'Tento týden žádná aktivita v kódování',
-        de: 'Keine Aktivitäten in dieser Woche',
-        en: 'No coding activity this week',
-        bn: 'এই সপ্তাহে কোন কোডিং অ্যাক্টিভিটি নেই',
-        es: 'No hay actividad de codificación esta semana',
-        fr: 'Aucune activité de codage cette semaine',
-        hu: 'Nem volt aktivitás ezen a héten',
-        it: 'Nessuna attività in questa settimana',
-        ja: '今週のコーディング活動はありません',
-        kr: '이번 주 작업내역 없음',
-        nl: 'Geen programmeeractiviteit deze week',
-        'pt-pt': 'Sem atividade esta semana',
-        'pt-br': 'Nenhuma atividade de codificação esta semana',
-        np: 'यस हप्ता कुनै कोडिंग गतिविधि छैन',
-        el: "Δεν υπάρχει δραστηριότητα κώδικα γι' αυτή την εβδομάδα",
-        ru: 'На этой неделе не было активности',
-        'uk-ua': 'На цьому тижні не було активності',
-        id: 'Tidak ada aktivitas perkodingan minggu ini',
-        ml: 'ഈ ആഴ്ച കോഡിംഗ് പ്രവർത്തനങ്ങളൊന്നുമില്ല',
-        my: 'Tiada aktiviti pengekodan minggu ini',
-        sk: 'Žiadna kódovacia aktivita tento týždeň',
-        tr: 'Bu hafta herhangi bir kod yazma aktivitesi olmadı',
-        pl: 'Brak aktywności w tym tygodniu',
-        uz: "Bu hafta faol bo'lmadi",
-        vi: 'Không Có Hoạt Động Trong Tuần Này',
-        se: 'Ingen aktivitet denna vecka',
-    },
-};
-const availableLocales = Object.keys(repoCardLocales['repocard.archived']);
-function isLocaleAvailable(locale) {
-    return availableLocales.includes(locale.toLowerCase());
-}
-
-
-;// CONCATENATED MODULE: ./src/cards/stats-card.ts
-
-
-
-
-
-
-
-const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
-let maxWidth = 0;
-const createRow = ({ imageBase64, name, valueCells: valueCellCriteria, index, }) => {
-    const staggerDelay = (index + 3) * 150;
-    let offset = clampValue(measureText(name, 18), 230, 400);
-    offset += offset === 230 ? 5 : 15;
-    const circleRadius = 14;
-    const xAlign = 4;
-    const yAlign = 18.5;
-    const cellWidths = [];
-    const renderCellText = (val, x, y) => `
-   <g class="cell-text">
-      <text x="${val.includes('+') ? x : 7.2}" y="${y}">
-      ${val}
-      </text>
-    </g>
-    `;
-    const getValueCellContent = (val) => {
-        if (val == undefined) {
-            return { item: '', width: 0 };
-        }
-        if (ranks.includes(val)) {
-            return {
-                item: `
-    <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="${circleRadius}" />
-    ${renderCellText(val, val.includes('+') ? xAlign : 7.2, yAlign)}
-    `,
-                width: circleRadius * 2,
-            };
-        }
-        return { item: renderCellText(val, xAlign, yAlign), width: measureText(val, 18) };
-    };
-    const valueCells = valueCellCriteria.map((val) => {
-        const { item, width } = getValueCellContent(val);
-        cellWidths.push(width);
-        maxWidth = Math.max(maxWidth, offset + width);
-        const fullItem = `
-    <g data-testid="value-cell" transform="translate(${offset}, 0)">
-        ${item}
-    </g>
-        `;
-        offset += 50;
-        return fullItem;
-    });
-    return {
-        content: `
-    <g class="stagger" style="animation-delay: ${staggerDelay}ms" transform="translate(25, 0)">
-      <defs>
-        <clipPath id="myCircle">
-          <circle cx="12.5" cy="12.5" r="12.5" fill="#FFFFFF" />
-        </clipPath>
-      </defs>
-      <image xlink:href="${imageBase64}" width="25" height="25" clip-path="url(#myCircle)"/>
-      <g transform="translate(30,16)">
-        <text class="stat bold">${name}</text>
-      </g>
-      ${valueCells}
-    </g>
-  `,
-        cellWidths,
-    };
-};
-const renderContributorStatsCard = async (username, name, contributorStats = [], { columns = [{ name: 'star_rank', hide: [] }], line_height = 25, hide_title = false, hide_border = false, order_by = 'stars', title_color, icon_color, text_color, bg_color, border_radius, border_color, custom_title, theme = 'default', locale, limit = -1, exclude = [], contributor_fetcher = fetchContributors, } = {}) => {
-    const lheight = parseInt(String(line_height), 10);
-    const { titleColor, textColor, iconColor, bgColor, borderColor } = getCardColors({
-        title_color,
-        icon_color,
-        text_color,
-        bg_color,
-        border_color,
-        theme,
-    });
-    const apostrophe = ['x', 's'].includes(name.slice(-1).toLocaleLowerCase()) ? '' : 's';
-    const i18n = new I18n({
-        locale,
-        translations: statCardLocales({ name, apostrophe }),
-    });
-    const imageBase64s = await Promise.all(Object.values(contributorStats).map((contributorStat) => {
-        const url = new URL(contributorStat.owner.avatarUrl);
-        url.searchParams.append('s', '50');
-        return getImageBase64FromURL(url.toString());
-    }));
-    const starRankCriteria = getColumnCriteria(columns, 'star_rank');
-    const contributorRankCriteria = getColumnCriteria(columns, 'contribution_rank');
-    const commitsCriteria = getColumnCriteria(columns, 'commits');
-    let allContributorsByRepo;
-    if (contributorRankCriteria) {
-        allContributorsByRepo = [];
-        for (const { nameWithOwner } of Object.values(contributorStats)) {
-            const contributors = await contributor_fetcher(username, nameWithOwner, token);
-            allContributorsByRepo.push(contributors);
-        }
-    }
-    const allCellWidths = [];
-    const calculatedStats = contributorStats
-        .map(({ url, name, stargazerCount, numContributions }, index) => {
-        if (exclude.some((pattern) => matchWildcard(name, pattern))) {
-            return undefined;
-        }
-        if (commitsCriteria?.minimum !== undefined &&
-            numContributions !== undefined &&
-            numContributions < commitsCriteria.minimum) {
-            return undefined;
-        }
-        const contributionRank = contributorRankCriteria && numContributions !== undefined
-            ? calculateContributionsRank(name, allContributorsByRepo[index], numContributions)
-            : undefined;
-        if (contributionRank && contributorRankCriteria?.hide.includes(contributionRank)) {
-            return undefined;
-        }
-        const starRank = starRankCriteria ? calculateStarsRank(stargazerCount) : undefined;
-        if (starRank && starRankCriteria?.hide.includes(starRank)) {
-            return undefined;
-        }
-        return {
-            name,
-            imageBase64: imageBase64s[index],
-            url,
-            numContributions,
-            contributionRank,
-            numStars: stargazerCount,
-            starRank,
-        };
-    })
-        .filter((s) => s !== undefined)
-        .sort((a, b) => order_by == 'stars'
-        ? b.numStars - a.numStars
-        : (b.numContributions ?? 0) - (a.numContributions ?? 0))
-        .slice(0, limit > 0 ? limit : undefined);
-    const statRows = calculatedStats.map((stat, index) => {
-        const columnValsMap = {
-            star_rank: stat.starRank,
-            contribution_rank: stat.contributionRank,
-            commits: stat.numContributions?.toString(),
-        };
-        const { content, cellWidths } = createRow({
-            ...stat,
-            index,
-            valueCells: columns.map((c) => columnValsMap[c.name]),
-        });
-        allCellWidths.push(cellWidths);
-        return content;
-    });
-    const columnWidths = allCellWidths.reduce((acc, row) => acc.map((max, i) => Math.max(max, row[i])));
-    const distanceY = 8;
-    const height = Math.max(30 + 45 + (statRows.length + 1) * (lheight + distanceY), 150);
-    const cssStyles = getStyles({
-        titleColor: titleColor,
-        textColor: textColor,
-        iconColor: iconColor,
-        show_icons: true,
-    });
-    return renderCard({
-        customTitle: custom_title,
-        defaultTitle: i18n.t('statcard.title'),
-        body: `
-    <svg overflow="visible">
-      ${flexLayout({
-            items: statRows,
-            gap: lheight + distanceY,
-            direction: 'column',
-        }).join('')}
-    </svg>
-  `,
-        columns: columns.map((column, i) => ({
-            column: column.name,
-            width: columnWidths[i],
-        })),
-        width: maxWidth,
-        height,
-        border_radius,
-        hide_border,
-        hide_title,
-        css: cssStyles,
-        colors: {
-            titleColor,
-            textColor,
-            iconColor,
-            bgColor,
-            borderColor,
-        },
-    });
-};
-
 ;// CONCATENATED MODULE: ./node_modules/zod/v3/helpers/util.js
 var util;
 (function (util) {
@@ -56492,6 +55586,474 @@ const NEVER = INVALID;
 
 /* harmony default export */ const zod = (external_namespaceObject);
 
+;// CONCATENATED MODULE: ./themes/index.ts
+const themes = {
+    default: {
+        title_color: '2f80ed',
+        icon_color: '4c71f2',
+        text_color: '434d58',
+        bg_color: 'fffefe',
+        border_color: 'e4e2e2',
+    },
+    default_repocard: {
+        title_color: '2f80ed',
+        icon_color: '586069',
+        text_color: '434d58',
+        bg_color: 'fffefe',
+    },
+    transparent: {
+        title_color: '006AFF',
+        icon_color: '0579C3',
+        text_color: '417E87',
+        bg_color: 'ffffff00',
+    },
+    shadow_red: {
+        title_color: '9A0000',
+        text_color: '444',
+        icon_color: '4F0000',
+        border_color: '4F0000',
+        bg_color: 'ffffff00',
+    },
+    shadow_green: {
+        title_color: '007A00',
+        text_color: '444',
+        icon_color: '003D00',
+        border_color: '003D00',
+        bg_color: 'ffffff00',
+    },
+    shadow_blue: {
+        title_color: '00779A',
+        text_color: '444',
+        icon_color: '004450',
+        border_color: '004490',
+        bg_color: 'ffffff00',
+    },
+    dark: {
+        title_color: 'fff',
+        icon_color: '79ff97',
+        text_color: '9f9f9f',
+        bg_color: '151515',
+    },
+    radical: {
+        title_color: 'fe428e',
+        icon_color: 'f8d847',
+        text_color: 'a9fef7',
+        bg_color: '141321',
+    },
+    merko: {
+        title_color: 'abd200',
+        icon_color: 'b7d364',
+        text_color: '68b587',
+        bg_color: '0a0f0b',
+    },
+    gruvbox: {
+        title_color: 'fabd2f',
+        icon_color: 'fe8019',
+        text_color: '8ec07c',
+        bg_color: '282828',
+    },
+    gruvbox_light: {
+        title_color: 'b57614',
+        icon_color: 'af3a03',
+        text_color: '427b58',
+        bg_color: 'fbf1c7',
+    },
+    tokyonight: {
+        title_color: '70a5fd',
+        icon_color: 'bf91f3',
+        text_color: '38bdae',
+        bg_color: '1a1b27',
+    },
+    onedark: {
+        title_color: 'e4bf7a',
+        icon_color: '8eb573',
+        text_color: 'df6d74',
+        bg_color: '282c34',
+    },
+    cobalt: {
+        title_color: 'e683d9',
+        icon_color: '0480ef',
+        text_color: '75eeb2',
+        bg_color: '193549',
+    },
+    synthwave: {
+        title_color: 'e2e9ec',
+        icon_color: 'ef8539',
+        text_color: 'e5289e',
+        bg_color: '2b213a',
+    },
+    highcontrast: {
+        title_color: 'e7f216',
+        icon_color: '00ffff',
+        text_color: 'fff',
+        bg_color: '000',
+    },
+    dracula: {
+        title_color: 'ff6e96',
+        icon_color: '79dafa',
+        text_color: 'f8f8f2',
+        bg_color: '282a36',
+    },
+    prussian: {
+        title_color: 'bddfff',
+        icon_color: '38a0ff',
+        text_color: '6e93b5',
+        bg_color: '172f45',
+    },
+    monokai: {
+        title_color: 'eb1f6a',
+        icon_color: 'e28905',
+        text_color: 'f1f1eb',
+        bg_color: '272822',
+    },
+    vue: {
+        title_color: '41b883',
+        icon_color: '41b883',
+        text_color: '273849',
+        bg_color: 'fffefe',
+    },
+    'vue-dark': {
+        title_color: '41b883',
+        icon_color: '41b883',
+        text_color: 'fffefe',
+        bg_color: '273849',
+    },
+    'shades-of-purple': {
+        title_color: 'fad000',
+        icon_color: 'b362ff',
+        text_color: 'a599e9',
+        bg_color: '2d2b55',
+    },
+    nightowl: {
+        title_color: 'c792ea',
+        icon_color: 'ffeb95',
+        text_color: '7fdbca',
+        bg_color: '011627',
+    },
+    buefy: {
+        title_color: '7957d5',
+        icon_color: 'ff3860',
+        text_color: '363636',
+        bg_color: 'ffffff',
+    },
+    'blue-green': {
+        title_color: '2f97c1',
+        icon_color: 'f5b700',
+        text_color: '0cf574',
+        bg_color: '040f0f',
+    },
+    algolia: {
+        title_color: '00AEFF',
+        icon_color: '2DDE98',
+        text_color: 'FFFFFF',
+        bg_color: '050F2C',
+    },
+    'great-gatsby': {
+        title_color: 'ffa726',
+        icon_color: 'ffb74d',
+        text_color: 'ffd95b',
+        bg_color: '000000',
+    },
+    darcula: {
+        title_color: 'BA5F17',
+        icon_color: '84628F',
+        text_color: 'BEBEBE',
+        bg_color: '242424',
+    },
+    bear: {
+        title_color: 'e03c8a',
+        icon_color: '00AEFF',
+        text_color: 'bcb28d',
+        bg_color: '1f2023',
+    },
+    'solarized-dark': {
+        title_color: '268bd2',
+        icon_color: 'b58900',
+        text_color: '859900',
+        bg_color: '002b36',
+    },
+    'solarized-light': {
+        title_color: '268bd2',
+        icon_color: 'b58900',
+        text_color: '859900',
+        bg_color: 'fdf6e3',
+    },
+    'chartreuse-dark': {
+        title_color: '7fff00',
+        icon_color: '00AEFF',
+        text_color: 'fff',
+        bg_color: '000',
+    },
+    nord: {
+        title_color: '81a1c1',
+        text_color: 'd8dee9',
+        icon_color: '88c0d0',
+        bg_color: '2e3440',
+    },
+    gotham: {
+        title_color: '2aa889',
+        icon_color: '599cab',
+        text_color: '99d1ce',
+        bg_color: '0c1014',
+    },
+    'material-palenight': {
+        title_color: 'c792ea',
+        icon_color: '89ddff',
+        text_color: 'a6accd',
+        bg_color: '292d3e',
+    },
+    graywhite: {
+        title_color: '24292e',
+        icon_color: '24292e',
+        text_color: '24292e',
+        bg_color: 'ffffff',
+    },
+    'vision-friendly-dark': {
+        title_color: 'ffb000',
+        icon_color: '785ef0',
+        text_color: 'ffffff',
+        bg_color: '000000',
+    },
+    'ayu-mirage': {
+        title_color: 'f4cd7c',
+        icon_color: '73d0ff',
+        text_color: 'c7c8c2',
+        bg_color: '1f2430',
+    },
+    'midnight-purple': {
+        title_color: '9745f5',
+        icon_color: '9f4bff',
+        text_color: 'ffffff',
+        bg_color: '000000',
+    },
+    calm: {
+        title_color: 'e07a5f',
+        icon_color: 'edae49',
+        text_color: 'ebcfb2',
+        bg_color: '373f51',
+    },
+    'flag-india': {
+        title_color: 'ff8f1c',
+        icon_color: '250E62',
+        text_color: '509E2F',
+        bg_color: 'ffffff',
+    },
+    omni: {
+        title_color: 'FF79C6',
+        icon_color: 'e7de79',
+        text_color: 'E1E1E6',
+        bg_color: '191622',
+    },
+    react: {
+        title_color: '61dafb',
+        icon_color: '61dafb',
+        text_color: 'ffffff',
+        bg_color: '20232a',
+    },
+    jolly: {
+        title_color: 'ff64da',
+        icon_color: 'a960ff',
+        text_color: 'ffffff',
+        bg_color: '291B3E',
+    },
+    maroongold: {
+        title_color: 'F7EF8A',
+        icon_color: 'F7EF8A',
+        text_color: 'E0AA3E',
+        bg_color: '260000',
+    },
+    yeblu: {
+        title_color: 'ffff00',
+        icon_color: 'ffff00',
+        text_color: 'ffffff',
+        bg_color: '002046',
+    },
+    blueberry: {
+        title_color: '82aaff',
+        icon_color: '89ddff',
+        text_color: '27e8a7',
+        bg_color: '242938',
+    },
+    slateorange: {
+        title_color: 'faa627',
+        icon_color: 'faa627',
+        text_color: 'ffffff',
+        bg_color: '36393f',
+    },
+    kacho_ga: {
+        title_color: 'bf4a3f',
+        icon_color: 'a64833',
+        text_color: 'd9c8a9',
+        bg_color: '402b23',
+    },
+    outrun: {
+        title_color: 'ffcc00',
+        icon_color: 'ff1aff',
+        text_color: '8080ff',
+        bg_color: '141439',
+    },
+    ocean_dark: {
+        title_color: '8957B2',
+        icon_color: 'FFFFFF',
+        text_color: '92D534',
+        bg_color: '151A28',
+    },
+    city_lights: {
+        title_color: '5D8CB3',
+        icon_color: '4798FF',
+        text_color: '718CA1',
+        bg_color: '1D252C',
+    },
+    github_dark: {
+        title_color: '58A6FF',
+        icon_color: '1F6FEB',
+        text_color: 'C3D1D9',
+        bg_color: '0D1117',
+    },
+    github_dark_dimmed: {
+        title_color: '539bf5',
+        icon_color: '539bf5',
+        text_color: 'ADBAC7',
+        bg_color: '24292F',
+        border_color: '373E47',
+    },
+    discord_old_blurple: {
+        title_color: '7289DA',
+        icon_color: '7289DA',
+        text_color: 'FFFFFF',
+        bg_color: '2C2F33',
+    },
+    aura_dark: {
+        title_color: 'ff7372',
+        icon_color: '6cffd0',
+        text_color: 'dbdbdb',
+        bg_color: '252334',
+    },
+    panda: {
+        title_color: '19f9d899',
+        icon_color: '19f9d899',
+        text_color: 'FF75B5',
+        bg_color: '31353a',
+    },
+    noctis_minimus: {
+        title_color: 'd3b692',
+        icon_color: '72b7c0',
+        text_color: 'c5cdd3',
+        bg_color: '1b2932',
+    },
+    cobalt2: {
+        title_color: 'ffc600',
+        icon_color: 'ffffff',
+        text_color: '0088ff',
+        bg_color: '193549',
+    },
+    swift: {
+        title_color: '000000',
+        icon_color: 'f05237',
+        text_color: '000000',
+        bg_color: 'f7f7f7',
+    },
+    aura: {
+        title_color: 'a277ff',
+        icon_color: 'ffca85',
+        text_color: '61ffca',
+        bg_color: '15141b',
+    },
+    apprentice: {
+        title_color: 'ffffff',
+        icon_color: 'ffffaf',
+        text_color: 'bcbcbc',
+        bg_color: '262626',
+    },
+    moltack: {
+        title_color: '86092C',
+        icon_color: '86092C',
+        text_color: '574038',
+        bg_color: 'F5E1C0',
+    },
+    codeSTACKr: {
+        title_color: 'ff652f',
+        icon_color: 'FFE400',
+        text_color: 'ffffff',
+        bg_color: '09131B',
+        border_color: '0c1a25',
+    },
+    rose_pine: {
+        title_color: '9ccfd8',
+        icon_color: 'ebbcba',
+        text_color: 'e0def4',
+        bg_color: '191724',
+    },
+    catppuccin_latte: {
+        title_color: '137980',
+        icon_color: '8839ef',
+        text_color: '4c4f69',
+        bg_color: 'eff1f5',
+    },
+    catppuccin_mocha: {
+        title_color: '94e2d5',
+        icon_color: 'cba6f7',
+        text_color: 'cdd6f4',
+        bg_color: '1e1e2e',
+    },
+    date_night: {
+        title_color: 'DA7885',
+        text_color: 'E1B2A2',
+        icon_color: 'BB8470',
+        border_color: '170F0C',
+        bg_color: '170F0C',
+    },
+    one_dark_pro: {
+        title_color: '61AFEF',
+        text_color: 'E5C06E',
+        icon_color: 'C678DD',
+        border_color: '3B4048',
+        bg_color: '23272E',
+    },
+    rose: {
+        title_color: '8d192b',
+        text_color: '862931',
+        icon_color: 'B71F36',
+        border_color: 'e9d8d4',
+        bg_color: 'e9d8d4',
+    },
+    holi: {
+        title_color: '5FABEE',
+        text_color: 'D6E7FF',
+        icon_color: '5FABEE',
+        border_color: '85A4C0',
+        bg_color: '030314',
+    },
+    neon: {
+        title_color: '00EAD3',
+        text_color: 'FF449F',
+        icon_color: '00EAD3',
+        border_color: 'ffffff',
+        bg_color: '000000',
+    },
+    blue_navy: {
+        title_color: '82AAFF',
+        text_color: '82AAFF',
+        icon_color: '82AAFF',
+        border_color: 'ffffff',
+        bg_color: '000000',
+    },
+    calm_pink: {
+        title_color: 'e07a5f',
+        text_color: 'edae49',
+        icon_color: 'ebcfb2',
+        border_color: 'e1bc29',
+        bg_color: '2b2d40',
+    },
+    ambient_gradient: {
+        title_color: 'ffffff',
+        text_color: 'ffffff',
+        icon_color: 'ffffff',
+        bg_color: '35,4158d0,c850c0,ffcc70',
+    },
+};
+const themeNames = Object.keys(themes);
+
 ;// CONCATENATED MODULE: ./src/common/schema.ts
 
 
@@ -56509,7 +56071,7 @@ const columnCriteriaSchema = zod.union([
         hide: parseArray,
     }),
     zod.object({
-        name: zod["enum"](['commits']),
+        name: zod["enum"](['commits', 'pull_requests']),
         minimum: zod.number().optional(),
     }),
 ]);
@@ -56558,10 +56120,1154 @@ const mergeHideIntoColumnCriteria = ({ hide, columns, ...v }) => ({
     ...v,
 });
 
+;// CONCATENATED MODULE: ./action/src/parse-input.ts
+
+
+const inputSchema = commonInputSchema.extend({
+    output_file: emptyStringToUndefined["default"]('github-contributor-stats.svg'),
+})
+    .transform(mergeHideIntoColumnCriteria);
+function parseInputs() {
+    return inputSchema.parse({
+        username: core.getInput('username', { required: true }),
+        output_file: core.getInput('output-file'),
+        combine_all_yearly_contributions: core.getInput('combine-all-yearly-contributions'),
+        columns: core.getInput('columns'),
+        hide: core.getInput('hide'),
+        order_by: core.getInput('order-by'),
+        limit: core.getInput('limit'),
+        exclude: core.getInput('exclude'),
+        theme: core.getInput('theme'),
+        title_color: core.getInput('title-color'),
+        text_color: core.getInput('text-color'),
+        icon_color: core.getInput('icon-color'),
+        bg_color: core.getInput('bg-color'),
+        border_color: core.getInput('border-color'),
+        border_radius: core.getInput('border-radius'),
+        hide_title: core.getBooleanInput('hide-title'),
+        hide_border: core.getBooleanInput('hide-border'),
+        custom_title: core.getInput('custom-title'),
+        locale: core.getInput('locale'),
+    });
+}
+
+;// CONCATENATED MODULE: ./src/calculateRank.ts
+const ranks = ['S+', 'S', 'A+', 'A', 'B+', 'B'];
+const RANK_THRESHOLDS_STARGAZERS = {
+    'S+': 10000,
+    S: 1000,
+    'A+': 500,
+    A: 100,
+    'B+': 50,
+    B: 0,
+};
+const calculateStarsRank = (stargazers) => {
+    for (const [rank, threshold] of Object.entries(RANK_THRESHOLDS_STARGAZERS)) {
+        if (stargazers >= threshold) {
+            return rank;
+        }
+    }
+    return 'B';
+};
+const RANK_THRESHOLDS_CONTRIBUTIONS = {
+    'S+': 90,
+    S: 80,
+    'A+': 70,
+    A: 60,
+    'B+': 50,
+    B: 0,
+};
+const calculateContributionsRank = (name, contributors, numContributions) => {
+    contributors = contributors.filter((contributor) => contributor.type === 'User');
+    const numOfOverRankContributors = contributors.filter((contributor) => contributor.contributions > numContributions);
+    const rankOfContribution = ((contributors.length - numOfOverRankContributors.length) / contributors.length) *
+        100;
+    for (const [rank, threshold] of Object.entries(RANK_THRESHOLDS_CONTRIBUTIONS)) {
+        if (rankOfContribution >= threshold) {
+            return rank;
+        }
+    }
+    return 'B';
+};
+
+;// CONCATENATED MODULE: ./src/common/utils.ts
+
+
+const renderError = (message, secondaryMessage = '') => {
+    return `
+    <svg width="495" height="120" viewBox="0 0 495 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <style>
+    .text { font: 600 16px 'Segoe UI', Ubuntu, Sans-Serif; fill: #2F80ED }
+    .small { font: 600 12px 'Segoe UI', Ubuntu, Sans-Serif; fill: #252525 }
+    .gray { fill: #858585 }
+    </style>
+    <rect x="0.5" y="0.5" width="494" height="99%" rx="4.5" fill="#FFFEFE" stroke="#E4E2E2"/>
+    <text x="25" y="45" class="text">Something went wrong! file an issue at https://tiny.one/readme-stats</text>
+    <text data-testid="message" x="25" y="55" class="text small">
+      <tspan x="25" dy="18">${encodeHTML(message)}</tspan>
+      <tspan x="25" dy="18" class="gray">${secondaryMessage}</tspan>
+    </text>
+    </svg>
+  `;
+};
+const matchWildcard = (str, pattern) => new RegExp('^' +
+    lodash_default().escapeRegExp(pattern)
+        .replace(/\\\*/g, '.*')
+        .replace(/\\\?/g, '.') +
+    '$').test(str);
+const encodeHTML = (str) => {
+    return str
+        .replace(/[\u00A0-\u9999<>&](?!#)/gim, (i) => {
+        return '&#' + i.charCodeAt(0) + ';';
+    })
+        .replace(/\u0008/gim, '');
+};
+const kFormatter = (num) => {
+    return Math.abs(num) > 999
+        ? Math.sign(num) * parseFloat((Math.abs(num) / 1000).toFixed(1)) + 'k'
+        : Math.sign(num) * Math.abs(num);
+};
+function isValidHexColor(hexColor) {
+    return new RegExp(/^([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{3}|[A-Fa-f0-9]{4})$/).test(hexColor);
+}
+const clampValue = (number, min, max) => {
+    if (typeof number === 'string') {
+        number = parseInt(number);
+    }
+    if (Number.isNaN(number))
+        return min;
+    return Math.max(min, Math.min(number, max));
+};
+function isValidGradient(colors) {
+    return isValidHexColor(colors[1]) && isValidHexColor(colors[2]);
+}
+function fallbackColor(color, fallbackColor) {
+    if (!color) {
+        return fallbackColor;
+    }
+    const colors = color.split(',');
+    let gradient = null;
+    if (colors.length > 1 && isValidGradient(colors)) {
+        gradient = colors;
+    }
+    return (gradient ? gradient : isValidHexColor(color) && `#${color}`) || fallbackColor;
+}
+const flexLayout = ({ items, gap, direction, sizes = [], }) => {
+    let lastSize = 0;
+    return items.filter(Boolean).map((item, i) => {
+        const size = sizes[i] || 0;
+        let transform = `translate(${lastSize}, 0)`;
+        if (direction === 'column') {
+            transform = `translate(0, ${lastSize})`;
+        }
+        lastSize += size + gap;
+        return `<g transform="${transform}">${item}</g>`;
+    });
+};
+const getCardColors = ({ title_color, text_color, icon_color, bg_color, border_color, theme: themeName, }) => {
+    const theme = themes[themeName];
+    const defaultTheme = themes["default"];
+    const titleColor = fallbackColor(title_color || theme.title_color, '#' + defaultTheme.title_color);
+    const iconColor = fallbackColor(icon_color || theme.icon_color, '#' + defaultTheme.icon_color);
+    const textColor = fallbackColor(text_color || theme.text_color, '#' + defaultTheme.text_color);
+    const bgColor = fallbackColor(bg_color || theme.bg_color, '#' + defaultTheme.bg_color);
+    const borderColor = fallbackColor(border_color || theme.border_color, '#' + defaultTheme.border_color);
+    return { titleColor, iconColor, textColor, bgColor, borderColor };
+};
+const TIMES_S = {
+    THIRTY_MINUTES: 1800,
+    TWO_HOURS: 7200,
+    FOUR_HOURS: 14400,
+    ONE_DAY: 86400,
+};
+const SECONDARY_ERROR_MESSAGES = {
+    MAX_RETRY: 'Please add an env variable called PAT_1 with your github token in vercel',
+    USER_NOT_FOUND: 'Make sure the provided username is not an organization',
+};
+class CustomError extends Error {
+    type;
+    secondaryMessage;
+    constructor(message, type) {
+        super(message);
+        this.type = type;
+        this.secondaryMessage =
+            SECONDARY_ERROR_MESSAGES[type] || type;
+    }
+    static MAX_RETRY = (/* unused pure expression or super */ null && ('MAX_RETRY'));
+    static USER_NOT_FOUND = (/* unused pure expression or super */ null && ('USER_NOT_FOUND'));
+}
+const measureText = (str, fontSize = 10) => {
+    const widths = [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0.2796875, 0.2765625,
+        0.3546875, 0.5546875, 0.5546875, 0.8890625, 0.665625, 0.190625,
+        0.3328125, 0.3328125, 0.3890625, 0.5828125, 0.2765625, 0.3328125,
+        0.2765625, 0.3015625, 0.5546875, 0.5546875, 0.5546875, 0.5546875,
+        0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875,
+        0.2765625, 0.2765625, 0.584375, 0.5828125, 0.584375, 0.5546875,
+        1.0140625, 0.665625, 0.665625, 0.721875, 0.721875, 0.665625,
+        0.609375, 0.7765625, 0.721875, 0.2765625, 0.5, 0.665625,
+        0.5546875, 0.8328125, 0.721875, 0.7765625, 0.665625, 0.7765625,
+        0.721875, 0.665625, 0.609375, 0.721875, 0.665625, 0.94375,
+        0.665625, 0.665625, 0.609375, 0.2765625, 0.3546875, 0.2765625,
+        0.4765625, 0.5546875, 0.3328125, 0.5546875, 0.5546875, 0.5,
+        0.5546875, 0.5546875, 0.2765625, 0.5546875, 0.5546875, 0.221875,
+        0.240625, 0.5, 0.221875, 0.8328125, 0.5546875, 0.5546875,
+        0.5546875, 0.5546875, 0.3328125, 0.5, 0.2765625, 0.5546875,
+        0.5, 0.721875, 0.5, 0.5, 0.5, 0.3546875, 0.259375, 0.353125, 0.5890625,
+    ];
+    const avg = 0.5279276315789471;
+    return (str
+        .split('')
+        .map((c) => (c.charCodeAt(0) < widths.length ? widths[c.charCodeAt(0)] : avg))
+        .reduce((cur, acc) => acc + cur) * fontSize);
+};
+const getImageBase64FromURL = async (url) => {
+    const imageURLData = await fetch(url);
+    const buffer = await imageURLData.arrayBuffer();
+    const stringifiedBuffer = Buffer.from(buffer).toString('base64');
+    const contentType = imageURLData.headers.get('content-type');
+    const imageBase64 = `data:image/${contentType};base64,${stringifiedBuffer}`;
+    return new Promise((resolve) => {
+        resolve(imageBase64);
+    });
+};
+const getColumnCriteria = (columns, name) => columns.find((col) => col.name === name);
+
+;// CONCATENATED MODULE: ./src/getStyles.ts
+const calculateCircleProgress = (value) => {
+    const radius = 40;
+    const c = Math.PI * (radius * 2);
+    if (value < 0)
+        value = 0;
+    if (value > 100)
+        value = 100;
+    return ((100 - value) / 100) * c;
+};
+const getProgressAnimation = ({ progress }) => {
+    return `
+    @keyframes rankAnimation {
+      from {
+        stroke-dashoffset: ${calculateCircleProgress(0)};
+      }
+      to {
+        stroke-dashoffset: ${calculateCircleProgress(progress)};
+      }
+    }
+  `;
+};
+const getAnimations = () => {
+    return `
+    /* Animations */
+    @keyframes scaleInAnimation {
+      from {
+        transform: translate(0px, 0px) scale(0);
+      }
+      to {
+        transform: translate(0px, 0px) scale(1);
+      }
+    }
+    @keyframes fadeInAnimation {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+  `;
+};
+const getStyles = ({ titleColor, textColor, iconColor, show_icons, progress, }) => {
+    return `
+    .stat {
+      font: 600 14px 'Segoe UI', Ubuntu, "Helvetica Neue", Sans-Serif; fill: ${textColor};
+    }
+    @supports(-moz-appearance: auto) {
+      /* Selector detects Firefox */
+      .stat { font-size:12px; }
+    }
+    .stagger {
+      opacity: 0;
+      animation: fadeInAnimation 0.3s ease-in-out forwards;
+    }
+    .cell-text {
+      font: 800 18px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${textColor}; 
+      animation: scaleInAnimation 0.3s ease-in-out forwards;
+    }
+    
+    .bold { font-weight: 700 }
+    .icon {
+      fill: ${iconColor};
+      display: ${show_icons ? 'block' : 'none'};
+    }
+    
+    .rank-circle-rim {
+      stroke: ${titleColor};
+      fill: none;
+      stroke-width: 3;
+      opacity: 0.2;
+    }
+    ${ false || progress === undefined
+        ? ''
+        : getProgressAnimation({ progress })}
+  `;
+};
+
+;// CONCATENATED MODULE: ./src/common/Card.ts
+
+
+function renderCard({ customTitle, defaultTitle = '', titlePrefixIcon, body, columns, width = 100, height = 100, border_radius = 4.5, hide_border = false, hide_title = false, colors = {}, css = '', animations = true, }) {
+    height = hide_title ? height - 30 : height;
+    const title = encodeHTML(customTitle ?? defaultTitle);
+    const repositoryNameTitle = 'Repository';
+    const paddingX = 25;
+    const paddingY = 35;
+    function renderTitle() {
+        const titleText = `
+      <text
+        x="0"
+        y="0"
+        class="header"
+        data-testid="header"
+      >${title}</text>
+    `;
+        const prefixIconSize = 16;
+        const prefixIconGap = 25;
+        const prefixIcon = titlePrefixIcon
+            ? `
+      <svg
+        class="icon"
+        x="0"
+        y="-13"
+        viewBox="0 0 16 16"
+        version="1.1"
+        width="${prefixIconSize}"
+        height="${prefixIconSize}"
+      >
+        ${titlePrefixIcon}
+      </svg>
+    `
+            : undefined;
+        const titleWidth = paddingX +
+            (prefixIcon ? prefixIconSize + prefixIconGap : 0) +
+            measureText(title, 18);
+        return {
+            title: `
+      <g
+        data-testid="card-title"
+        transform="translate(${paddingX}, ${paddingY})"
+      >
+        ${flexLayout({
+                items: [prefixIcon, titleText].filter((v) => Boolean(v)),
+                gap: prefixIconGap,
+                direction: 'row',
+            }).join('')}
+      </g>
+    `,
+            titleWidth,
+        };
+    }
+    function renderSubTitle() {
+        const repoTitleText = `
+    <text
+      x="0"
+      y="5"
+      class="sub-title-header"
+      data-testid="header"
+    >${repositoryNameTitle}</text>
+  `;
+        const icon = (inner, width = 24, iconTitle) => `<svg
+      class="icon"
+      x="0"
+      y="-13"
+      viewBox="0 0 24 24"
+      version="1.1"
+      width="${width}"
+      height="24"
+      preserveAspectRatio="xMidYMid meet"
+    >
+      ${iconTitle ? `<title>${iconTitle}</title>` : ''}
+      ${inner}
+    </svg>`;
+        const githubIcon = `
+      <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+      <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+      <g id="SVGRepo_iconCarrier">
+        <path fill-rule="evenodd" d="M12 0a12 12 0 1 0 0 24 12 12 0 0 0 0-24zm3.163 21.783h-.093a.513.513 0 0 1-.382-.14.513.513 0 0 1-.14-.372v-1.406c.006-.467.01-.94.01-1.416a3.693 3.693 0 0 0-.151-1.028 1.832 1.832 0 0 0-.542-.875 8.014 8.014 0 0 0 2.038-.471 4.051 4.051 0 0 0 1.466-.964c.407-.427.71-.943.885-1.506a6.77 6.77 0 0 0 .3-2.13 4.138 4.138 0 0 0-.26-1.476 3.892 3.892 0 0 0-.795-1.284 2.81 2.81 0 0 0 .162-.582c.033-.2.05-.402.05-.604 0-.26-.03-.52-.09-.773a5.309 5.309 0 0 0-.221-.763.293.293 0 0 0-.111-.02h-.11c-.23.002-.456.04-.674.111a5.34 5.34 0 0 0-.703.26 6.503 6.503 0 0 0-.661.343c-.215.127-.405.249-.573.362a9.578 9.578 0 0 0-5.143 0 13.507 13.507 0 0 0-.572-.362 6.022 6.022 0 0 0-.672-.342 4.516 4.516 0 0 0-.705-.261 2.203 2.203 0 0 0-.662-.111h-.11a.29.29 0 0 0-.11.02 5.844 5.844 0 0 0-.23.763c-.054.254-.08.513-.081.773 0 .202.017.404.051.604.033.199.086.394.16.582A3.888 3.888 0 0 0 5.702 10a4.142 4.142 0 0 0-.263 1.476 6.871 6.871 0 0 0 .292 2.12c.181.563.483 1.08.884 1.516.415.422.915.75 1.466.964.653.25 1.337.41 2.033.476a1.828 1.828 0 0 0-.452.633 2.99 2.99 0 0 0-.2.744 2.754 2.754 0 0 1-1.175.27 1.788 1.788 0 0 1-1.065-.3 2.904 2.904 0 0 1-.752-.824 3.1 3.1 0 0 0-.292-.382 2.693 2.693 0 0 0-.372-.343 1.841 1.841 0 0 0-.432-.24 1.2 1.2 0 0 0-.481-.101c-.04.001-.08.005-.12.01a.649.649 0 0 0-.162.02.408.408 0 0 0-.13.06.116.116 0 0 0-.06.1.33.33 0 0 0 .14.242c.093.074.17.131.232.171l.03.021c.133.103.261.214.382.333.112.098.213.209.3.33.09.119.168.246.231.381.073.134.15.288.231.463.188.474.522.875.954 1.145.453.243.961.364 1.476.351.174 0 .349-.01.522-.03.172-.028.343-.057.515-.091v1.743a.5.5 0 0 1-.533.521h-.062a10.286 10.286 0 1 1 6.324 0v.005z">
+        </path>
+      </g>
+      `;
+        const gitPRIcon = `<path fill-rule="evenodd" clip-rule="evenodd" d="M14.7071 2.70711L13.4142 4H14C17.3137 4 20 6.68629 20 10V16.1707C21.1652 16.5825 22 17.6938 22 19C22 20.6569 20.6569 22 19 22C17.3431 22 16 20.6569 16 19C16 17.6938 16.8348 16.5825 18 16.1707V10C18 7.79086 16.2091 6 14 6H13.4142L14.7071 7.29289C15.0976 7.68342 15.0976 8.31658 14.7071 8.70711C14.3166 9.09763 13.6834 9.09763 13.2929 8.70711L10.2929 5.70711C9.90237 5.31658 9.90237 4.68342 10.2929 4.29289L13.2929 1.29289C13.6834 0.902369 14.3166 0.902369 14.7071 1.29289C15.0976 1.68342 15.0976 2.31658 14.7071 2.70711ZM18 19C18 18.4477 18.4477 18 19 18C19.5523 18 20 18.4477 20 19C20 19.5523 19.5523 20 19 20C18.4477 20 18 19.5523 18 19ZM6 4C5.44772 4 5 4.44772 5 5C5 5.55228 5.44772 6 6 6C6.55228 6 7 5.55228 7 5C7 4.44772 6.55228 4 6 4ZM7 7.82929C8.16519 7.41746 9 6.30622 9 5C9 3.34315 7.65685 2 6 2C4.34315 2 3 3.34315 3 5C3 6.30622 3.83481 7.41746 5 7.82929V16.1707C3.83481 16.5825 3 17.6938 3 19C3 20.6569 4.34315 22 6 22C7.65685 22 9 20.6569 9 19C9 17.6938 8.16519 16.5825 7 16.1707V7.82929ZM6 18C5.44772 18 5 18.4477 5 19C5 19.5523 5.44772 20 6 20C6.55228 20 7 19.5523 7 19C7 18.4477 6.55228 18 6 18Z"/>`;
+        const starIcon = '<path d="M11.2691 4.41115C11.5006 3.89177 11.6164 3.63208 11.7776 3.55211C11.9176 3.48263 12.082 3.48263 12.222 3.55211C12.3832 3.63208 12.499 3.89177 12.7305 4.41115L14.5745 8.54808C14.643 8.70162 14.6772 8.77839 14.7302 8.83718C14.777 8.8892 14.8343 8.93081 14.8982 8.95929C14.9705 8.99149 15.0541 9.00031 15.2213 9.01795L19.7256 9.49336C20.2911 9.55304 20.5738 9.58288 20.6997 9.71147C20.809 9.82316 20.8598 9.97956 20.837 10.1342C20.8108 10.3122 20.5996 10.5025 20.1772 10.8832L16.8125 13.9154C16.6877 14.0279 16.6252 14.0842 16.5857 14.1527C16.5507 14.2134 16.5288 14.2807 16.5215 14.3503C16.5132 14.429 16.5306 14.5112 16.5655 14.6757L17.5053 19.1064C17.6233 19.6627 17.6823 19.9408 17.5989 20.1002C17.5264 20.2388 17.3934 20.3354 17.2393 20.3615C17.0619 20.3915 16.8156 20.2495 16.323 19.9654L12.3995 17.7024C12.2539 17.6184 12.1811 17.5765 12.1037 17.56C12.0352 17.5455 11.9644 17.5455 11.8959 17.56C11.8185 17.5765 11.7457 17.6184 11.6001 17.7024L7.67662 19.9654C7.18404 20.2495 6.93775 20.3915 6.76034 20.3615C6.60623 20.3354 6.47319 20.2388 6.40075 20.1002C6.31736 19.9408 6.37635 19.6627 6.49434 19.1064L7.4341 14.6757C7.46898 14.5112 7.48642 14.429 7.47814 14.3503C7.47081 14.2807 7.44894 14.2134 7.41394 14.1527C7.37439 14.0842 7.31195 14.0279 7.18708 13.9154L3.82246 10.8832C3.40005 10.5025 3.18884 10.3122 3.16258 10.1342C3.13978 9.97956 3.19059 9.82316 3.29993 9.71147C3.42581 9.58288 3.70856 9.55304 4.27406 9.49336L8.77835 9.01795C8.94553 9.00031 9.02911 8.99149 9.10139 8.95929C9.16534 8.93081 9.2226 8.8892 9.26946 8.83718C9.32241 8.77839 9.35663 8.70162 9.42508 8.54808L11.2691 4.41115Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+        const commitsIcon = '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M480-280q-73 0-127.5-45.5T284-440H80v-80h204q14-69 68.5-114.5T480-680q73 0 127.5 45.5T676-520h204v80H676q-14 69-68.5 114.5T480-280Zm0-80q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35Z"/></svg>';
+        const iconMap = {
+            contribution_rank: { icon: gitPRIcon, title: 'Contribution Rank' },
+            star_rank: { icon: starIcon, title: 'Star Rank' },
+            commits: { icon: commitsIcon, title: 'Commits' },
+            pull_requests: { icon: gitPRIcon, title: 'Pull Requests' },
+        };
+        return `
+      <g
+        data-testid="card-title"
+        transform="translate(${paddingX}, ${paddingY + 30})"
+      >
+        ${flexLayout({
+            items: [icon(githubIcon), repoTitleText],
+            gap: 30,
+            direction: 'row',
+        }).join('')}
+      </g>
+      <g
+        data-testid="card-title"
+        transform="translate(${paddingX + 235}, ${paddingY + 30})"
+      >
+        ${flexLayout({
+            items: columns.map((col) => {
+                const { icon: iconPath, title: iconTitle } = iconMap[col.column];
+                return icon(iconPath, col.width, iconTitle);
+            }),
+            gap: 50,
+            direction: 'row',
+        }).join('')}
+      </g>
+    `;
+    }
+    function renderGradient() {
+        if (typeof colors.bgColor !== 'object')
+            return '';
+        const gradients = colors.bgColor.slice(1);
+        return typeof colors.bgColor === 'object'
+            ? `
+        <defs>
+          <linearGradient
+            id="gradient"
+            gradientTransform="rotate(${colors.bgColor[0]})"
+            gradientUnits="userSpaceOnUse"
+          >
+            ${gradients.map((grad, index) => {
+                const offset = (index * 100) / (gradients.length - 1);
+                return `<stop offset="${offset}%" stop-color="#${grad}" />`;
+            })}
+          </linearGradient>
+        </defs>
+        `
+            : '';
+    }
+    const { title: resolvedTitle, titleWidth } = hide_title
+        ? { title: '', titleWidth: 0 }
+        : renderTitle();
+    width = Math.max(width, titleWidth);
+    width += paddingX;
+    return `
+      <svg
+        width="${width}"
+        height="${height}"
+        viewBox="0 0 ${width} ${height}"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        role="img"
+        aria-labelledby="descId"
+      >
+        <style>
+          .header {
+            font: 600 18px 'Segoe UI', Ubuntu, Sans-Serif;
+            fill: ${colors?.titleColor};
+            animation: fadeInAnimation 0.8s ease-in-out forwards;
+          }
+          .sub-title-header {
+            font: 800 14px 'Segoe UI', Ubuntu, Sans-Serif;
+            fill: ${colors?.titleColor};
+            animation: fadeInAnimation 0.8s ease-in-out forwards;
+          }
+          @supports(-moz-appearance: auto) {
+            /* Selector detects Firefox */
+            .header { font-size: 15.5px; }
+          }
+          ${css}
+
+          ${ false ? 0 : getAnimations()}
+          ${animations === false
+        ? `* { animation-duration: 0s !important; animation-delay: 0s !important; }`
+        : ''}
+        </style>
+
+        ${renderGradient()}
+
+        <rect
+          data-testid="card-bg"
+          x="0.5"
+          y="0.5"
+          rx="${border_radius}"
+          height="99%"
+          stroke="${colors.borderColor}"
+          width="${width - 1}"
+          fill="${typeof colors.bgColor === 'object' ? 'url(#gradient)' : colors.bgColor}"
+          stroke-opacity="${hide_border ? 0 : 1}"
+        />
+        ${hide_title ? '' : resolvedTitle}
+        ${hide_title ? '' : renderSubTitle()}
+        <g
+          data-testid="main-card-body"
+          transform="translate(0, ${hide_title ? paddingX : paddingY + 20 + 30})"
+        >
+          ${body}
+        </g>
+      </svg>
+    `;
+}
+
+;// CONCATENATED MODULE: ./src/common/I18n.ts
+class I18n {
+    locale;
+    translations;
+    fallbackLocale;
+    constructor({ locale, translations, }) {
+        this.locale = locale;
+        this.translations = translations;
+        this.fallbackLocale = 'en';
+    }
+    t(str) {
+        if (!this.translations[str]) {
+            throw new Error(`${str} Translation string not found`);
+        }
+        if (!this.translations[str][this.locale || this.fallbackLocale]) {
+            throw new Error(`${str} Translation locale not found`);
+        }
+        return this.translations[str][this.locale || this.fallbackLocale];
+    }
+}
+
+;// CONCATENATED MODULE: ./src/fetchContributors.ts
+async function fetchContributors(username, nameWithOwner, token) {
+    const page = 1;
+    const url = `https://api.github.com/repos/${nameWithOwner}/contributors?page=${page}&per_page=100`;
+    const response = await fetch(url, {
+        headers: { Authorization: `token ${token}` },
+    });
+    console.log(response);
+    if (!response.ok)
+        return [];
+    const contributors = (await response.json());
+    return contributors;
+}
+
+;// CONCATENATED MODULE: ./src/translations.ts
+
+const statCardLocales = ({ name, apostrophe, }) => {
+    const encodedName = encodeHTML(name);
+    return {
+        'statcard.title': {
+            ar: `${encodedName} إحصائيات غيت هاب`,
+            cn: `${encodedName} 的 GitHub 统计数据`,
+            'zh-tw': `${encodedName} 的 GitHub 統計數據`,
+            cs: `GitHub statistiky uživatele ${encodedName}`,
+            de: `${encodedName + apostrophe} GitHub-Statistiken`,
+            en: `${encodedName}'${apostrophe} GitHub Contributor Stats`,
+            bn: `${encodedName} এর GitHub পরিসংখ্যান`,
+            es: `Estadísticas de GitHub de ${encodedName}`,
+            fr: `Statistiques GitHub de ${encodedName}`,
+            hu: `${encodedName} GitHub statisztika`,
+            it: `Statistiche GitHub di ${encodedName}`,
+            ja: `${encodedName}の GitHub 統計`,
+            kr: `${encodedName}의 GitHub 기여 통계`,
+            nl: `${encodedName}'${apostrophe} GitHub-statistieken`,
+            'pt-pt': `Estatísticas do GitHub de ${encodedName}`,
+            'pt-br': `Estatísticas do GitHub de ${encodedName}`,
+            np: `${encodedName}'${apostrophe} गिटहब तथ्याङ्क`,
+            el: `Στατιστικά GitHub του ${encodedName}`,
+            ru: `Статистика GitHub пользователя ${encodedName}`,
+            'uk-ua': `Статистика GitHub користувача ${encodedName}`,
+            id: `Statistik GitHub ${encodedName}`,
+            ml: `${encodedName}'${apostrophe} ഗിറ്റ്ഹബ് സ്ഥിതിവിവരക്കണക്കുകൾ`,
+            my: `Statistik GitHub ${encodedName}`,
+            sk: `GitHub štatistiky používateľa ${encodedName}`,
+            tr: `${encodedName} Hesabının GitHub Yıldızları`,
+            pl: `Statystyki GitHub użytkownika ${encodedName}`,
+            uz: `${encodedName}ning Github'dagi statistikasi`,
+            vi: `Thống Kê GitHub ${encodedName}`,
+            se: `GitHubstatistik för ${encodedName}`,
+        },
+        'statcard.totalstars': {
+            ar: 'مجموع النجوم',
+            cn: '获标星数（star）',
+            'zh-tw': '獲標星數（star）',
+            cs: 'Celkem hvězd',
+            de: 'Insgesamt erhaltene Sterne',
+            en: 'Total Stars Earned',
+            bn: 'সর্বমোট Star',
+            es: 'Estrellas totales',
+            fr: "Total d'étoiles",
+            hu: 'Csillagok',
+            it: 'Stelle totali',
+            ja: 'スターされた数',
+            kr: '받은 스타 수',
+            nl: 'Totaal Sterren Ontvangen',
+            'pt-pt': 'Total de estrelas',
+            'pt-br': 'Total de estrelas',
+            np: 'कुल ताराहरू',
+            el: 'Σύνολο Αστεριών',
+            ru: 'Всего звезд',
+            'uk-ua': 'Всього зірок',
+            id: 'Total Bintang',
+            ml: 'ആകെ നക്ഷത്രങ്ങൾ',
+            my: 'Jumlah Bintang',
+            sk: 'Hviezdy',
+            tr: 'Toplam Yıldız',
+            pl: 'Liczba Gwiazdek dostanych',
+            uz: 'Yulduzchalar',
+            vi: 'Tổng Số Sao',
+            se: 'Antal intjänade stjärnor',
+        },
+        'statcard.commits': {
+            ar: 'مجموع الحفظ',
+            cn: '累计提交数（commit）',
+            'zh-tw': '累計提交數（commit）',
+            cs: 'Celkem commitů',
+            de: 'Anzahl Commits',
+            en: 'Total Commits',
+            bn: 'সর্বমোট Commit',
+            es: 'Commits totales',
+            fr: 'Total des Commits',
+            hu: 'Összes commit',
+            it: 'Commit totali',
+            ja: '合計コミット数',
+            kr: '전체 커밋 수',
+            nl: 'Aantal commits',
+            'pt-pt': 'Total de Commits',
+            'pt-br': 'Total de Commits',
+            np: 'कुल Commits',
+            el: 'Σύνολο Commits',
+            ru: 'Всего коммитов',
+            'uk-ua': 'Всього коммітов',
+            id: 'Total Komitmen',
+            ml: 'ആകെ കമ്മിറ്റുകൾ',
+            my: 'Jumlah Komitmen',
+            sk: 'Všetky commity',
+            tr: 'Toplam Commit',
+            pl: 'Wszystkie commity',
+            uz: "'Commit'lar",
+            vi: 'Tổng Số Cam Kết',
+            se: 'Totalt antal commits',
+        },
+        'statcard.prs': {
+            ar: 'مجموع طلبات السحب',
+            cn: '拉取请求数（PR）',
+            'zh-tw': '拉取請求數（PR）',
+            cs: 'Celkem PRs',
+            de: 'PRs Insgesamt',
+            en: 'Total PRs',
+            bn: 'সর্বমোট PR',
+            es: 'PRs totales',
+            fr: 'Total des PRs',
+            hu: 'Összes PR',
+            it: 'PR totali',
+            ja: '合計 PR',
+            kr: 'PR 횟수',
+            nl: "Aantal PR's",
+            'pt-pt': 'Total de PRs',
+            'pt-br': 'Total de PRs',
+            np: 'कुल PRs',
+            el: 'Σύνολο PRs',
+            ru: 'Всего pull request`ов',
+            'uk-ua': 'Всього pull request`iв',
+            id: 'Total Permintaan Tarik',
+            ml: 'ആകെ പുൾ അഭ്യർത്ഥനകൾ',
+            my: 'Jumlah PR',
+            sk: 'Všetky PR',
+            tr: 'Toplam PR',
+            pl: 'Wszystkie PR-y',
+            uz: "'Pull Request'lar",
+            vi: 'Tổng Số PR',
+            se: 'Totalt antal PR',
+        },
+        'statcard.issues': {
+            ar: 'مجموع التحسينات',
+            cn: '指出问题数（issue）',
+            'zh-tw': '指出問題數（issue）',
+            cs: 'Celkem problémů',
+            de: 'Anzahl Issues',
+            en: 'Total Issues',
+            bn: 'সর্বমোট Issue',
+            es: 'Issues totales',
+            fr: "Nombre total d'incidents",
+            hu: 'Összes hibajegy',
+            it: 'Segnalazioni totali',
+            ja: '合計 issue',
+            kr: '이슈 개수',
+            nl: 'Aantal kwesties',
+            'pt-pt': 'Total de Issues',
+            'pt-br': 'Total de Issues',
+            np: 'कुल मुद्दाहरू',
+            el: 'Σύνολο Ζητημάτων',
+            ru: 'Всего issue',
+            'uk-ua': 'Всього issue',
+            id: 'Total Masalah Dilaporkan',
+            ml: 'ആകെ ലക്കങ്ങൾ',
+            my: 'Jumlah Isu Dilaporkan',
+            sk: 'Všetky problémy',
+            tr: 'Toplam Hata',
+            pl: 'Wszystkie Issues',
+            uz: "'Issue'lar",
+            vi: 'Tổng Số Vấn Đề',
+            se: 'Total antal issues',
+        },
+        'statcard.contribs': {
+            ar: 'ساهم في',
+            cn: '参与项目数',
+            'zh-tw': '參與項目數',
+            cs: 'Přispěl k',
+            de: 'Beigetragen zu',
+            en: 'Contributed to',
+            bn: 'অবদান রেখেছেন',
+            es: 'Contribuciones en',
+            fr: 'Contribué à',
+            hu: 'Hozzájárulások',
+            it: 'Ha contribuito a',
+            ja: '貢献したリポジトリ',
+            kr: '전체 기여도',
+            nl: 'Bijgedragen aan',
+            'pt-pt': 'Contribuiu em',
+            'pt-br': 'Contribuiu para',
+            np: 'कुल योगदानहरू',
+            el: 'Συνεισφέρθηκε σε',
+            ru: 'Внёс вклад в',
+            'uk-ua': 'Вніс внесок у',
+            id: 'Berkontribusi ke',
+            ml: 'സമർപ്പിച്ചിരിക്കുന്നത്',
+            my: 'Menyumbang kepada',
+            sk: 'Účasti',
+            tr: 'Katkı Verildi',
+            pl: 'Kontrybucje',
+            uz: 'Hissa qoʻshgan',
+            vi: 'Đã Đóng Góp',
+            se: 'Bidragit till',
+        },
+    };
+};
+const repoCardLocales = {
+    'repocard.template': {
+        ar: 'قالب',
+        bn: 'টেমপ্লেট',
+        cn: '模板',
+        'zh-tw': '模板',
+        cs: 'Šablona',
+        de: 'Vorlage',
+        en: 'Template',
+        es: 'Plantilla',
+        fr: 'Modèle',
+        hu: 'Sablon',
+        it: 'Template',
+        ja: 'テンプレート',
+        kr: '템플릿',
+        nl: 'Sjabloon',
+        'pt-pt': 'Modelo',
+        'pt-br': 'Modelo',
+        np: 'टेम्पलेट',
+        el: 'Πρότυπο',
+        ru: 'Шаблон',
+        'uk-ua': 'Шаблон',
+        id: 'Pola',
+        ml: 'ടെംപ്ലേറ്റ്',
+        my: 'Templat',
+        sk: 'Šablóna',
+        tr: 'Şablon',
+        pl: 'Szablony',
+        vi: 'Mẫu',
+        se: 'Mall',
+    },
+    'repocard.archived': {
+        ar: 'محفوظ',
+        bn: 'আর্কাইভড',
+        cn: '已归档',
+        'zh-tw': '已歸檔',
+        cs: 'Archivováno',
+        de: 'Archiviert',
+        en: 'Archived',
+        es: 'Archivados',
+        fr: 'Archivé',
+        hu: 'Archivált',
+        it: 'Archiviata',
+        ja: 'アーカイブ済み',
+        kr: '보관됨',
+        nl: 'Gearchiveerd',
+        'pt-pt': 'Arquivados',
+        'pt-br': 'Arquivados',
+        np: 'अभिलेख राखियो',
+        el: 'Αρχειοθετημένα',
+        ru: 'Архивирован',
+        'uk-ua': 'Архивирован',
+        id: 'Arsip',
+        ml: 'ശേഖരിച്ചത്',
+        my: 'Arkib',
+        sk: 'Archivované',
+        tr: 'Arşiv',
+        pl: 'Zarchiwizowano',
+        vi: 'Đã Lưu Trữ',
+        se: 'Arkiverade',
+    },
+};
+const langCardLocales = {
+    'langcard.title': {
+        ar: 'أكثر اللغات إستخداماً',
+        cn: '最常用的语言',
+        'zh-tw': '最常用的語言',
+        cs: 'Nejpoužívanější jazyky',
+        de: 'Meist verwendete Sprachen',
+        bn: 'সর্বাধিক ব্যবহৃত ভাষা সমূহ',
+        en: 'Most Used Languages',
+        es: 'Lenguajes más usados',
+        fr: 'Langages les plus utilisés',
+        hu: 'Leggyakrabban használt nyelvek',
+        it: 'Linguaggi più utilizzati',
+        ja: '最もよく使っている言語',
+        kr: '가장 많이 사용된 언어',
+        nl: 'Meest gebruikte talen',
+        'pt-pt': 'Idiomas mais usados',
+        'pt-br': 'Linguagens mais usadas',
+        np: 'अधिक प्रयोग गरिएको भाषाहरू',
+        el: 'Οι περισσότερο χρησιμοποιούμενες γλώσσες',
+        ru: 'Наиболее часто используемые языки',
+        'uk-ua': 'Найбільш часто використовувані мови',
+        id: 'Bahasa Yang Paling Banyak Digunakan',
+        ml: 'കൂടുതൽ ഉപയോഗിച്ച ഭാഷകൾ',
+        my: 'Bahasa Paling Digunakan',
+        sk: 'Najviac používané jazyky',
+        tr: 'En Çok Kullanılan Diller',
+        pl: 'Najczęściej używane języki',
+        vi: 'Ngôn Ngữ Thường Sử Dụng',
+        se: 'Mest använda språken',
+    },
+};
+const wakatimeCardLocales = {
+    'wakatimecard.title': {
+        ar: 'إحصائيات واكا تايم',
+        cn: 'Wakatime 周统计',
+        'zh-tw': 'Wakatime 周統計',
+        cs: 'Statistiky Wakatime',
+        de: 'Wakatime Status',
+        en: 'Wakatime Stats',
+        bn: 'Wakatime স্ট্যাটাস',
+        es: 'Estadísticas de Wakatime',
+        fr: 'Statistiques de Wakatime',
+        hu: 'Wakatime statisztika',
+        it: 'Statistiche Wakatime',
+        ja: 'Wakatime ワカタイム統計',
+        kr: 'Wakatime 주간 통계',
+        nl: 'Wakatime-statistieken',
+        'pt-pt': 'Estatísticas Wakatime',
+        'pt-br': 'Estatísticas Wakatime',
+        np: 'Wakatime तथ्या .्क',
+        el: 'Στατιστικά Wakatime',
+        ru: 'Статистика Wakatime',
+        'uk-ua': 'Статистика Wakatime',
+        id: 'Status Wakatime',
+        ml: 'വേക്ക് ടൈം സ്ഥിതിവിവരക്കണക്കുകൾ',
+        my: 'Statistik Wakatime',
+        sk: 'Wakatime štatistika',
+        tr: 'Waketime İstatistikler',
+        pl: 'statystyki Wakatime',
+        vi: 'Thống Kê Wakatime',
+        se: 'Wakatime statistik',
+    },
+    'wakatimecard.nocodingactivity': {
+        ar: 'لا يوجد نشاط برمجي لهذا الأسبوع',
+        cn: '本周没有编程活动',
+        'zh-tw': '本周沒有編程活動',
+        cs: 'Tento týden žádná aktivita v kódování',
+        de: 'Keine Aktivitäten in dieser Woche',
+        en: 'No coding activity this week',
+        bn: 'এই সপ্তাহে কোন কোডিং অ্যাক্টিভিটি নেই',
+        es: 'No hay actividad de codificación esta semana',
+        fr: 'Aucune activité de codage cette semaine',
+        hu: 'Nem volt aktivitás ezen a héten',
+        it: 'Nessuna attività in questa settimana',
+        ja: '今週のコーディング活動はありません',
+        kr: '이번 주 작업내역 없음',
+        nl: 'Geen programmeeractiviteit deze week',
+        'pt-pt': 'Sem atividade esta semana',
+        'pt-br': 'Nenhuma atividade de codificação esta semana',
+        np: 'यस हप्ता कुनै कोडिंग गतिविधि छैन',
+        el: "Δεν υπάρχει δραστηριότητα κώδικα γι' αυτή την εβδομάδα",
+        ru: 'На этой неделе не было активности',
+        'uk-ua': 'На цьому тижні не було активності',
+        id: 'Tidak ada aktivitas perkodingan minggu ini',
+        ml: 'ഈ ആഴ്ച കോഡിംഗ് പ്രവർത്തനങ്ങളൊന്നുമില്ല',
+        my: 'Tiada aktiviti pengekodan minggu ini',
+        sk: 'Žiadna kódovacia aktivita tento týždeň',
+        tr: 'Bu hafta herhangi bir kod yazma aktivitesi olmadı',
+        pl: 'Brak aktywności w tym tygodniu',
+        uz: "Bu hafta faol bo'lmadi",
+        vi: 'Không Có Hoạt Động Trong Tuần Này',
+        se: 'Ingen aktivitet denna vecka',
+    },
+};
+const availableLocales = Object.keys(repoCardLocales['repocard.archived']);
+function isLocaleAvailable(locale) {
+    return availableLocales.includes(locale.toLowerCase());
+}
+
+;// CONCATENATED MODULE: ./src/cards/stats-card.ts
+
+
+
+
+
+
+
+const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
+let maxWidth = 0;
+const createRow = ({ imageBase64, name, valueCells: valueCellCriteria, index, }) => {
+    const staggerDelay = (index + 3) * 150;
+    let offset = clampValue(measureText(name, 18), 230, 400);
+    offset += offset === 230 ? 5 : 15;
+    const circleRadius = 14;
+    const xAlign = 4;
+    const yAlign = 18.5;
+    const cellWidths = [];
+    const renderCellText = (val, x, y) => `
+   <g class="cell-text">
+      <text x="${val.includes('+') ? x : 7.2}" y="${y}">
+      ${val}
+      </text>
+    </g>
+    `;
+    const getValueCellContent = (val) => {
+        if (val == undefined) {
+            return { item: '', width: 0 };
+        }
+        if (ranks.includes(val)) {
+            return {
+                item: `
+    <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="${circleRadius}" />
+    ${renderCellText(val, val.includes('+') ? xAlign : 7.2, yAlign)}
+    `,
+                width: circleRadius * 2,
+            };
+        }
+        return { item: renderCellText(val, xAlign, yAlign), width: measureText(val, 18) };
+    };
+    const valueCells = valueCellCriteria.map((val) => {
+        const { item, width } = getValueCellContent(val);
+        cellWidths.push(width);
+        maxWidth = Math.max(maxWidth, offset + width);
+        const fullItem = `
+    <g data-testid="value-cell" transform="translate(${offset}, 0)">
+        ${item}
+    </g>
+        `;
+        offset += 50;
+        return fullItem;
+    });
+    return {
+        content: `
+    <g class="stagger" style="animation-delay: ${staggerDelay}ms" transform="translate(25, 0)">
+      <defs>
+        <clipPath id="myCircle">
+          <circle cx="12.5" cy="12.5" r="12.5" fill="#FFFFFF" />
+        </clipPath>
+      </defs>
+      <image xlink:href="${imageBase64}" width="25" height="25" clip-path="url(#myCircle)"/>
+      <g transform="translate(30,16)">
+        <text class="stat bold">${name}</text>
+      </g>
+      ${valueCells}
+    </g>
+  `,
+        cellWidths,
+    };
+};
+const renderContributorStatsCard = async (username, name, contributorStats = [], { columns = [{ name: 'star_rank', hide: [] }], line_height = 25, hide_title = false, hide_border = false, order_by = 'stars', title_color, icon_color, text_color, bg_color, border_radius, border_color, custom_title, theme = 'default', locale, limit = -1, exclude = [], contributor_fetcher = fetchContributors, } = {}) => {
+    const lheight = parseInt(String(line_height), 10);
+    const { titleColor, textColor, iconColor, bgColor, borderColor } = getCardColors({
+        title_color,
+        icon_color,
+        text_color,
+        bg_color,
+        border_color,
+        theme,
+    });
+    const apostrophe = ['x', 's'].includes(name.slice(-1).toLocaleLowerCase()) ? '' : 's';
+    const i18n = new I18n({
+        locale,
+        translations: statCardLocales({ name, apostrophe }),
+    });
+    const imageBase64s = await Promise.all(Object.values(contributorStats).map((contributorStat) => {
+        const url = new URL(contributorStat.owner.avatarUrl);
+        url.searchParams.append('s', '50');
+        return getImageBase64FromURL(url.toString());
+    }));
+    const starRankCriteria = getColumnCriteria(columns, 'star_rank');
+    const contributorRankCriteria = getColumnCriteria(columns, 'contribution_rank');
+    const commitsCriteria = getColumnCriteria(columns, 'commits');
+    const pullRequestsCriteria = getColumnCriteria(columns, 'pull_requests');
+    let allContributorsByRepo;
+    if (contributorRankCriteria) {
+        allContributorsByRepo = [];
+        for (const { nameWithOwner } of Object.values(contributorStats)) {
+            const contributors = await contributor_fetcher(username, nameWithOwner, token);
+            allContributorsByRepo.push(contributors);
+        }
+    }
+    const allCellWidths = [];
+    const calculatedStats = contributorStats
+        .map(({ url, name, stargazerCount, numContributedCommits, numContributedPrs }, index) => {
+        if (exclude.some((pattern) => matchWildcard(name, pattern))) {
+            return undefined;
+        }
+        for (const [given, minimum] of [
+            [numContributedCommits, commitsCriteria?.minimum],
+            [numContributedPrs, pullRequestsCriteria?.minimum],
+        ]) {
+            if (minimum !== undefined && given !== undefined && given < minimum) {
+                return undefined;
+            }
+        }
+        const contributionRank = contributorRankCriteria && numContributedCommits !== undefined
+            ? calculateContributionsRank(name, allContributorsByRepo[index], numContributedCommits)
+            : undefined;
+        if (contributionRank &&
+            contributorRankCriteria?.hide.includes(contributionRank)) {
+            return undefined;
+        }
+        const starRank = starRankCriteria
+            ? calculateStarsRank(stargazerCount)
+            : undefined;
+        if (starRank && starRankCriteria?.hide.includes(starRank)) {
+            return undefined;
+        }
+        return {
+            name,
+            imageBase64: imageBase64s[index],
+            url,
+            contributionRank,
+            numContributedCommits,
+            numStars: stargazerCount,
+            numContributedPrs,
+            starRank,
+        };
+    })
+        .filter((s) => s !== undefined)
+        .sort((a, b) => order_by == 'stars'
+        ? b.numStars - a.numStars
+        : (b.numContributedCommits ?? 0) - (a.numContributedCommits ?? 0))
+        .slice(0, limit > 0 ? limit : undefined);
+    const statRows = calculatedStats.map((stat, index) => {
+        const columnValsMap = {
+            star_rank: stat.starRank,
+            contribution_rank: stat.contributionRank,
+            commits: stat.numContributedCommits?.toString(),
+            pull_requests: stat.numContributedPrs?.toString(),
+        };
+        const { content, cellWidths } = createRow({
+            ...stat,
+            index,
+            valueCells: columns.map((c) => columnValsMap[c.name]),
+        });
+        allCellWidths.push(cellWidths);
+        return content;
+    });
+    const columnWidths = allCellWidths.reduce((acc, row) => acc.map((max, i) => Math.max(max, row[i])));
+    const distanceY = 8;
+    const height = Math.max(30 + 45 + (statRows.length + 1) * (lheight + distanceY), 150);
+    const cssStyles = getStyles({
+        titleColor: titleColor,
+        textColor: textColor,
+        iconColor: iconColor,
+        show_icons: true,
+    });
+    return renderCard({
+        customTitle: custom_title,
+        defaultTitle: i18n.t('statcard.title'),
+        body: `
+    <svg overflow="visible">
+      ${flexLayout({
+            items: statRows,
+            gap: lheight + distanceY,
+            direction: 'column',
+        }).join('')}
+    </svg>
+  `,
+        columns: columns.map((column, i) => ({
+            column: column.name,
+            width: columnWidths[i],
+        })),
+        width: maxWidth,
+        height,
+        border_radius,
+        hide_border,
+        hide_title,
+        css: cssStyles,
+        colors: {
+            titleColor,
+            textColor,
+            iconColor,
+            bgColor,
+            borderColor,
+        },
+    });
+};
+
 // EXTERNAL MODULE: ./node_modules/axios/index.js
 var axios = __webpack_require__(9669);
 var axios_default = /*#__PURE__*/__webpack_require__.n(axios);
+;// CONCATENATED MODULE: ./src/fetchContributorStats.ts
+
+const repositoryQuery = `
+owner {
+  id
+  avatarUrl
+}
+isInOrganization
+url
+homepageUrl
+name
+nameWithOwner
+stargazerCount
+openGraphImageUrl
+defaultBranchRef {
+  target {
+    ... on Commit {
+      history {
+        totalCount
+      }
+    }
+  }
+}
+`;
+const fetchContributorStats = async (username) => {
+    try {
+        const response = await axios_default().post('https://api.github.com/graphql', {
+            query: `query {
+                  user(login: ${JSON.stringify(username)}) {
+                    id
+                    name
+                    repositoriesContributedTo(first :100, contributionTypes: COMMIT) {
+                      totalCount
+                      nodes {
+                        ${repositoryQuery}
+                      }
+                    }
+                  }
+                }`,
+        }, {
+            headers: {
+                Authorization: `token ${process.env.GITHUB_PERSONAL_ACCESS_TOKEN}`,
+            },
+        });
+        if (response.status === 200) {
+            return response.data.data.user;
+        }
+    }
+    catch (error) {
+        console.error(error);
+        return;
+    }
+};
+
 ;// CONCATENATED MODULE: ./src/fetchAllContributorStats.ts
+
 
 
 const MAX_REPOS_PER_QUERY = 100;
@@ -56576,26 +57282,15 @@ async function fetchContributionsForRange(username, range) {
                 totalCount
               }
               repository {
-                owner {
-                  id
-                  avatarUrl
-                }
-                isInOrganization
-                url
-                homepageUrl
-                name
-                nameWithOwner
-                stargazerCount
-                openGraphImageUrl
-                defaultBranchRef {
-                  target {
-                    ... on Commit {
-                      history {
-                        totalCount
-                      }
-                    }
-                  }
-                }
+                ${repositoryQuery}
+              }
+            }
+            pullRequestContributionsByRepository(maxRepositories: ${MAX_REPOS_PER_QUERY}) {
+              contributions {
+                totalCount
+              }
+              repository {
+                ${repositoryQuery}
               }
             }
           }
@@ -56607,12 +57302,7 @@ async function fetchContributionsForRange(username, range) {
         },
         validateStatus: (status) => status == 200,
     });
-    const commitContributionsByRepository = response.data.data.user.contributionsCollection.commitContributionsByRepository;
-    return commitContributionsByRepository.map(({ contributions, repository }) => ({
-        nameWithOwner: repository.nameWithOwner,
-        repository,
-        contributions: contributions.totalCount,
-    }));
+    return response.data.data.user.contributionsCollection;
 }
 function splitTimeRange(range) {
     const from = new Date(range.from);
@@ -56652,13 +57342,18 @@ function splitTimeRange(range) {
 }
 async function fetchContributionsWithSplitting(username, range, depth = 0) {
     const results = await fetchContributionsForRange(username, range);
-    if (results.length >= MAX_REPOS_PER_QUERY && depth < 4) {
+    if ((results.pullRequestContributionsByRepository.length >= MAX_REPOS_PER_QUERY ||
+        results.commitContributionsByRepository.length >= MAX_REPOS_PER_QUERY) &&
+        depth < 4) {
         const subRanges = splitTimeRange(range);
         if (subRanges.length === 1) {
             return results;
         }
         const subResults = await Promise.all(subRanges.map((subRange) => fetchContributionsWithSplitting(username, subRange, depth + 1)));
-        return subResults.flat();
+        return {
+            commitContributionsByRepository: subResults.flatMap((c) => c.commitContributionsByRepository),
+            pullRequestContributionsByRepository: subResults.flatMap((c) => c.pullRequestContributionsByRepository),
+        };
     }
     return results;
 }
@@ -56685,78 +57380,33 @@ async function fetchAllContributorStats(username) {
         to: `${year}-12-31T23:59:59Z`,
     })));
     const allContributions = yearlyContributions.flat();
-    const nodes = lodash_default().chain(allContributions)
-        .groupBy('nameWithOwner')
+    const getStatsByName = (items) => lodash_default().chain(items)
+        .groupBy((item) => item.repository.nameWithOwner)
         .map((contributions) => {
-        const totalCount = lodash_default().sumBy(contributions, 'contributions');
+        const totalCount = lodash_default().sumBy(contributions, (c) => c.contributions.totalCount);
         return {
             ...contributions[0].repository,
             numContributions: totalCount,
         };
     })
         .value();
+    const commitsRepositories = getStatsByName(allContributions.flatMap((c) => c.commitContributionsByRepository));
+    const pullRequestsRepositories = getStatsByName(allContributions.flatMap((c) => c.pullRequestContributionsByRepository));
     return {
         id,
         name,
         repositoriesContributedTo: {
-            nodes,
+            nodes: commitsRepositories.map((repo) => ({
+                ...repo,
+                numContributedCommits: repo.numContributions,
+                numContributedPrs: pullRequestsRepositories.find((prRepo) => prRepo.nameWithOwner === repo.nameWithOwner)?.numContributions,
+            })),
         },
     };
 }
 
-;// CONCATENATED MODULE: ./src/fetchContributorStats.ts
-
-const fetchContributorStats = async (username) => {
-    try {
-        const response = await axios_default().post('https://api.github.com/graphql', {
-            query: `query {
-                  user(login: ${JSON.stringify(username)}) {
-                    id
-                    name
-                    repositoriesContributedTo(first :100, contributionTypes: COMMIT) {
-                      totalCount
-                      nodes {
-                        owner {
-                          id
-                          avatarUrl
-                        }
-                        isInOrganization
-                        url
-                        homepageUrl
-                        name
-                        nameWithOwner
-                        stargazerCount
-                        openGraphImageUrl
-                        defaultBranchRef {
-                          target {
-                            ... on Commit {
-                              history {
-                                totalCount
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }`,
-        }, {
-            headers: {
-                Authorization: `token ${process.env.GITHUB_PERSONAL_ACCESS_TOKEN}`,
-            },
-        });
-        if (response.status === 200) {
-            return response.data.data.user;
-        }
-    }
-    catch (error) {
-        console.error(error);
-        return;
-    }
-};
-
-
 ;// CONCATENATED MODULE: ./action/src/index.ts
+
 
 
 
@@ -56853,36 +57503,9 @@ function createRateLimitedFetcher() {
         return contributors;
     };
 }
-const inputSchema = commonInputSchema.extend({
-    output_file: emptyStringToUndefined["default"]('github-contributor-stats.svg'),
-})
-    .transform(mergeHideIntoColumnCriteria);
-function parseActionInputs() {
-    return inputSchema.parse({
-        username: core.getInput('username', { required: true }),
-        output_file: core.getInput('output-file'),
-        combine_all_yearly_contributions: core.getInput('combine-all-yearly-contributions'),
-        columns: core.getInput('columns'),
-        hide: core.getInput('hide'),
-        order_by: core.getInput('order-by'),
-        limit: core.getInput('limit'),
-        exclude: core.getInput('exclude'),
-        theme: core.getInput('theme'),
-        title_color: core.getInput('title-color'),
-        text_color: core.getInput('text-color'),
-        icon_color: core.getInput('icon-color'),
-        bg_color: core.getInput('bg-color'),
-        border_color: core.getInput('border-color'),
-        border_radius: core.getInput('border-radius'),
-        hide_title: core.getBooleanInput('hide-title'),
-        hide_border: core.getBooleanInput('hide-border'),
-        custom_title: core.getInput('custom-title'),
-        locale: core.getInput('locale'),
-    });
-}
 async function run() {
     try {
-        const { username, output_file, combine_all_yearly_contributions, columns, order_by, limit, exclude, theme, title_color, text_color, icon_color, bg_color, border_color, border_radius, hide_title, hide_border, custom_title, locale, } = parseActionInputs();
+        const { username, output_file, combine_all_yearly_contributions, columns, order_by, limit, exclude, theme, title_color, text_color, icon_color, bg_color, border_color, border_radius, hide_title, hide_border, custom_title, locale, } = parseInputs();
         core.info(`Generating stats for user: ${username}`);
         core.info(`Combine all yearly contributions: ${combine_all_yearly_contributions}`);
         core.info(`Columns: ${columns.map((col) => col.name).join(', ')}`);
@@ -56896,6 +57519,14 @@ async function run() {
         }
         const name = result.name;
         const contributorStats = result.repositoriesContributedTo.nodes;
+        console.log(JSON.stringify(contributorStats.map((repo) => {
+            lodash_default().pick(repo, [
+                'nameWithOwner',
+                'stargazerCount',
+                'numContributedCommits',
+                'numContributedPrs',
+            ]);
+        }), null, 2));
         core.info(`Found ${contributorStats.length} repositories`);
         const contributorFetcher = contributorRankCriteria
             ? createRateLimitedFetcher()

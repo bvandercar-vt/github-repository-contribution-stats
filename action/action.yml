@@ -15,7 +15,7 @@ inputs:
     required: false
     default: 'github-contributor-stats.svg'
   columns:
-    description: 'Comma-separated list of columns to show. Options: "star_rank", "contribution_rank", "commits". Can be in the desired order.'
+    description: 'Comma-separated list of columns to show. Options: "star_rank", "contribution_rank", "commits", "pull_requests". Can be in the desired order.'
     required: false
     default: 'star_rank'
   combine-all-yearly-contributions:
@@ -34,6 +34,10 @@ inputs:
     description: 'Limit number of repositories to show (-1 for no limit)'
     required: false
     default: '-1'
+  exclude:
+    description: 'Comma-separated list of repositories to exclude (supports wildcards)'
+    required: false
+    default: ''
   theme:
     description: 'Theme name (default, dark, radical, etc.)'
     required: false

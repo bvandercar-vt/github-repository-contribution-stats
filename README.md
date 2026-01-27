@@ -4,6 +4,8 @@
  <p align="center">Get dynamically generated your github repository contribution stats on your READMEs!</p>
 </p>
 
+**ORIGINAL README: https://github.com/HwangTaehyun/github-repository-contribution-stats**
+
 # Features
 
 - [GitHub Repository Contribution Stats Card](#github-repository-contribution-stats-card)
@@ -31,13 +33,13 @@ _Note: Available ranks are S+ (over 10000), S (over 1000), A+ (over 500), A (ove
 
 ### Columns
 
-Can configure the visible columns by passing a string array of values that can be `star_rank`, `contribution_rank`, or `columns`
+Can configure the visible columns by passing a string array of values that can be `star_rank`, `contribution_rank`, `commits`, or `pull_requests`
 
 Examples:
 
 - `&columns=contribution_rank`
 - `&columns=contribution_rank,star_rank`
-- `&columns=star_rank,commits`
+- `&columns=star_rank,commits,pull_requests`
 
 <!-- TODO: example image with all columns present -->
 
@@ -95,22 +97,6 @@ You can look at a preview for [all available themes](./themes/README.md) or chec
 
 > Note: The minimum of cache_seconds is currently 4 hours as a temporary fix for PATs exhaustion.
 
-## :sparkling_heart: Support the project
-
-I open-source almost everything I can and try to reply to everyone needing help using these projects. Obviously,
-this takes time. You can use this service for free.
-
-However, if you are using this project and are happy with it or just want to encourage me to continue creating stuff, there are a few ways you can do it:
-
-- Starring and sharing the project :rocket:
-- You can make one-time donations via buymeacoffee. I'll probably buy a coffee! :coffee:
-
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/eeht17173)
-
-Thanks! :heart:
-
 ## Contribution
 
 Contributions are welcome!
-
-Made with :fire: and TypeScript.

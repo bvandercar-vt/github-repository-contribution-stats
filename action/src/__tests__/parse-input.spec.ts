@@ -1,6 +1,5 @@
 import { mockYamlParse } from '../__helpers__/mock_yaml_parse';
-import type { ValidatedActionInputs } from '../src';
-import { parseActionInputs } from '../src';
+import { parseInputs, type ValidatedInputs } from '../parse-input';
 
 const fixturesFolder = `${__dirname}/../__fixtures__`;
 
@@ -14,12 +13,27 @@ const base = {
   theme: 'default',
   limit: -1,
   exclude: [],
-} satisfies Partial<ValidatedActionInputs>;
+} satisfies Partial<ValidatedInputs>;
 
-describe('parseActionInputs', () => {
+const originalEnv = process.env;
+
+describe('parseInputs', () => {
+  beforeEach(() => {
+    jest.resetModules();
+    for (const key of Object.keys(process.env)) {
+      if (key.startsWith('INPUT_')) {
+        delete process.env[key];
+      }
+    }
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
+  });
+
   it('example-workflow.yml', () => {
-    mockYamlParse(`${__dirname}/../example-workflow.yml`);
-    expect(parseActionInputs()).toEqual({
+    mockYamlParse(`${__dirname}/../../example-workflow.yml`);
+    expect(parseInputs()).toEqual({
       ...base,
       columns: [
         { name: 'star_rank', hide: [] },
@@ -30,7 +44,7 @@ describe('parseActionInputs', () => {
 
   it('columns-object.yml', () => {
     mockYamlParse(`${fixturesFolder}/columns-object.yml`);
-    expect(parseActionInputs()).toEqual({
+    expect(parseInputs()).toEqual({
       ...base,
       columns: [
         { name: 'star_rank', hide: [] },

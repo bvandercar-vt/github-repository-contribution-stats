@@ -1,4 +1,3 @@
-// @ts-check
 export const calculateCircleProgress = (value: number) => {
   const radius = 40;
   const c = Math.PI * (radius * 2);

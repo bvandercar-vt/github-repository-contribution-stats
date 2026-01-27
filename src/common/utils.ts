@@ -1,4 +1,3 @@
-// @ts-check
 import _ from 'lodash';
 import type { Simplify } from 'type-fest';
 

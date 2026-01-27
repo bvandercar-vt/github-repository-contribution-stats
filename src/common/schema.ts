@@ -25,7 +25,7 @@ const columnCriteriaSchema = z.union([
     hide: parseArray,
   }),
   z.object({
-    name: z.enum(['commits']),
+    name: z.enum(['commits', 'pull_requests']),
     minimum: z.number().optional(),
   }),
 ]);

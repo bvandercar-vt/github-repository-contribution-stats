@@ -57,7 +57,7 @@ jobs:
 |-------|-------------|----------|---------|
 | `username` | GitHub username to generate stats for | Yes | - |
 | `output-file` | Output SVG file path | No | `github-contributor-stats.svg` |
-| `columns` | Comma-separated list of columns to show. Options: "star_rank", "contribution_rank", "commits". Can be in the desired order. | No | "star_rank" |
+| `columns` | Comma-separated list of columns to show. Options: "star_rank", "contribution_rank", "commits", "pull_requests". Can be in the desired order. | No | "star_rank" |
 | `combine-all-yearly-contributions` | Combine contributions from all years | No | `true` |
 | `hide` | Comma-separated ranks to hide (e.g., "B,B+") | No | - |
 | `order-by` | Order by "stars" or "contributions" | No | `stars` |

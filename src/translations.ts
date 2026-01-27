@@ -1,6 +1,12 @@
 import { encodeHTML } from '@/common/utils';
 
-const statCardLocales = ({ name, apostrophe }: { name: string; apostrophe: string }) => {
+export const statCardLocales = ({
+  name,
+  apostrophe,
+}: {
+  name: string;
+  apostrophe: string;
+}) => {
   const encodedName = encodeHTML(name);
   return {
     'statcard.title': {
@@ -192,7 +198,7 @@ const statCardLocales = ({ name, apostrophe }: { name: string; apostrophe: strin
   };
 };
 
-const repoCardLocales = {
+export const repoCardLocales = {
   'repocard.template': {
     ar: 'قالب',
     bn: 'টেমপ্লেট',
@@ -255,7 +261,7 @@ const repoCardLocales = {
   },
 };
 
-const langCardLocales = {
+export const langCardLocales = {
   'langcard.title': {
     ar: 'أكثر اللغات إستخداماً',
     cn: '最常用的语言',
@@ -288,7 +294,7 @@ const langCardLocales = {
   },
 };
 
-const wakatimeCardLocales = {
+export const wakatimeCardLocales = {
   'wakatimecard.title': {
     ar: 'إحصائيات واكا تايم',
     cn: 'Wakatime 周统计',
@@ -352,17 +358,8 @@ const wakatimeCardLocales = {
   },
 };
 
-const availableLocales = Object.keys(repoCardLocales['repocard.archived']);
+export const availableLocales = Object.keys(repoCardLocales['repocard.archived']);
 
-function isLocaleAvailable(locale: string) {
+export function isLocaleAvailable(locale: string) {
   return availableLocales.includes(locale.toLowerCase());
 }
-
-export {
-  isLocaleAvailable,
-  availableLocales,
-  statCardLocales,
-  repoCardLocales,
-  langCardLocales,
-  wakatimeCardLocales,
-};

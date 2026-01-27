@@ -35,6 +35,29 @@ export interface Repository {
   } | null;
 }
 
+export const repositoryQuery = `
+owner {
+  id
+  avatarUrl
+}
+isInOrganization
+url
+homepageUrl
+name
+nameWithOwner
+stargazerCount
+openGraphImageUrl
+defaultBranchRef {
+  target {
+    ... on Commit {
+      history {
+        totalCount
+      }
+    }
+  }
+}
+`;
+
 /**
  * The Fetch Contributor Stats Function.
  *
@@ -45,7 +68,7 @@ export interface Repository {
  *
  * @return {*}
  */
-const fetchContributorStats = async (username: string) => {
+export const fetchContributorStats = async (username: string) => {
   try {
     const response = await axios.post<
       UserResponse<{
@@ -66,26 +89,7 @@ const fetchContributorStats = async (username: string) => {
                     repositoriesContributedTo(first :100, contributionTypes: COMMIT) {
                       totalCount
                       nodes {
-                        owner {
-                          id
-                          avatarUrl
-                        }
-                        isInOrganization
-                        url
-                        homepageUrl
-                        name
-                        nameWithOwner
-                        stargazerCount
-                        openGraphImageUrl
-                        defaultBranchRef {
-                          target {
-                            ... on Commit {
-                              history {
-                                totalCount
-                              }
-                            }
-                          }
-                        }
+                        ${repositoryQuery}
                       }
                     }
                   }
@@ -106,5 +110,3 @@ const fetchContributorStats = async (username: string) => {
     return;
   }
 };
-
-export { fetchContributorStats };

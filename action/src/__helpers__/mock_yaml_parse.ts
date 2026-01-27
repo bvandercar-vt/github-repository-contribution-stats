@@ -4,7 +4,7 @@ import * as path from 'path';
 import yaml from 'js-yaml';
 
 const actionYml = yaml.load(
-  fs.readFileSync(path.join(__dirname, '../action.yml'), 'utf8'),
+  fs.readFileSync(path.join(__dirname, '../../action.yml'), 'utf8'),
 ) as Record<string, unknown>;
 const defaults = Object.fromEntries(
   Object.entries(actionYml.inputs as Record<string, { default?: unknown }>).map(

@@ -111,7 +111,8 @@ export type ContributionsStats = Pick<
   Repository,
   'name' | 'owner' | 'nameWithOwner' | 'url' | 'stargazerCount'
 > & {
-  numContributions?: number;
+  numContributedCommits?: number;
+  numContributedPrs?: number;
 };
 
 export const renderContributorStatsCard = async (
@@ -206,6 +207,7 @@ export const renderContributorStatsCard = async (
   const starRankCriteria = getColumnCriteria(columns, 'star_rank');
   const contributorRankCriteria = getColumnCriteria(columns, 'contribution_rank');
   const commitsCriteria = getColumnCriteria(columns, 'commits');
+  const pullRequestsCriteria = getColumnCriteria(columns, 'pull_requests');
 
   let allContributorsByRepo: Contributor[][];
   if (contributorRankCriteria) {
@@ -219,53 +221,65 @@ export const renderContributorStatsCard = async (
 
   const allCellWidths: number[][] = [];
   const calculatedStats = contributorStats
-    .map(({ url, name, stargazerCount, numContributions }, index) => {
-      if (exclude.some((pattern) => matchWildcard(name, pattern))) {
-        return undefined;
-      }
+    .map(
+      (
+        { url, name, stargazerCount, numContributedCommits, numContributedPrs },
+        index,
+      ) => {
+        if (exclude.some((pattern) => matchWildcard(name, pattern))) {
+          return undefined;
+        }
 
-      if (
-        commitsCriteria?.minimum !== undefined &&
-        numContributions !== undefined &&
-        numContributions < commitsCriteria.minimum
-      ) {
-        return undefined;
-      }
+        for (const [given, minimum] of [
+          [numContributedCommits, commitsCriteria?.minimum],
+          [numContributedPrs, pullRequestsCriteria?.minimum],
+        ] as const) {
+          if (minimum !== undefined && given !== undefined && given < minimum) {
+            return undefined;
+          }
+        }
 
-      const contributionRank =
-        contributorRankCriteria && numContributions !== undefined
-          ? calculateContributionsRank(
-              name,
-              allContributorsByRepo[index],
-              numContributions,
-            )
+        const contributionRank =
+          contributorRankCriteria && numContributedCommits !== undefined
+            ? calculateContributionsRank(
+                name,
+                allContributorsByRepo[index],
+                numContributedCommits,
+              )
+            : undefined;
+
+        if (
+          contributionRank &&
+          contributorRankCriteria?.hide.includes(contributionRank)
+        ) {
+          return undefined;
+        }
+
+        const starRank = starRankCriteria
+          ? calculateStarsRank(stargazerCount)
           : undefined;
 
-      if (contributionRank && contributorRankCriteria?.hide.includes(contributionRank)) {
-        return undefined;
-      }
+        if (starRank && starRankCriteria?.hide.includes(starRank)) {
+          return undefined;
+        }
 
-      const starRank = starRankCriteria ? calculateStarsRank(stargazerCount) : undefined;
-
-      if (starRank && starRankCriteria?.hide.includes(starRank)) {
-        return undefined;
-      }
-
-      return {
-        name,
-        imageBase64: imageBase64s[index],
-        url,
-        numContributions,
-        contributionRank,
-        numStars: stargazerCount,
-        starRank,
-      };
-    })
+        return {
+          name,
+          imageBase64: imageBase64s[index],
+          url,
+          contributionRank,
+          numContributedCommits,
+          numStars: stargazerCount,
+          numContributedPrs,
+          starRank,
+        };
+      },
+    )
     .filter((s): s is Exclude<typeof s, undefined> => s !== undefined)
     .sort((a, b) =>
       order_by == 'stars'
         ? b.numStars - a.numStars
-        : (b.numContributions ?? 0) - (a.numContributions ?? 0),
+        : (b.numContributedCommits ?? 0) - (a.numContributedCommits ?? 0),
     )
     .slice(0, limit > 0 ? limit : undefined);
 
@@ -273,7 +287,8 @@ export const renderContributorStatsCard = async (
     const columnValsMap = {
       star_rank: stat.starRank,
       contribution_rank: stat.contributionRank,
-      commits: stat.numContributions?.toString(),
+      commits: stat.numContributedCommits?.toString(),
+      pull_requests: stat.numContributedPrs?.toString(),
     } satisfies Record<ColumnName, string | undefined>;
 
     // create the text nodes, and pass index so that we can calculate the line spacing

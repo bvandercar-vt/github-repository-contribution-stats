@@ -2,14 +2,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import * as core from '@actions/core';
-import type { z } from 'zod';
+import _ from 'lodash';
+
+import { parseInputs } from './parse-input';
 
 import { renderContributorStatsCard, type ContributorFetcher } from '@/cards/stats-card';
-import {
-  commonInputSchema,
-  emptyStringToUndefined,
-  mergeHideIntoColumnCriteria,
-} from '@/common/schema';
 import { getColumnCriteria } from '@/common/utils';
 import { fetchAllContributorStats } from '@/fetchAllContributorStats';
 import { type Contributor } from '@/fetchContributors';
@@ -165,38 +162,6 @@ function createRateLimitedFetcher(): ContributorFetcher {
   };
 }
 
-const inputSchema = commonInputSchema
-  .extend({
-    output_file: emptyStringToUndefined.default('github-contributor-stats.svg'),
-  })
-  .transform(mergeHideIntoColumnCriteria);
-
-export type ValidatedActionInputs = z.infer<typeof inputSchema>;
-
-export function parseActionInputs(): ValidatedActionInputs {
-  return inputSchema.parse({
-    username: core.getInput('username', { required: true }),
-    output_file: core.getInput('output-file'),
-    combine_all_yearly_contributions: core.getInput('combine-all-yearly-contributions'),
-    columns: core.getInput('columns'),
-    hide: core.getInput('hide'),
-    order_by: core.getInput('order-by'),
-    limit: core.getInput('limit'),
-    exclude: core.getInput('exclude'),
-    theme: core.getInput('theme'),
-    title_color: core.getInput('title-color'),
-    text_color: core.getInput('text-color'),
-    icon_color: core.getInput('icon-color'),
-    bg_color: core.getInput('bg-color'),
-    border_color: core.getInput('border-color'),
-    border_radius: core.getInput('border-radius'),
-    hide_title: core.getBooleanInput('hide-title'),
-    hide_border: core.getBooleanInput('hide-border'),
-    custom_title: core.getInput('custom-title'),
-    locale: core.getInput('locale'),
-  });
-}
-
 async function run(): Promise<void> {
   try {
     // Parse and validate inputs
@@ -219,7 +184,7 @@ async function run(): Promise<void> {
       hide_border,
       custom_title,
       locale,
-    } = parseActionInputs();
+    } = parseInputs();
 
     core.info(`Generating stats for user: ${username}`);
     core.info(`Combine all yearly contributions: ${combine_all_yearly_contributions}`);
@@ -240,6 +205,21 @@ async function run(): Promise<void> {
     const name = result.name;
     const contributorStats = result.repositoriesContributedTo.nodes;
 
+    console.log(
+      JSON.stringify(
+        contributorStats.map((repo) => {
+          _.pick(repo, [
+            'nameWithOwner',
+            'stargazerCount',
+            'numContributedCommits',
+            'numContributedPrs',
+          ]);
+        }),
+        null,
+        2,
+      ),
+    );
+
     core.info(`Found ${contributorStats.length} repositories`);
 
     // Create rate-limited fetcher if needed
@@ -254,6 +234,7 @@ async function run(): Promise<void> {
       core.info(
         `Min interval between requests: ${MIN_REQUEST_INTERVAL_MS}ms (secondary rate limit protection)`,
       );
+      core.info(`Total contributor API requests made: ${requestCount}`);
     }
 
     // Render the card
@@ -279,14 +260,11 @@ async function run(): Promise<void> {
 
     // Write SVG to file
     const outputPath = path.resolve(process.cwd(), output_file);
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
     fs.writeFileSync(outputPath, svg);
 
     core.info(`SVG written to: ${outputPath}`);
     core.setOutput('svg-path', outputPath);
-
-    if (contributorRankCriteria) {
-      core.info(`Total contributor API requests made: ${requestCount}`);
-    }
   } catch (error) {
     if (error instanceof Error) {
       core.setFailed(error.message);
