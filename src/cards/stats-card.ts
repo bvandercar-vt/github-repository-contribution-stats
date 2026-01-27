@@ -223,10 +223,17 @@ export const renderContributorStatsCard = async (
   const calculatedStats = contributorStats
     .map(
       (
-        { url, name, stargazerCount, numContributedCommits, numContributedPrs },
+        {
+          url,
+          name,
+          nameWithOwner,
+          stargazerCount,
+          numContributedCommits,
+          numContributedPrs,
+        },
         index,
       ) => {
-        if (exclude.some((pattern) => matchWildcard(name, pattern))) {
+        if (exclude.some((pattern) => matchWildcard(nameWithOwner, pattern))) {
           return undefined;
         }
 

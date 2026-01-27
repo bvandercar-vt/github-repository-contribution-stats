@@ -49551,9 +49551,7 @@ const renderError = (message, secondaryMessage = '') => {
   `;
 };
 const matchWildcard = (str, pattern) => new RegExp('^' +
-    lodash__WEBPACK_IMPORTED_MODULE_0___default().escapeRegExp(pattern)
-        .replace(/\\\*/g, '.*')
-        .replace(/\\\?/g, '.') +
+    lodash__WEBPACK_IMPORTED_MODULE_0___default().escapeRegExp(pattern).replace(/\\\*/g, '.*') +
     '$').test(str);
 const encodeHTML = (str) => {
     return str

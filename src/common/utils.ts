@@ -31,9 +31,7 @@ export const renderError = (message: string, secondaryMessage: string = '') => {
 export const matchWildcard = (str: string, pattern: string) =>
   new RegExp(
     '^' +
-      _.escapeRegExp(pattern)
-        .replace(/\\\*/g, '.*') // convert * to .*
-        .replace(/\\\?/g, '.') + // convert ? to .
+      _.escapeRegExp(pattern).replace(/\\\*/g, '.*') + // convert * to .*
       '$',
   ).test(str);
 

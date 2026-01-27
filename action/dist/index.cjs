@@ -56211,9 +56211,7 @@ const renderError = (message, secondaryMessage = '') => {
   `;
 };
 const matchWildcard = (str, pattern) => new RegExp('^' +
-    lodash_default().escapeRegExp(pattern)
-        .replace(/\\\*/g, '.*')
-        .replace(/\\\?/g, '.') +
+    lodash_default().escapeRegExp(pattern).replace(/\\\*/g, '.*') +
     '$').test(str);
 const encodeHTML = (str) => {
     return str

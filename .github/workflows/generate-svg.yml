@@ -8,6 +8,7 @@ on:
 
 jobs:
   generate:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     name: Generate SVG with Action
     runs-on: ubuntu-latest
     permissions:
@@ -27,7 +28,7 @@ jobs:
           theme: merko
           combine-all-yearly-contributions: true
           columns: commits,pull_requests,contribution_rank
-          exclude: bvandercar-vt*
+          exclude: bvandercar-vt/*
           bg-color: 00000000
           order-by: contributions
 
