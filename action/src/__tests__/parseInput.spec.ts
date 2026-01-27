@@ -35,10 +35,7 @@ describe('parseInputs', () => {
     mockYamlParse(`${__dirname}/../../example-workflow.yml`);
     expect(parseInputs()).toEqual({
       ...base,
-      columns: [
-        { name: 'star_rank', hide: [] },
-        { name: 'contribution_rank', hide: [] },
-      ],
+      columns: [{ name: 'star_rank' }, { name: 'contribution_rank' }],
     });
   });
 
@@ -47,7 +44,7 @@ describe('parseInputs', () => {
     expect(parseInputs()).toEqual({
       ...base,
       columns: [
-        { name: 'star_rank', hide: [] },
+        { name: 'star_rank' },
         { name: 'contribution_rank', hide: ['B'] },
         { name: 'commits', minimum: 2 },
       ],

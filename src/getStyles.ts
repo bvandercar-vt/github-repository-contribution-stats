@@ -55,8 +55,7 @@ export const getStyles = ({
   iconColor?: string;
   show_icons?: boolean;
   progress?: number;
-}) => {
-  return `
+}) => `
     .stat {
       font: 600 14px 'Segoe UI', Ubuntu, "Helvetica Neue", Sans-Serif; fill: ${textColor};
     }
@@ -91,6 +90,5 @@ export const getStyles = ({
         : getProgressAnimation({ progress })
     }
   `;
-};
 
 // module.exports = { getStyles, getAnimations };

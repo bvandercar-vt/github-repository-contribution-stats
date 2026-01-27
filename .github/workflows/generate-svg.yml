@@ -24,7 +24,7 @@ jobs:
           GITHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_API_TOKEN }}
         with:
           username: bvandercar-vt
-          output-file: action/src/__fixtures__/generated-image.svg
+          output-file: action/generated-images/generated-image.svg
           theme: merko
           combine-all-yearly-contributions: true
           columns: commits,pull_requests,contribution_rank

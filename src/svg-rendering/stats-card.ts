@@ -31,7 +31,6 @@ const renderRow = ({
   offset += offset === 230 ? 5 : 15;
 
   const circleRadius = 14;
-  const xAlign = 4;
   const yAlign = 18.5;
   const cellWidths: number[] = [];
 
@@ -45,26 +44,31 @@ const renderRow = ({
 
   const getValueCellContent = (val: string | undefined) => {
     if (val == undefined) {
-      return { item: '', width: 0 };
+      return { item: '', width: 0, addlOffset: 0 };
     }
     if ((ranks as readonly string[]).includes(val)) {
       return {
         item: `
     <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="${circleRadius}" />
-    ${renderCellText(val, val.includes('+') ? xAlign : 7.2, yAlign)}
+    ${renderCellText(val, val.includes('+') ? 4 : 7.2, yAlign)}
     `,
         width: circleRadius * 2,
+        addlOffset: 0,
       };
     }
-    return { item: renderCellText(val, xAlign, yAlign), width: measureText(val, 18) };
+    return {
+      item: renderCellText(val, 0, yAlign),
+      width: measureText(val, 18),
+      addlOffset: -6,
+    };
   };
 
   const valueCells = valueCellCriteria.map((val) => {
-    const { item, width } = getValueCellContent(val);
+    const { item, width, addlOffset } = getValueCellContent(val);
     cellWidths.push(width);
     maxWidth = Math.max(maxWidth, offset + width);
     const fullItem = `
-    <g data-testid="value-cell" transform="translate(${offset}, 0)">
+    <g data-testid="value-cell" transform="translate(${offset + addlOffset}, 0)">
         ${item}
     </g>
         `;
@@ -96,7 +100,7 @@ export const renderContributorStatsCard = async (
   name: string,
   contributorStats: ContributionsStats[] = [],
   {
-    columns = [{ name: 'star_rank', hide: [] }],
+    columns = [{ name: 'star_rank' }],
     line_height = 25,
     hide_title = false,
     hide_border = false,
@@ -201,9 +205,10 @@ export const renderContributorStatsCard = async (
     return content;
   });
 
-  const columnWidths: number[] = allCellWidths.reduce((acc, row) =>
-    acc.map((max, i) => Math.max(max, row[i])),
-  );
+  const columnWidths: number[] =
+    allCellWidths.length > 0
+      ? allCellWidths.reduce((acc, row) => acc.map((max, i) => Math.max(max, row[i])))
+      : [];
 
   // Calculate the card height depending on how many items there are
   // but if rank circle is visible clamp the minimum height to `150`
@@ -229,10 +234,7 @@ export const renderContributorStatsCard = async (
       }).join('')}
     </svg>
   `,
-    columns: columns.map((column, i) => ({
-      column: column.name,
-      width: columnWidths[i],
-    })),
+    columns: columns.map((column, i) => ({ ...column, width: columnWidths[i] })),
     width: maxWidth,
     height,
     border_radius,

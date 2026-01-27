@@ -24,7 +24,7 @@ export type ContributorFetcher = (
 export async function processStats(
   contributorStats: ContributionsStats[] = [],
   {
-    columns = [{ name: 'star_rank', hide: [] }],
+    columns = [{ name: 'star_rank' }],
     username,
     order_by = 'stars',
     limit = -1,
@@ -108,7 +108,7 @@ export async function processStats(
 
         if (
           contributionRank &&
-          contributorRankCriteria?.hide.includes(contributionRank)
+          contributorRankCriteria?.hide?.includes(contributionRank)
         ) {
           return undefined;
         }
@@ -117,7 +117,7 @@ export async function processStats(
           ? calculateStarsRank(stargazerCount)
           : undefined;
 
-        if (starRank && starRankCriteria?.hide.includes(starRank)) {
+        if (starRank && starRankCriteria?.hide?.includes(starRank)) {
           return undefined;
         }
 

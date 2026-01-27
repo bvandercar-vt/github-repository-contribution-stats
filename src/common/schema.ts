@@ -19,19 +19,30 @@ export const parseArray = emptyStringToUndefined.transform(
   (val) => val?.split(',').map((v) => v.trim()) ?? [],
 );
 
+const commonColumnCriteria = {
+  icon: z.enum(['commit', 'pull_request', 'star', 'github', 'rankings']).optional(),
+};
+
+const rankColumns = z.enum(['star_rank', 'contribution_rank']);
+
+const rankColumnsCriteria = z.object({
+  name: rankColumns,
+  hide: parseArray.optional(),
+  ...commonColumnCriteria,
+});
+
 const columnCriteriaSchema = z.union([
-  z.object({
-    name: z.enum(['star_rank', 'contribution_rank']),
-    hide: parseArray,
-  }),
+  rankColumnsCriteria,
   z.object({
     name: z.enum(['commits', 'pull_requests']),
     minimum: z.number().optional(),
+    ...commonColumnCriteria,
   }),
 ]);
 
 export type ColumnCriteria = z.infer<typeof columnCriteriaSchema>;
 export type ColumnName = ColumnCriteria['name'];
+export type ColumnIcon = Exclude<ColumnCriteria['icon'], undefined>;
 
 const parseColumns = z
   .string()
@@ -80,14 +91,19 @@ type CommonInput = z.infer<typeof commonInputSchema>;
 
 export type OrderByOptions = CommonInput['order_by'];
 
+const isRankColumnCriteria = (
+  col: ColumnCriteria,
+): col is z.infer<typeof rankColumnsCriteria> =>
+  (rankColumns.options as string[]).includes(col.name);
+
 export const mergeHideIntoColumnCriteria = <T extends CommonInput>({
   hide,
   columns,
   ...v
 }: T) => ({
   columns: columns.map((col) => {
-    if ('hide' in col) {
-      col.hide = _.uniq(col.hide.concat(hide));
+    if (isRankColumnCriteria(col) && hide.length > 0) {
+      col.hide = _.uniq((col.hide ?? []).concat(hide));
     }
     return col;
   }),
