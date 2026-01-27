@@ -12,6 +12,7 @@ import {
   getImageBase64FromURL,
   measureText,
   getColumnCriteria,
+  matchWildcard,
 } from '@/common/utils';
 import { fetchContributors, type Contributor } from '@/fetchContributors';
 import { type Repository } from '@/fetchContributorStats';
@@ -133,6 +134,7 @@ export const renderContributorStatsCard = async (
     theme = 'default',
     locale,
     limit = -1,
+    exclude = [],
     contributor_fetcher = fetchContributors,
   }: {
     /**
@@ -171,6 +173,7 @@ export const renderContributorStatsCard = async (
      * @default none
      */
     limit?: number;
+    exclude?: string[];
     contributor_fetcher?: ContributorFetcher;
   } = {},
 ) => {
@@ -217,6 +220,10 @@ export const renderContributorStatsCard = async (
   const allCellWidths: number[][] = [];
   const calculatedStats = contributorStats
     .map(({ url, name, stargazerCount, numContributions }, index) => {
+      if (exclude.some((pattern) => matchWildcard(name, pattern))) {
+        return undefined;
+      }
+
       if (
         commitsCriteria?.minimum !== undefined &&
         numContributions !== undefined &&

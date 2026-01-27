@@ -62,6 +62,7 @@ jobs:
 | `hide` | Comma-separated ranks to hide (e.g., "B,B+") | No | - |
 | `order-by` | Order by "stars" or "contributions" | No | `stars` |
 | `limit` | Max repositories to show (-1 for all) | No | `-1` |
+| `exclude` | Comma-separated repos to exclude. Can use wildcards. | No | - |
 | `theme` | Theme name | No | `default` |
 | `title-color` | Custom title color (hex) | No | - |
 | `text-color` | Custom text color (hex) | No | - |

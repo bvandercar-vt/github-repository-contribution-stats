@@ -58,6 +58,7 @@ export const commonInputSchema = z.object({
   columns: parseColumns,
   order_by: z.enum(['stars', 'contributions']).optional().default('stars'),
   limit: emptyStringToUndefined.pipe(z.coerce.number().int().optional()),
+  exclude: parseArray,
   hide: parseArray,
   theme: z
     .enum(themeNames as [ThemeNames, ...ThemeNames[]])

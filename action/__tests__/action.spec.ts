@@ -13,6 +13,7 @@ const base = {
   hide_title: false,
   theme: 'default',
   limit: -1,
+  exclude: [],
 } satisfies Partial<ValidatedActionInputs>;
 
 describe('parseActionInputs', () => {

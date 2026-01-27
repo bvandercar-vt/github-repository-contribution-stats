@@ -1,5 +1,5 @@
 // @ts-check
-// import imageToBase64 from 'image-to-base64';
+import _ from 'lodash';
 import type { Simplify } from 'type-fest';
 
 import { themes, type Theme, type ThemeNames } from '../../themes';
@@ -28,6 +28,15 @@ export const renderError = (message: string, secondaryMessage: string = '') => {
     </svg>
   `;
 };
+
+export const matchWildcard = (str: string, pattern: string) =>
+  new RegExp(
+    '^' +
+      _.escapeRegExp(pattern)
+        .replace(/\\\*/g, '.*') // convert * to .*
+        .replace(/\\\?/g, '.') + // convert ? to .
+      '$',
+  ).test(str);
 
 /**
  * @see https://stackoverflow.com/a/48073476/10629172

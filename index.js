@@ -43947,7 +43947,7 @@ const createRow = ({ imageBase64, name, valueCells: valueCellCriteria, index, })
         cellWidths,
     };
 };
-const renderContributorStatsCard = async (username, name, contributorStats = [], { columns = [{ name: 'star_rank', hide: [] }], line_height = 25, hide_title = false, hide_border = false, order_by = 'stars', title_color, icon_color, text_color, bg_color, border_radius, border_color, custom_title, theme = 'default', locale, limit = -1, contributor_fetcher = _fetchContributors__WEBPACK_IMPORTED_MODULE_4__.fetchContributors, } = {}) => {
+const renderContributorStatsCard = async (username, name, contributorStats = [], { columns = [{ name: 'star_rank', hide: [] }], line_height = 25, hide_title = false, hide_border = false, order_by = 'stars', title_color, icon_color, text_color, bg_color, border_radius, border_color, custom_title, theme = 'default', locale, limit = -1, exclude = [], contributor_fetcher = _fetchContributors__WEBPACK_IMPORTED_MODULE_4__.fetchContributors, } = {}) => {
     const lheight = parseInt(String(line_height), 10);
     const { titleColor, textColor, iconColor, bgColor, borderColor } = (0,_common_utils__WEBPACK_IMPORTED_MODULE_3__.getCardColors)({
         title_color,
@@ -43981,6 +43981,9 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
     const allCellWidths = [];
     const calculatedStats = contributorStats
         .map(({ url, name, stargazerCount, numContributions }, index) => {
+        if (exclude.some((pattern) => (0,_common_utils__WEBPACK_IMPORTED_MODULE_3__.matchWildcard)(name, pattern))) {
+            return undefined;
+        }
         if (commitsCriteria?.minimum !== undefined &&
             numContributions !== undefined &&
             numContributions < commitsCriteria.minimum) {
@@ -44374,13 +44377,13 @@ const parseColumns = zod__WEBPACK_IMPORTED_MODULE_2__["default"].string()
     return parseArray.parse(trimmed).map((col) => ({ name: col }));
 })
     .pipe(zod__WEBPACK_IMPORTED_MODULE_2__["default"].array(columnCriteriaSchema));
-const orderByOptions = ['stars', 'contribution_rank'];
 const commonInputSchema = zod__WEBPACK_IMPORTED_MODULE_2__["default"].object({
     username: zod__WEBPACK_IMPORTED_MODULE_2__["default"].string().min(1, 'Username is required'),
     combine_all_yearly_contributions: parseBoolean.default('true'),
     columns: parseColumns,
-    order_by: zod__WEBPACK_IMPORTED_MODULE_2__["default"]["enum"](orderByOptions).optional().default('stars'),
+    order_by: zod__WEBPACK_IMPORTED_MODULE_2__["default"]["enum"](['stars', 'contributions']).optional().default('stars'),
     limit: emptyStringToUndefined.pipe(zod__WEBPACK_IMPORTED_MODULE_2__["default"].coerce.number().int().optional()),
+    exclude: parseArray,
     hide: parseArray,
     theme: zod__WEBPACK_IMPORTED_MODULE_2__["default"]["enum"](_themes__WEBPACK_IMPORTED_MODULE_1__.themeNames)
         .optional()
@@ -44428,10 +44431,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "getColumnCriteria": () => (/* binding */ getColumnCriteria),
 /* harmony export */   "getImageBase64FromURL": () => (/* binding */ getImageBase64FromURL),
 /* harmony export */   "kFormatter": () => (/* binding */ kFormatter),
+/* harmony export */   "matchWildcard": () => (/* binding */ matchWildcard),
 /* harmony export */   "measureText": () => (/* binding */ measureText),
 /* harmony export */   "renderError": () => (/* binding */ renderError)
 /* harmony export */ });
-/* harmony import */ var _themes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../themes */ "./themes/index.ts");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _themes__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../themes */ "./themes/index.ts");
+
 
 const renderError = (message, secondaryMessage = '') => {
     return `
@@ -44450,6 +44457,11 @@ const renderError = (message, secondaryMessage = '') => {
     </svg>
   `;
 };
+const matchWildcard = (str, pattern) => new RegExp('^' +
+    lodash__WEBPACK_IMPORTED_MODULE_0___default().escapeRegExp(pattern)
+        .replace(/\\\*/g, '.*')
+        .replace(/\\\?/g, '.') +
+    '$').test(str);
 const encodeHTML = (str) => {
     return str
         .replace(/[\u00A0-\u9999<>&](?!#)/gim, (i) => {
@@ -44510,8 +44522,8 @@ const flexLayout = ({ items, gap, direction, sizes = [] }) => {
     });
 };
 const getCardColors = ({ title_color, text_color, icon_color, bg_color, border_color, theme: themeName, }) => {
-    const theme = _themes__WEBPACK_IMPORTED_MODULE_0__.themes[themeName];
-    const defaultTheme = _themes__WEBPACK_IMPORTED_MODULE_0__.themes["default"];
+    const theme = _themes__WEBPACK_IMPORTED_MODULE_1__.themes[themeName];
+    const defaultTheme = _themes__WEBPACK_IMPORTED_MODULE_1__.themes["default"];
     const titleColor = fallbackColor(title_color || theme.title_color, '#' + defaultTheme.title_color);
     const iconColor = fallbackColor(icon_color || theme.icon_color, '#' + defaultTheme.icon_color);
     const textColor = fallbackColor(text_color || theme.text_color, '#' + defaultTheme.text_color);

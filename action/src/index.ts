@@ -182,6 +182,7 @@ export function parseActionInputs(): ValidatedActionInputs {
     hide: core.getInput('hide'),
     order_by: core.getInput('order-by'),
     limit: core.getInput('limit'),
+    exclude: core.getInput('exclude'),
     theme: core.getInput('theme'),
     title_color: core.getInput('title-color'),
     text_color: core.getInput('text-color'),
@@ -206,6 +207,7 @@ async function run(): Promise<void> {
       columns,
       order_by,
       limit,
+      exclude,
       theme,
       title_color,
       text_color,
@@ -271,6 +273,7 @@ async function run(): Promise<void> {
       theme,
       locale,
       limit,
+      exclude,
       contributor_fetcher: contributorFetcher,
     });
 

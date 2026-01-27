@@ -49,6 +49,10 @@ To limit contribution repos to show, you can pass a query parameter `&limit=` wi
 ![Taehyun's GitHub Repository Contribution stats](https://github-contributor-stats.vercel.app/api?username=HwangTaehyun&limit=5)
 ```
 
+### Excluding repos to show
+
+To exclude specific repos, you can pass a query parameter `&exclude=` with string-separated repo names. Can use wildcards, i.e. `&exclude=other-username/*`
+
 ### Hiding rank stats
 
 To hide specific ranks, you can pass a query parameter `&hide=` with comma-separated rank values. If you need to add plus rank (ex. B+) to hide arrays , it is always safe to replace pluses with %2B
