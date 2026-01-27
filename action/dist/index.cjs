@@ -57534,6 +57534,7 @@ async function run() {
         if (contributorRankCriteria) {
             core.info(`Will fetch contributors for ${contributorStats.length} repositories with rate limiting`);
             core.info(`Min interval between requests: ${MIN_REQUEST_INTERVAL_MS}ms (secondary rate limit protection)`);
+            core.info(`Total contributor API requests made: ${requestCount}`);
         }
         core.info('Rendering SVG...');
         const svg = await renderContributorStatsCard(username, name, contributorStats, {
@@ -57555,12 +57556,10 @@ async function run() {
             contributor_fetcher: contributorFetcher,
         });
         const outputPath = external_path_.resolve(process.cwd(), output_file);
+        external_fs_.mkdirSync(external_path_.dirname(outputPath), { recursive: true });
         external_fs_.writeFileSync(outputPath, svg);
         core.info(`SVG written to: ${outputPath}`);
         core.setOutput('svg-path', outputPath);
-        if (contributorRankCriteria) {
-            core.info(`Total contributor API requests made: ${requestCount}`);
-        }
     }
     catch (error) {
         if (error instanceof Error) {
