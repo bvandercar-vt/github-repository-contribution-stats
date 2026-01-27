@@ -51366,6 +51366,98 @@ var core = __webpack_require__(2225);
 // EXTERNAL MODULE: ./node_modules/lodash/lodash.js
 var lodash = __webpack_require__(6486);
 var lodash_default = /*#__PURE__*/__webpack_require__.n(lodash);
+;// CONCATENATED MODULE: ./action/src/createRateLimitedFetcher.ts
+
+let requestCount = 0;
+let lastRequestTime = 0;
+async function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+const getRequestCount = () => requestCount;
+const MIN_REQUEST_INTERVAL_MS = 100;
+function createRateLimitedFetcher() {
+    return async (_username, nameWithOwner, token) => {
+        const now = Date.now();
+        const timeSinceLastRequest = now - lastRequestTime;
+        if (timeSinceLastRequest < MIN_REQUEST_INTERVAL_MS) {
+            await sleep(MIN_REQUEST_INTERVAL_MS - timeSinceLastRequest);
+        }
+        lastRequestTime = Date.now();
+        requestCount++;
+        if (requestCount % 10 === 0) {
+            core.info(`  Fetched contributors for ${requestCount} repositories...`);
+        }
+        const url = `https://api.github.com/repos/${nameWithOwner}/contributors?per_page=100`;
+        const headers = {
+            Accept: 'application/vnd.github.v3+json',
+            'User-Agent': 'github-contributor-stats-action',
+        };
+        if (token) {
+            headers['Authorization'] = `token ${token}`;
+        }
+        const response = await fetch(url, { headers });
+        const rateLimitRemaining = response.headers.get('x-ratelimit-remaining');
+        const rateLimitReset = response.headers.get('x-ratelimit-reset');
+        const rateLimitLimit = response.headers.get('x-ratelimit-limit');
+        const retryAfter = response.headers.get('retry-after');
+        if (response.status === 403 || response.status === 429) {
+            let waitTime;
+            if (retryAfter) {
+                waitTime = parseInt(retryAfter) * 1000 + 1000;
+                core.info(`Secondary rate limit hit. retry-after: ${retryAfter}s. Waiting ${Math.ceil(waitTime / 1000)}s...`);
+            }
+            else if (rateLimitReset) {
+                const resetTime = parseInt(rateLimitReset, 10) * 1000;
+                waitTime = Math.max(0, resetTime - Date.now()) + 1000;
+                core.info(`Primary rate limit reached (${rateLimitRemaining}/${rateLimitLimit}). Waiting ${Math.ceil(waitTime / 1000)}s until reset...`);
+            }
+            else {
+                waitTime = 60000;
+                core.info(`Rate limit hit (no retry info). Waiting 60s as recommended by GitHub docs...`);
+            }
+            await sleep(waitTime);
+            requestCount--;
+            lastRequestTime = 0;
+            return createRateLimitedFetcher()(_username, nameWithOwner, token);
+        }
+        if (requestCount === 1) {
+            core.info(`Rate limit info: ${rateLimitRemaining}/${rateLimitLimit} remaining (resets at ${rateLimitReset
+                ? new Date(parseInt(rateLimitReset, 10) * 1000).toISOString()
+                : 'N/A'})`);
+            if (rateLimitLimit && parseInt(rateLimitLimit, 10) === 60) {
+                core.warning(`⚠️ Rate limit is 60/hour (unauthenticated primary rate limit).\n` +
+                    `   Expected: 1000/hr for GITHUB_TOKEN, 5000/hr for PAT.\n` +
+                    `   Possible causes:\n` +
+                    `   - GITHUB_TOKEN may not work for external repos' contributors API\n` +
+                    `   - Token may be invalid or missing\n` +
+                    `   Solution: Use a PAT with 'public_repo' scope.\n` +
+                    `   Create at: https://github.com/settings/tokens`);
+            }
+        }
+        if (rateLimitRemaining && parseInt(rateLimitRemaining, 10) <= 1 && rateLimitReset) {
+            const resetTime = parseInt(rateLimitReset, 10) * 1000;
+            const waitTime = Math.max(0, resetTime - Date.now()) + 1000;
+            core.info(`Primary rate limit almost exhausted (${rateLimitRemaining}/${rateLimitLimit}). Waiting ${Math.ceil(waitTime / 1000)}s until reset...`);
+            await sleep(waitTime);
+        }
+        if (!response.ok) {
+            const body = await response.text();
+            throw new Error(`Failed to fetch contributors for ${nameWithOwner}\n` +
+                `  Status: ${response.status} ${response.statusText}\n` +
+                `  URL: ${url}\n` +
+                `  Rate-Limit-Limit: ${rateLimitLimit}\n` +
+                `  Rate-Limit-Remaining: ${rateLimitRemaining}\n` +
+                `  Rate-Limit-Reset: ${rateLimitReset} (${rateLimitReset
+                    ? new Date(parseInt(rateLimitReset, 10) * 1000).toISOString()
+                    : 'N/A'})\n` +
+                `  Retry-After: ${retryAfter}\n` +
+                `  Response body: ${body}`);
+        }
+        const contributors = (await response.json());
+        return contributors;
+    };
+}
+
 ;// CONCATENATED MODULE: ./node_modules/zod/v3/helpers/util.js
 var util;
 (function (util) {
@@ -56120,7 +56212,7 @@ const mergeHideIntoColumnCriteria = ({ hide, columns, ...v }) => ({
     ...v,
 });
 
-;// CONCATENATED MODULE: ./action/src/parse-input.ts
+;// CONCATENATED MODULE: ./action/src/parseInputs.ts
 
 
 const inputSchema = commonInputSchema.extend({
@@ -56150,45 +56242,6 @@ function parseInputs() {
         locale: core.getInput('locale'),
     });
 }
-
-;// CONCATENATED MODULE: ./src/calculateRank.ts
-const ranks = ['S+', 'S', 'A+', 'A', 'B+', 'B'];
-const RANK_THRESHOLDS_STARGAZERS = {
-    'S+': 10000,
-    S: 1000,
-    'A+': 500,
-    A: 100,
-    'B+': 50,
-    B: 0,
-};
-const calculateStarsRank = (stargazers) => {
-    for (const [rank, threshold] of Object.entries(RANK_THRESHOLDS_STARGAZERS)) {
-        if (stargazers >= threshold) {
-            return rank;
-        }
-    }
-    return 'B';
-};
-const RANK_THRESHOLDS_CONTRIBUTIONS = {
-    'S+': 90,
-    S: 80,
-    'A+': 70,
-    A: 60,
-    'B+': 50,
-    B: 0,
-};
-const calculateContributionsRank = (name, contributors, numContributions) => {
-    contributors = contributors.filter((contributor) => contributor.type === 'User');
-    const numOfOverRankContributors = contributors.filter((contributor) => contributor.contributions > numContributions);
-    const rankOfContribution = ((contributors.length - numOfOverRankContributors.length) / contributors.length) *
-        100;
-    for (const [rank, threshold] of Object.entries(RANK_THRESHOLDS_CONTRIBUTIONS)) {
-        if (rankOfContribution >= threshold) {
-            return rank;
-        }
-    }
-    return 'B';
-};
 
 ;// CONCATENATED MODULE: ./src/common/utils.ts
 
@@ -56333,6 +56386,276 @@ const getImageBase64FromURL = async (url) => {
 };
 const getColumnCriteria = (columns, name) => columns.find((col) => col.name === name);
 
+// EXTERNAL MODULE: ./node_modules/axios/index.js
+var axios = __webpack_require__(9669);
+var axios_default = /*#__PURE__*/__webpack_require__.n(axios);
+;// CONCATENATED MODULE: ./src/fetchContributorStats.ts
+
+const repositoryQuery = `
+owner {
+  id
+  avatarUrl
+}
+isInOrganization
+url
+homepageUrl
+name
+nameWithOwner
+stargazerCount
+openGraphImageUrl
+defaultBranchRef {
+  target {
+    ... on Commit {
+      history {
+        totalCount
+      }
+    }
+  }
+}
+`;
+const fetchContributorStats = async (username) => {
+    try {
+        const response = await axios_default().post('https://api.github.com/graphql', {
+            query: `query {
+                  user(login: ${JSON.stringify(username)}) {
+                    id
+                    name
+                    repositoriesContributedTo(first :100, contributionTypes: COMMIT) {
+                      totalCount
+                      nodes {
+                        ${repositoryQuery}
+                      }
+                    }
+                  }
+                }`,
+        }, {
+            headers: {
+                Authorization: `token ${process.env.GITHUB_PERSONAL_ACCESS_TOKEN}`,
+            },
+        });
+        if (response.status === 200) {
+            return response.data.data.user;
+        }
+    }
+    catch (error) {
+        console.error(error);
+        return;
+    }
+};
+
+;// CONCATENATED MODULE: ./src/fetchAllContributorStats.ts
+
+
+
+const MAX_REPOS_PER_QUERY = 100;
+async function fetchContributionsForRange(username, range) {
+    const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
+    const response = await axios_default().post('https://api.github.com/graphql', {
+        query: `query {
+        user(login: ${JSON.stringify(username)}) {
+          contributionsCollection(from: "${range.from}", to: "${range.to}") {
+            commitContributionsByRepository(maxRepositories: ${MAX_REPOS_PER_QUERY}) {
+              contributions {
+                totalCount
+              }
+              repository {
+                ${repositoryQuery}
+              }
+            }
+            pullRequestContributionsByRepository(maxRepositories: ${MAX_REPOS_PER_QUERY}) {
+              contributions {
+                totalCount
+              }
+              repository {
+                ${repositoryQuery}
+              }
+            }
+          }
+        }
+      }`,
+    }, {
+        headers: {
+            Authorization: `token ${token}`,
+        },
+        validateStatus: (status) => status == 200,
+    });
+    return response.data.data.user.contributionsCollection;
+}
+function splitTimeRange(range) {
+    const from = new Date(range.from);
+    const to = new Date(range.to);
+    const diffMonths = (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth());
+    if (diffMonths >= 6) {
+        const mid = new Date(from);
+        mid.setMonth(mid.getMonth() + Math.floor(diffMonths / 2));
+        mid.setDate(1);
+        const midEnd = new Date(mid);
+        midEnd.setDate(midEnd.getDate() - 1);
+        midEnd.setHours(23, 59, 59, 999);
+        return [
+            { from: range.from, to: midEnd.toISOString() },
+            { from: mid.toISOString(), to: range.to },
+        ];
+    }
+    else if (diffMonths >= 2) {
+        const ranges = [];
+        const current = new Date(from);
+        while (current < to) {
+            const monthStart = new Date(current);
+            const monthEnd = new Date(current);
+            monthEnd.setMonth(monthEnd.getMonth() + 1);
+            monthEnd.setDate(0);
+            monthEnd.setHours(23, 59, 59, 999);
+            ranges.push({
+                from: monthStart.toISOString(),
+                to: monthEnd > to ? range.to : monthEnd.toISOString(),
+            });
+            current.setMonth(current.getMonth() + 1);
+            current.setDate(1);
+        }
+        return ranges;
+    }
+    return [range];
+}
+async function fetchContributionsWithSplitting(username, range, depth = 0) {
+    const results = await fetchContributionsForRange(username, range);
+    if ((results.pullRequestContributionsByRepository.length >= MAX_REPOS_PER_QUERY ||
+        results.commitContributionsByRepository.length >= MAX_REPOS_PER_QUERY) &&
+        depth < 4) {
+        const subRanges = splitTimeRange(range);
+        if (subRanges.length === 1) {
+            return results;
+        }
+        const subResults = await Promise.all(subRanges.map((subRange) => fetchContributionsWithSplitting(username, subRange, depth + 1)));
+        return {
+            commitContributionsByRepository: subResults.flatMap((c) => c.commitContributionsByRepository),
+            pullRequestContributionsByRepository: subResults.flatMap((c) => c.pullRequestContributionsByRepository),
+        };
+    }
+    return results;
+}
+async function fetchAllContributorStats(username) {
+    const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
+    const { data: { data: { user: { id, name, contributionsCollection: { contributionYears }, }, }, }, } = await axios_default().post('https://api.github.com/graphql', {
+        query: `query {
+          user(login: "${username}") {
+            id
+            name
+            contributionsCollection {
+              contributionYears
+            }
+          }
+        }`,
+    }, {
+        headers: {
+            Authorization: `token ${token}`,
+        },
+        validateStatus: (status) => status == 200,
+    });
+    const yearlyContributions = await Promise.all(contributionYears.map((year) => fetchContributionsWithSplitting(username, {
+        from: `${year}-01-01T00:00:00Z`,
+        to: `${year}-12-31T23:59:59Z`,
+    })));
+    const allContributions = yearlyContributions.flat();
+    const getStatsByName = (items) => lodash_default().chain(items)
+        .groupBy((item) => item.repository.nameWithOwner)
+        .map((contributions) => {
+        const totalCount = lodash_default().sumBy(contributions, (c) => c.contributions.totalCount);
+        return {
+            ...contributions[0].repository,
+            numContributions: totalCount,
+        };
+    })
+        .value();
+    const commitsRepositories = getStatsByName(allContributions.flatMap((c) => c.commitContributionsByRepository));
+    const pullRequestsRepositories = getStatsByName(allContributions.flatMap((c) => c.pullRequestContributionsByRepository));
+    return {
+        id,
+        name,
+        repositoriesContributedTo: {
+            nodes: commitsRepositories.map((repo) => ({
+                ...repo,
+                numContributedCommits: repo.numContributions,
+                numContributedPrs: pullRequestsRepositories.find((prRepo) => prRepo.nameWithOwner === repo.nameWithOwner)?.numContributions,
+            })),
+        },
+    };
+}
+
+;// CONCATENATED MODULE: ./src/calculateRank.ts
+const ranks = ['S+', 'S', 'A+', 'A', 'B+', 'B'];
+const RANK_THRESHOLDS_STARGAZERS = {
+    'S+': 10000,
+    S: 1000,
+    'A+': 500,
+    A: 100,
+    'B+': 50,
+    B: 0,
+};
+const calculateStarsRank = (stargazers) => {
+    for (const [rank, threshold] of Object.entries(RANK_THRESHOLDS_STARGAZERS)) {
+        if (stargazers >= threshold) {
+            return rank;
+        }
+    }
+    return 'B';
+};
+const RANK_THRESHOLDS_CONTRIBUTIONS = {
+    'S+': 90,
+    S: 80,
+    'A+': 70,
+    A: 60,
+    'B+': 50,
+    B: 0,
+};
+const calculateContributionsRank = (name, contributors, numContributions) => {
+    contributors = contributors.filter((contributor) => contributor.type === 'User');
+    const numOfOverRankContributors = contributors.filter((contributor) => contributor.contributions > numContributions);
+    const rankOfContribution = ((contributors.length - numOfOverRankContributors.length) / contributors.length) *
+        100;
+    for (const [rank, threshold] of Object.entries(RANK_THRESHOLDS_CONTRIBUTIONS)) {
+        if (rankOfContribution >= threshold) {
+            return rank;
+        }
+    }
+    return 'B';
+};
+
+;// CONCATENATED MODULE: ./src/common/I18n.ts
+class I18n {
+    locale;
+    translations;
+    fallbackLocale;
+    constructor({ locale, translations, }) {
+        this.locale = locale;
+        this.translations = translations;
+        this.fallbackLocale = 'en';
+    }
+    t(str) {
+        if (!this.translations[str]) {
+            throw new Error(`${str} Translation string not found`);
+        }
+        if (!this.translations[str][this.locale || this.fallbackLocale]) {
+            throw new Error(`${str} Translation locale not found`);
+        }
+        return this.translations[str][this.locale || this.fallbackLocale];
+    }
+}
+
+;// CONCATENATED MODULE: ./src/fetchContributors.ts
+async function fetchContributors(username, nameWithOwner, token) {
+    const page = 1;
+    const url = `https://api.github.com/repos/${nameWithOwner}/contributors?page=${page}&per_page=100`;
+    const response = await fetch(url, {
+        headers: { Authorization: `token ${token}` },
+    });
+    console.log(response);
+    if (!response.ok)
+        return [];
+    const contributors = (await response.json());
+    return contributors;
+}
+
 ;// CONCATENATED MODULE: ./src/getStyles.ts
 const calculateCircleProgress = (value) => {
     const radius = 40;
@@ -56412,7 +56735,74 @@ const getStyles = ({ titleColor, textColor, iconColor, show_icons, progress, }) 
   `;
 };
 
-;// CONCATENATED MODULE: ./src/common/Card.ts
+;// CONCATENATED MODULE: ./src/processStats.ts
+
+
+
+const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
+async function processStats(contributorStats = [], { columns = [{ name: 'star_rank', hide: [] }], username, order_by = 'stars', limit = -1, exclude = [], contributor_fetcher = fetchContributors, }) {
+    const starRankCriteria = getColumnCriteria(columns, 'star_rank');
+    const contributorRankCriteria = getColumnCriteria(columns, 'contribution_rank');
+    const commitsCriteria = getColumnCriteria(columns, 'commits');
+    const pullRequestsCriteria = getColumnCriteria(columns, 'pull_requests');
+    let allContributorsByRepo;
+    if (contributorRankCriteria) {
+        allContributorsByRepo = [];
+        for (const { nameWithOwner } of Object.values(contributorStats)) {
+            const contributors = await contributor_fetcher(username, nameWithOwner, token);
+            allContributorsByRepo.push(contributors);
+        }
+    }
+    const imageBase64s = await Promise.all(Object.values(contributorStats).map((contributorStat) => {
+        const url = new URL(contributorStat.owner.avatarUrl);
+        url.searchParams.append('s', '50');
+        return getImageBase64FromURL(url.toString());
+    }));
+    return contributorStats
+        .map(({ url, name, nameWithOwner, stargazerCount, numContributedCommits, numContributedPrs, }, index) => {
+        if (exclude.some((pattern) => matchWildcard(nameWithOwner, pattern))) {
+            return undefined;
+        }
+        for (const [given, minimum] of [
+            [numContributedCommits, commitsCriteria?.minimum],
+            [numContributedPrs, pullRequestsCriteria?.minimum],
+        ]) {
+            if (minimum !== undefined && given !== undefined && given < minimum) {
+                return undefined;
+            }
+        }
+        const contributionRank = contributorRankCriteria && numContributedCommits !== undefined
+            ? calculateContributionsRank(name, allContributorsByRepo[index], numContributedCommits)
+            : undefined;
+        if (contributionRank &&
+            contributorRankCriteria?.hide.includes(contributionRank)) {
+            return undefined;
+        }
+        const starRank = starRankCriteria
+            ? calculateStarsRank(stargazerCount)
+            : undefined;
+        if (starRank && starRankCriteria?.hide.includes(starRank)) {
+            return undefined;
+        }
+        return {
+            name,
+            imageBase64: imageBase64s[index],
+            url,
+            contributionRank,
+            numContributedCommits,
+            numStars: stargazerCount,
+            numContributedPrs,
+            starRank,
+        };
+    })
+        .filter((s) => s !== undefined)
+        .sort((a, b) => order_by == 'stars'
+        ? b.numStars - a.numStars
+        : (b.numContributedCommits ?? 0) - (a.numContributedCommits ?? 0))
+        .slice(0, limit > 0 ? limit : undefined);
+}
+
+;// CONCATENATED MODULE: ./src/svg-rendering/_outer_card.ts
 
 
 function renderCard({ customTitle, defaultTitle = '', titlePrefixIcon, body, columns, width = 100, height = 100, border_radius = 4.5, hide_border = false, hide_title = false, colors = {}, css = '', animations = true, }) {
@@ -56556,7 +56946,7 @@ function renderCard({ customTitle, defaultTitle = '', titlePrefixIcon, body, col
         ? { title: '', titleWidth: 0 }
         : renderTitle();
     width = Math.max(width, titleWidth);
-    width += paddingX;
+    width += paddingX * 2;
     return `
       <svg
         width="${width}"
@@ -56614,41 +57004,6 @@ function renderCard({ customTitle, defaultTitle = '', titlePrefixIcon, body, col
         </g>
       </svg>
     `;
-}
-
-;// CONCATENATED MODULE: ./src/common/I18n.ts
-class I18n {
-    locale;
-    translations;
-    fallbackLocale;
-    constructor({ locale, translations, }) {
-        this.locale = locale;
-        this.translations = translations;
-        this.fallbackLocale = 'en';
-    }
-    t(str) {
-        if (!this.translations[str]) {
-            throw new Error(`${str} Translation string not found`);
-        }
-        if (!this.translations[str][this.locale || this.fallbackLocale]) {
-            throw new Error(`${str} Translation locale not found`);
-        }
-        return this.translations[str][this.locale || this.fallbackLocale];
-    }
-}
-
-;// CONCATENATED MODULE: ./src/fetchContributors.ts
-async function fetchContributors(username, nameWithOwner, token) {
-    const page = 1;
-    const url = `https://api.github.com/repos/${nameWithOwner}/contributors?page=${page}&per_page=100`;
-    const response = await fetch(url, {
-        headers: { Authorization: `token ${token}` },
-    });
-    console.log(response);
-    if (!response.ok)
-        return [];
-    const contributors = (await response.json());
-    return contributors;
 }
 
 ;// CONCATENATED MODULE: ./src/translations.ts
@@ -57006,7 +57361,7 @@ function isLocaleAvailable(locale) {
     return availableLocales.includes(locale.toLowerCase());
 }
 
-;// CONCATENATED MODULE: ./src/cards/stats-card.ts
+;// CONCATENATED MODULE: ./src/svg-rendering/stats-card.ts
 
 
 
@@ -57014,9 +57369,9 @@ function isLocaleAvailable(locale) {
 
 
 
-const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
+
 let maxWidth = 0;
-const createRow = ({ imageBase64, name, valueCells: valueCellCriteria, index, }) => {
+const renderRow = ({ imageBase64, name, valueCells: valueCellCriteria, index, }) => {
     const staggerDelay = (index + 3) * 150;
     let offset = clampValue(measureText(name, 18), 230, 400);
     offset += offset === 230 ? 5 : 15;
@@ -57077,6 +57432,14 @@ const createRow = ({ imageBase64, name, valueCells: valueCellCriteria, index, })
     };
 };
 const renderContributorStatsCard = async (username, name, contributorStats = [], { columns = [{ name: 'star_rank', hide: [] }], line_height = 25, hide_title = false, hide_border = false, order_by = 'stars', title_color, icon_color, text_color, bg_color, border_radius, border_color, custom_title, theme = 'default', locale, limit = -1, exclude = [], contributor_fetcher = fetchContributors, } = {}) => {
+    const calculatedStats = await processStats(contributorStats, {
+        username,
+        columns,
+        order_by,
+        limit,
+        exclude,
+        contributor_fetcher,
+    });
     const lheight = parseInt(String(line_height), 10);
     const { titleColor, textColor, iconColor, bgColor, borderColor } = getCardColors({
         title_color,
@@ -57091,66 +57454,7 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
         locale,
         translations: statCardLocales({ name, apostrophe }),
     });
-    const imageBase64s = await Promise.all(Object.values(contributorStats).map((contributorStat) => {
-        const url = new URL(contributorStat.owner.avatarUrl);
-        url.searchParams.append('s', '50');
-        return getImageBase64FromURL(url.toString());
-    }));
-    const starRankCriteria = getColumnCriteria(columns, 'star_rank');
-    const contributorRankCriteria = getColumnCriteria(columns, 'contribution_rank');
-    const commitsCriteria = getColumnCriteria(columns, 'commits');
-    const pullRequestsCriteria = getColumnCriteria(columns, 'pull_requests');
-    let allContributorsByRepo;
-    if (contributorRankCriteria) {
-        allContributorsByRepo = [];
-        for (const { nameWithOwner } of Object.values(contributorStats)) {
-            const contributors = await contributor_fetcher(username, nameWithOwner, token);
-            allContributorsByRepo.push(contributors);
-        }
-    }
     const allCellWidths = [];
-    const calculatedStats = contributorStats
-        .map(({ url, name, nameWithOwner, stargazerCount, numContributedCommits, numContributedPrs, }, index) => {
-        if (exclude.some((pattern) => matchWildcard(nameWithOwner, pattern))) {
-            return undefined;
-        }
-        for (const [given, minimum] of [
-            [numContributedCommits, commitsCriteria?.minimum],
-            [numContributedPrs, pullRequestsCriteria?.minimum],
-        ]) {
-            if (minimum !== undefined && given !== undefined && given < minimum) {
-                return undefined;
-            }
-        }
-        const contributionRank = contributorRankCriteria && numContributedCommits !== undefined
-            ? calculateContributionsRank(name, allContributorsByRepo[index], numContributedCommits)
-            : undefined;
-        if (contributionRank &&
-            contributorRankCriteria?.hide.includes(contributionRank)) {
-            return undefined;
-        }
-        const starRank = starRankCriteria
-            ? calculateStarsRank(stargazerCount)
-            : undefined;
-        if (starRank && starRankCriteria?.hide.includes(starRank)) {
-            return undefined;
-        }
-        return {
-            name,
-            imageBase64: imageBase64s[index],
-            url,
-            contributionRank,
-            numContributedCommits,
-            numStars: stargazerCount,
-            numContributedPrs,
-            starRank,
-        };
-    })
-        .filter((s) => s !== undefined)
-        .sort((a, b) => order_by == 'stars'
-        ? b.numStars - a.numStars
-        : (b.numContributedCommits ?? 0) - (a.numContributedCommits ?? 0))
-        .slice(0, limit > 0 ? limit : undefined);
     const statRows = calculatedStats.map((stat, index) => {
         const columnValsMap = {
             star_rank: stat.starRank,
@@ -57158,7 +57462,7 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
             commits: stat.numContributedCommits?.toString(),
             pull_requests: stat.numContributedPrs?.toString(),
         };
-        const { content, cellWidths } = createRow({
+        const { content, cellWidths } = renderRow({
             ...stat,
             index,
             valueCells: columns.map((c) => columnValsMap[c.name]),
@@ -57207,202 +57511,6 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
     });
 };
 
-// EXTERNAL MODULE: ./node_modules/axios/index.js
-var axios = __webpack_require__(9669);
-var axios_default = /*#__PURE__*/__webpack_require__.n(axios);
-;// CONCATENATED MODULE: ./src/fetchContributorStats.ts
-
-const repositoryQuery = `
-owner {
-  id
-  avatarUrl
-}
-isInOrganization
-url
-homepageUrl
-name
-nameWithOwner
-stargazerCount
-openGraphImageUrl
-defaultBranchRef {
-  target {
-    ... on Commit {
-      history {
-        totalCount
-      }
-    }
-  }
-}
-`;
-const fetchContributorStats = async (username) => {
-    try {
-        const response = await axios_default().post('https://api.github.com/graphql', {
-            query: `query {
-                  user(login: ${JSON.stringify(username)}) {
-                    id
-                    name
-                    repositoriesContributedTo(first :100, contributionTypes: COMMIT) {
-                      totalCount
-                      nodes {
-                        ${repositoryQuery}
-                      }
-                    }
-                  }
-                }`,
-        }, {
-            headers: {
-                Authorization: `token ${process.env.GITHUB_PERSONAL_ACCESS_TOKEN}`,
-            },
-        });
-        if (response.status === 200) {
-            return response.data.data.user;
-        }
-    }
-    catch (error) {
-        console.error(error);
-        return;
-    }
-};
-
-;// CONCATENATED MODULE: ./src/fetchAllContributorStats.ts
-
-
-
-const MAX_REPOS_PER_QUERY = 100;
-async function fetchContributionsForRange(username, range) {
-    const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
-    const response = await axios_default().post('https://api.github.com/graphql', {
-        query: `query {
-        user(login: ${JSON.stringify(username)}) {
-          contributionsCollection(from: "${range.from}", to: "${range.to}") {
-            commitContributionsByRepository(maxRepositories: ${MAX_REPOS_PER_QUERY}) {
-              contributions {
-                totalCount
-              }
-              repository {
-                ${repositoryQuery}
-              }
-            }
-            pullRequestContributionsByRepository(maxRepositories: ${MAX_REPOS_PER_QUERY}) {
-              contributions {
-                totalCount
-              }
-              repository {
-                ${repositoryQuery}
-              }
-            }
-          }
-        }
-      }`,
-    }, {
-        headers: {
-            Authorization: `token ${token}`,
-        },
-        validateStatus: (status) => status == 200,
-    });
-    return response.data.data.user.contributionsCollection;
-}
-function splitTimeRange(range) {
-    const from = new Date(range.from);
-    const to = new Date(range.to);
-    const diffMonths = (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth());
-    if (diffMonths >= 6) {
-        const mid = new Date(from);
-        mid.setMonth(mid.getMonth() + Math.floor(diffMonths / 2));
-        mid.setDate(1);
-        const midEnd = new Date(mid);
-        midEnd.setDate(midEnd.getDate() - 1);
-        midEnd.setHours(23, 59, 59, 999);
-        return [
-            { from: range.from, to: midEnd.toISOString() },
-            { from: mid.toISOString(), to: range.to },
-        ];
-    }
-    else if (diffMonths >= 2) {
-        const ranges = [];
-        const current = new Date(from);
-        while (current < to) {
-            const monthStart = new Date(current);
-            const monthEnd = new Date(current);
-            monthEnd.setMonth(monthEnd.getMonth() + 1);
-            monthEnd.setDate(0);
-            monthEnd.setHours(23, 59, 59, 999);
-            ranges.push({
-                from: monthStart.toISOString(),
-                to: monthEnd > to ? range.to : monthEnd.toISOString(),
-            });
-            current.setMonth(current.getMonth() + 1);
-            current.setDate(1);
-        }
-        return ranges;
-    }
-    return [range];
-}
-async function fetchContributionsWithSplitting(username, range, depth = 0) {
-    const results = await fetchContributionsForRange(username, range);
-    if ((results.pullRequestContributionsByRepository.length >= MAX_REPOS_PER_QUERY ||
-        results.commitContributionsByRepository.length >= MAX_REPOS_PER_QUERY) &&
-        depth < 4) {
-        const subRanges = splitTimeRange(range);
-        if (subRanges.length === 1) {
-            return results;
-        }
-        const subResults = await Promise.all(subRanges.map((subRange) => fetchContributionsWithSplitting(username, subRange, depth + 1)));
-        return {
-            commitContributionsByRepository: subResults.flatMap((c) => c.commitContributionsByRepository),
-            pullRequestContributionsByRepository: subResults.flatMap((c) => c.pullRequestContributionsByRepository),
-        };
-    }
-    return results;
-}
-async function fetchAllContributorStats(username) {
-    const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
-    const { data: { data: { user: { id, name, contributionsCollection: { contributionYears }, }, }, }, } = await axios_default().post('https://api.github.com/graphql', {
-        query: `query {
-          user(login: "${username}") {
-            id
-            name
-            contributionsCollection {
-              contributionYears
-            }
-          }
-        }`,
-    }, {
-        headers: {
-            Authorization: `token ${token}`,
-        },
-        validateStatus: (status) => status == 200,
-    });
-    const yearlyContributions = await Promise.all(contributionYears.map((year) => fetchContributionsWithSplitting(username, {
-        from: `${year}-01-01T00:00:00Z`,
-        to: `${year}-12-31T23:59:59Z`,
-    })));
-    const allContributions = yearlyContributions.flat();
-    const getStatsByName = (items) => lodash_default().chain(items)
-        .groupBy((item) => item.repository.nameWithOwner)
-        .map((contributions) => {
-        const totalCount = lodash_default().sumBy(contributions, (c) => c.contributions.totalCount);
-        return {
-            ...contributions[0].repository,
-            numContributions: totalCount,
-        };
-    })
-        .value();
-    const commitsRepositories = getStatsByName(allContributions.flatMap((c) => c.commitContributionsByRepository));
-    const pullRequestsRepositories = getStatsByName(allContributions.flatMap((c) => c.pullRequestContributionsByRepository));
-    return {
-        id,
-        name,
-        repositoriesContributedTo: {
-            nodes: commitsRepositories.map((repo) => ({
-                ...repo,
-                numContributedCommits: repo.numContributions,
-                numContributedPrs: pullRequestsRepositories.find((prRepo) => prRepo.nameWithOwner === repo.nameWithOwner)?.numContributions,
-            })),
-        },
-    };
-}
-
 ;// CONCATENATED MODULE: ./action/src/index.ts
 
 
@@ -57413,101 +57521,14 @@ async function fetchAllContributorStats(username) {
 
 
 
-let requestCount = 0;
-let lastRequestTime = 0;
-async function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
-const MIN_REQUEST_INTERVAL_MS = 100;
-function createRateLimitedFetcher() {
-    return async (_username, nameWithOwner, token) => {
-        const now = Date.now();
-        const timeSinceLastRequest = now - lastRequestTime;
-        if (timeSinceLastRequest < MIN_REQUEST_INTERVAL_MS) {
-            await sleep(MIN_REQUEST_INTERVAL_MS - timeSinceLastRequest);
-        }
-        lastRequestTime = Date.now();
-        requestCount++;
-        if (requestCount % 10 === 0) {
-            core.info(`  Fetched contributors for ${requestCount} repositories...`);
-        }
-        const url = `https://api.github.com/repos/${nameWithOwner}/contributors?per_page=100`;
-        const headers = {
-            Accept: 'application/vnd.github.v3+json',
-            'User-Agent': 'github-contributor-stats-action',
-        };
-        if (token) {
-            headers['Authorization'] = `token ${token}`;
-        }
-        const response = await fetch(url, { headers });
-        const rateLimitRemaining = response.headers.get('x-ratelimit-remaining');
-        const rateLimitReset = response.headers.get('x-ratelimit-reset');
-        const rateLimitLimit = response.headers.get('x-ratelimit-limit');
-        const retryAfter = response.headers.get('retry-after');
-        if (response.status === 403 || response.status === 429) {
-            let waitTime;
-            if (retryAfter) {
-                waitTime = parseInt(retryAfter) * 1000 + 1000;
-                core.info(`Secondary rate limit hit. retry-after: ${retryAfter}s. Waiting ${Math.ceil(waitTime / 1000)}s...`);
-            }
-            else if (rateLimitReset) {
-                const resetTime = parseInt(rateLimitReset, 10) * 1000;
-                waitTime = Math.max(0, resetTime - Date.now()) + 1000;
-                core.info(`Primary rate limit reached (${rateLimitRemaining}/${rateLimitLimit}). Waiting ${Math.ceil(waitTime / 1000)}s until reset...`);
-            }
-            else {
-                waitTime = 60000;
-                core.info(`Rate limit hit (no retry info). Waiting 60s as recommended by GitHub docs...`);
-            }
-            await sleep(waitTime);
-            requestCount--;
-            lastRequestTime = 0;
-            return createRateLimitedFetcher()(_username, nameWithOwner, token);
-        }
-        if (requestCount === 1) {
-            core.info(`Rate limit info: ${rateLimitRemaining}/${rateLimitLimit} remaining (resets at ${rateLimitReset
-                ? new Date(parseInt(rateLimitReset, 10) * 1000).toISOString()
-                : 'N/A'})`);
-            if (rateLimitLimit && parseInt(rateLimitLimit, 10) === 60) {
-                core.warning(`⚠️ Rate limit is 60/hour (unauthenticated primary rate limit).\n` +
-                    `   Expected: 1000/hr for GITHUB_TOKEN, 5000/hr for PAT.\n` +
-                    `   Possible causes:\n` +
-                    `   - GITHUB_TOKEN may not work for external repos' contributors API\n` +
-                    `   - Token may be invalid or missing\n` +
-                    `   Solution: Use a PAT with 'public_repo' scope.\n` +
-                    `   Create at: https://github.com/settings/tokens`);
-            }
-        }
-        if (rateLimitRemaining && parseInt(rateLimitRemaining, 10) <= 1 && rateLimitReset) {
-            const resetTime = parseInt(rateLimitReset, 10) * 1000;
-            const waitTime = Math.max(0, resetTime - Date.now()) + 1000;
-            core.info(`Primary rate limit almost exhausted (${rateLimitRemaining}/${rateLimitLimit}). Waiting ${Math.ceil(waitTime / 1000)}s until reset...`);
-            await sleep(waitTime);
-        }
-        if (!response.ok) {
-            const body = await response.text();
-            throw new Error(`Failed to fetch contributors for ${nameWithOwner}\n` +
-                `  Status: ${response.status} ${response.statusText}\n` +
-                `  URL: ${url}\n` +
-                `  Rate-Limit-Limit: ${rateLimitLimit}\n` +
-                `  Rate-Limit-Remaining: ${rateLimitRemaining}\n` +
-                `  Rate-Limit-Reset: ${rateLimitReset} (${rateLimitReset
-                    ? new Date(parseInt(rateLimitReset, 10) * 1000).toISOString()
-                    : 'N/A'})\n` +
-                `  Retry-After: ${retryAfter}\n` +
-                `  Response body: ${body}`);
-        }
-        const contributors = (await response.json());
-        return contributors;
-    };
-}
+
 async function run() {
     try {
         const { username, output_file, combine_all_yearly_contributions, columns, order_by, limit, exclude, theme, title_color, text_color, icon_color, bg_color, border_color, border_radius, hide_title, hide_border, custom_title, locale, } = parseInputs();
         core.info(`Generating stats for user: ${username}`);
         core.info(`Combine all yearly contributions: ${combine_all_yearly_contributions}`);
         core.info(`Columns: ${columns.map((col) => col.name).join(', ')}`);
-        const contributorRankCriteria = getColumnCriteria(columns, 'contribution_rank');
+        const fetchOtherContributors = Boolean(getColumnCriteria(columns, 'contribution_rank'));
         core.info('Fetching contribution data...');
         const result = await (combine_all_yearly_contributions
             ? fetchAllContributorStats(username)
@@ -57526,13 +57547,12 @@ async function run() {
             ]);
         }), null, 2));
         core.info(`Found ${contributorStats.length} repositories`);
-        const contributorFetcher = contributorRankCriteria
+        const contributorFetcher = fetchOtherContributors
             ? createRateLimitedFetcher()
             : undefined;
-        if (contributorRankCriteria) {
+        if (fetchOtherContributors) {
             core.info(`Will fetch contributors for ${contributorStats.length} repositories with rate limiting`);
             core.info(`Min interval between requests: ${MIN_REQUEST_INTERVAL_MS}ms (secondary rate limit protection)`);
-            core.info(`Total contributor API requests made: ${requestCount}`);
         }
         core.info('Rendering SVG...');
         const svg = await renderContributorStatsCard(username, name, contributorStats, {
@@ -57553,6 +57573,9 @@ async function run() {
             exclude,
             contributor_fetcher: contributorFetcher,
         });
+        if (fetchOtherContributors) {
+            core.info(`Total contributor API requests made: ${getRequestCount()}`);
+        }
         const outputPath = external_path_.resolve(process.cwd(), output_file);
         external_fs_.mkdirSync(external_path_.dirname(outputPath), { recursive: true });
         external_fs_.writeFileSync(outputPath, svg);
