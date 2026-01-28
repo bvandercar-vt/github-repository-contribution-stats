@@ -46,14 +46,14 @@ app.get('/api', async (req, res) => {
     }
 
     const name = result.name;
-    const contributorStats = result.repositoriesContributedTo.nodes;
+    const reposWithStats = result.repositoriesContributedTo.nodes;
 
     const cacheSeconds = clampValue(cache_seconds, TIMES_S.FOUR_HOURS, TIMES_S.ONE_DAY);
 
     res.setHeader('Cache-Control', `public, max-age=${cacheSeconds}`);
 
     res.send(
-      await renderContributorStatsCard(username, name, contributorStats, parsedQuery),
+      await renderContributorStatsCard(username, name, reposWithStats, parsedQuery),
     );
   } catch (err: unknown) {
     if (err instanceof Error) {

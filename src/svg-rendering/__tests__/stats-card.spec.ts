@@ -3,9 +3,9 @@ import * as path from 'path';
 
 import { renderContributorStatsCard } from '../stats-card';
 
-import { type ContributionsStats } from '@/processStats';
+import { type RepoWithStats } from '@/processStats';
 
-const mockContributorStats: ContributionsStats[] = [
+const mockStats: RepoWithStats[] = [
   {
     name: 'Repo 1',
     owner: {
@@ -58,15 +58,10 @@ const generateAndTest = async ({
   filename,
   ...options
 }: Parameters<typeof renderContributorStatsCard>[3] & { filename: string }) => {
-  const svg = await renderContributorStatsCard(
-    'testuser',
-    'Test User',
-    mockContributorStats,
-    {
-      ...options,
-      contributor_fetcher: () => Promise.resolve([]),
-    },
-  );
+  const svg = await renderContributorStatsCard('testuser', 'Test User', mockStats, {
+    ...options,
+    contributor_fetcher: () => Promise.resolve([]),
+  });
 
   const outputPath = saveSvg(filename, svg);
   const generated = fs.readFileSync(outputPath, 'utf-8');

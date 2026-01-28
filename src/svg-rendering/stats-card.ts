@@ -6,8 +6,9 @@ import type { ColumnCriteria } from '@/common/schema';
 import { type ColumnName, type OrderByOptions } from '@/common/schema';
 import { clampValue, flexLayout, getCardColors, measureText } from '@/common/utils';
 import { fetchContributors } from '@/fetchContributors';
+import type { Repository } from '@/fetchContributorStats';
 import { getStyles } from '@/getStyles';
-import type { ContributionsStats, ContributorFetcher } from '@/processStats';
+import type { RepoWithStats, ContributorFetcher } from '@/processStats';
 import { processStats } from '@/processStats';
 import { renderCard } from '@/svg-rendering/_outer_card';
 import { statCardLocales } from '@/translations';
@@ -17,14 +18,14 @@ let maxWidth = 0;
 const renderRow = ({
   imageBase64,
   name,
+  url,
   valueCells: valueCellCriteria,
   index,
 }: {
   imageBase64: string;
-  name: string;
   valueCells: (string | undefined)[];
   index: number;
-}) => {
+} & Pick<Repository, 'name' | 'url'>) => {
   const staggerDelay = (index + 3) * 150;
 
   let offset = clampValue(measureText(name, 18), 230, 400);
@@ -79,6 +80,7 @@ const renderRow = ({
   return {
     content: `
     <g class="stagger" style="animation-delay: ${staggerDelay}ms" transform="translate(25, 0)">
+    <a xlink:href="${url}" target="_blank">
       <defs>
         <clipPath id="myCircle">
           <circle cx="12.5" cy="12.5" r="12.5" fill="#FFFFFF" />
@@ -89,6 +91,7 @@ const renderRow = ({
         <text class="stat bold">${name}</text>
       </g>
       ${valueCells}
+    </a>
     </g>
   `,
     cellWidths,
@@ -98,7 +101,7 @@ const renderRow = ({
 export const renderContributorStatsCard = async (
   username: string,
   name: string,
-  contributorStats: ContributionsStats[] = [],
+  reposWithStats: RepoWithStats[] = [],
   {
     columns = [{ name: 'star_rank' }],
     line_height = 25,
@@ -158,7 +161,7 @@ export const renderContributorStatsCard = async (
     contributor_fetcher?: ContributorFetcher;
   } = {},
 ) => {
-  const calculatedStats = await processStats(contributorStats, {
+  const processedStats = await processStats(reposWithStats, {
     username,
     columns,
     order_by,
@@ -187,17 +190,17 @@ export const renderContributorStatsCard = async (
 
   const allCellWidths: number[][] = [];
 
-  const statRows = calculatedStats.map((stat, index) => {
+  const statRows = processedStats.map((repo, index) => {
     const columnValsMap = {
-      star_rank: stat.starRank,
-      contribution_rank: stat.contributionRank,
-      commits: stat.numContributedCommits?.toString(),
-      pull_requests: stat.numContributedPrs?.toString(),
+      star_rank: repo.starRank,
+      contribution_rank: repo.contributionRank,
+      commits: repo.numContributedCommits?.toString(),
+      pull_requests: repo.numContributedPrs?.toString(),
     } satisfies Record<ColumnName, string | undefined>;
 
     // create the text nodes, and pass index so that we can calculate the line spacing
     const { content, cellWidths } = renderRow({
-      ...stat,
+      ...repo,
       index,
       valueCells: columns.map((c) => columnValsMap[c.name]),
     });

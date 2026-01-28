@@ -33,6 +33,11 @@ export interface Repository {
       };
     };
   } | null;
+  primaryLanguage: {
+    name: string;
+    color: string;
+    id: string;
+  };
 }
 
 export const repositoryQuery = `
@@ -55,6 +60,11 @@ defaultBranchRef {
       }
     }
   }
+}
+primaryLanguage {
+  name
+  color
+  id
 }
 `;
 

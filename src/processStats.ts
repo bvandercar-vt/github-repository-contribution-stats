@@ -6,7 +6,7 @@ import type { Repository } from './fetchContributorStats';
 
 const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
 
-export type ContributionsStats = Pick<
+export type RepoWithStats = Pick<
   Repository,
   'name' | 'owner' | 'nameWithOwner' | 'url' | 'stargazerCount'
 > & {
@@ -22,7 +22,7 @@ export type ContributorFetcher = (
 ) => Promise<Contributor[]>;
 
 export async function processStats(
-  contributorStats: ContributionsStats[] = [],
+  reposWithStats: RepoWithStats[] = [],
   {
     columns = [{ name: 'star_rank' }],
     username,
@@ -57,21 +57,21 @@ export async function processStats(
   if (contributorRankCriteria) {
     // Fetch sequentially to respect rate limiting (not in parallel with Promise.all)
     allContributorsByRepo = [];
-    for (const { nameWithOwner } of Object.values(contributorStats)) {
+    for (const { nameWithOwner } of Object.values(reposWithStats)) {
       const contributors = await contributor_fetcher(username, nameWithOwner, token!);
       allContributorsByRepo.push(contributors);
     }
   }
 
   const imageBase64s = await Promise.all(
-    Object.values(contributorStats).map((contributorStat) => {
-      const url = new URL(contributorStat.owner.avatarUrl);
+    Object.values(reposWithStats).map((repo) => {
+      const url = new URL(repo.owner.avatarUrl);
       url.searchParams.append('s', '50');
       return getImageBase64FromURL(url.toString());
     }),
   );
 
-  return contributorStats
+  return reposWithStats
     .map(
       (
         {

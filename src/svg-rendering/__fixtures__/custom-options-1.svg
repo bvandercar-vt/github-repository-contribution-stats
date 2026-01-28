@@ -187,6 +187,7 @@
     <svg overflow="visible">
       <g transform="translate(0, 0)">
     <g class="stagger" style="animation-delay: 450ms" transform="translate(25, 0)">
+    <a xlink:href="https://github.com/owner1/repo1" target="_blank">
       <defs>
         <clipPath id="myCircle">
           <circle cx="12.5" cy="12.5" r="12.5" fill="#FFFFFF" />
@@ -220,9 +221,11 @@
     
     </g>
         
+    </a>
     </g>
   </g><g transform="translate(0, 33)">
     <g class="stagger" style="animation-delay: 600ms" transform="translate(25, 0)">
+    <a xlink:href="https://github.com/owner2/repo2" target="_blank">
       <defs>
         <clipPath id="myCircle">
           <circle cx="12.5" cy="12.5" r="12.5" fill="#FFFFFF" />
@@ -256,9 +259,11 @@
     
     </g>
         
+    </a>
     </g>
   </g><g transform="translate(0, 66)">
     <g class="stagger" style="animation-delay: 750ms" transform="translate(25, 0)">
+    <a xlink:href="https://github.com/owner3/repo3" target="_blank">
       <defs>
         <clipPath id="myCircle">
           <circle cx="12.5" cy="12.5" r="12.5" fill="#FFFFFF" />
@@ -292,6 +297,7 @@
     
     </g>
         
+    </a>
     </g>
   </g>
     </svg>

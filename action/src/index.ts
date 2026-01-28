@@ -59,11 +59,11 @@ async function run(): Promise<void> {
     }
 
     const name = result.name;
-    const contributorStats = result.repositoriesContributedTo.nodes;
+    const reposWithStats = result.repositoriesContributedTo.nodes;
 
     console.log(
       JSON.stringify(
-        contributorStats.map((repo) => {
+        reposWithStats.map((repo) => {
           _.pick(repo, [
             'nameWithOwner',
             'stargazerCount',
@@ -76,7 +76,7 @@ async function run(): Promise<void> {
       ),
     );
 
-    core.info(`Found ${contributorStats.length} repositories`);
+    core.info(`Found ${reposWithStats.length} repositories`);
 
     // Create rate-limited fetcher if needed
     const contributorFetcher = fetchOtherContributors
@@ -85,7 +85,7 @@ async function run(): Promise<void> {
 
     if (fetchOtherContributors) {
       core.info(
-        `Will fetch contributors for ${contributorStats.length} repositories with rate limiting`,
+        `Will fetch contributors for ${reposWithStats.length} repositories with rate limiting`,
       );
       core.info(
         `Min interval between requests: ${MIN_REQUEST_INTERVAL_MS}ms (secondary rate limit protection)`,
@@ -94,7 +94,7 @@ async function run(): Promise<void> {
 
     // Render the card
     core.info('Rendering SVG...');
-    const svg = await renderContributorStatsCard(username, name, contributorStats, {
+    const svg = await renderContributorStatsCard(username, name, reposWithStats, {
       columns,
       hide_title,
       hide_border,
