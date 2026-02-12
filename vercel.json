@@ -2,7 +2,7 @@
   "builds": [
     {
       "src": "index.cjs",
-      "use": "@now/node"
+      "use": "@vercel/node"
     }
   ],
   "routes": [
